@@ -1,6 +1,8 @@
 package com.nexa.finance.domain.card
 
+import com.nexa.finance.domain.account.Account
 import com.nexa.finance.domain.account.AccountId
+import com.nexa.finance.domain.account.AccountType
 import com.nexa.finance.domain.common.CurrencyCode
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
@@ -18,10 +20,11 @@ class CardTest {
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
     private val userId = UserId(UUID.fromString("00000000-0000-0000-0000-000000000001"))
     private val accountId = AccountId(UUID.fromString("00000000-0000-0000-0000-000000000002"))
+    private val liabilityAccount = Account.create(userId, "Visa liability", AccountType.CREDIT_CARD, Money.zero(CurrencyCode.BRL), clock, accountId)
 
     private fun card() = Card.create(
         ownerId = userId,
-        liabilityAccountId = accountId,
+        liabilityAccount = liabilityAccount,
         name = "Nexa Visa",
         brand = CardBrand.VISA,
         lastFourDigits = "1234",
@@ -56,7 +59,7 @@ class CardTest {
     @Test
     fun rejectsInvalidLastFourDigits() {
         assertFailsWith<DomainValidationException> {
-            Card.create(userId, accountId, "Card", CardBrand.VISA, "12A4", Money(1000, CurrencyCode.BRL), 10, 20, clock)
+            Card.create(userId, liabilityAccount, "Card", CardBrand.VISA, "12A4", Money(1000, CurrencyCode.BRL), 10, 20, clock)
         }
     }
 }
