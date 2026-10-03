@@ -92,6 +92,16 @@ class User private constructor(
     companion object {
         private val EMAIL_REGEX = Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
 
+        fun restore(
+            id: UserId,
+            email: String,
+            displayName: String,
+            timeZone: ZoneId,
+            createdAt: Instant,
+            updatedAt: Instant,
+            status: UserStatus,
+        ): User = User(id, email, displayName, timeZone, createdAt, updatedAt, status)
+
         fun create(
             email: String,
             displayName: String,

@@ -510,40 +510,50 @@ O domÃ­nio deve representar corretamente as operaÃ§Ãµes financeiras previs
 
 ## 1.7 â€” AutenticaÃ§Ã£o e usuÃ¡rios
 
+**Status:** EM PROGRESSO
+
+Implementado e validado: cadastro, login, sessÃ£o persistida, logout, recuperaÃ§Ã£o de acesso, redefiniÃ§Ã£o de senha, perfil, autorizaÃ§Ã£o central e isolamento HTTP de contas financeiras entre usuÃ¡rios. O isolamento foi validado contra PostgreSQL real.
+
+A etapa permanece aberta porque os demais recursos financeiros ainda nÃ£o possuem repositÃ³rios/endpoints HTTP; o isolamento desses recursos serÃ¡ aplicado antes de serem expostos pela API.
+
 ### Microtarefas
 
-- [ ] Criar cadastro
-- [ ] Criar login
-- [ ] Criar sessÃ£o
-- [ ] Criar logout
-- [ ] Criar recuperaÃ§Ã£o de acesso
-- [ ] Criar perfil bÃ¡sico
-- [ ] Implementar autorizaÃ§Ã£o por usuÃ¡rio
-- [ ] Testar isolamento de dados entre usuÃ¡rios
+- [x] Criar cadastro
+- [x] Criar login
+- [x] Criar sessÃ£o
+- [x] Criar logout
+- [x] Criar recuperaÃ§Ã£o de acesso
+- [x] Criar perfil bÃ¡sico
+- [x] Implementar autorizaÃ§Ã£o por usuÃ¡rio
+- [x] Testar isolamento de dados entre usuÃ¡rios (contas financeiras expostas)
 
 ### CritÃ©rio de conclusÃ£o
 
-Um usuÃ¡rio nÃ£o pode acessar dados pertencentes a outro usuÃ¡rio.
+Um usuÃ¡rio nÃ£o pode acessar dados pertencentes a outro usuÃ¡rio. Para cada novo recurso financeiro exposto pela API, a consulta deve nascer escopada pelo usuÃ¡rio autenticado e possuir teste de isolamento.
 
 ---
 
 ## 1.8 â€” API base
 
+**Status:** CONCLUÍDO
+
+A API Ktor possui servidor, rotas, serializaÃ§Ã£o JSON, validaÃ§Ã£o de requests, tratamento central de erros, respostas padronizadas, autenticaÃ§Ã£o Bearer, documentaÃ§Ã£o inicial em docs/API.md e health check. Os fluxos de autenticaÃ§Ã£o, recuperaÃ§Ã£o, perfil, erros e contas foram testados via HTTP; os testes de integraÃ§Ã£o foram executados contra PostgreSQL real.
+
 ### Microtarefas
 
-- [ ] Criar servidor Ktor
-- [ ] Configurar rotas
-- [ ] Criar serializaÃ§Ã£o
-- [ ] Criar validaÃ§Ã£o de requests
-- [ ] Criar tratamento central de erros
-- [ ] Criar respostas padronizadas
-- [ ] Criar autenticaÃ§Ã£o
-- [ ] Criar documentaÃ§Ã£o inicial da API
-- [ ] Criar health check
+- [x] Criar servidor Ktor
+- [x] Configurar rotas
+- [x] Criar serializaÃ§Ã£o
+- [x] Criar validaÃ§Ã£o de requests
+- [x] Criar tratamento central de erros
+- [x] Criar respostas padronizadas
+- [x] Criar autenticaÃ§Ã£o
+- [x] Criar documentaÃ§Ã£o inicial da API
+- [x] Criar health check
 
 ### CritÃ©rio de conclusÃ£o
 
-A API deve responder de maneira consistente e previsÃ­vel a requests vÃ¡lidos e invÃ¡lidos.
+A API responde de maneira consistente e previsÃ­vel a requests vÃ¡lidos e invÃ¡lidos nos endpoints implementados.
 
 ---
 

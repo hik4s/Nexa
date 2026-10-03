@@ -79,6 +79,26 @@ class Account private constructor(
     }
 
     companion object {
+        fun restore(
+            id: AccountId,
+            ownerId: UserId,
+            name: String,
+            type: AccountType,
+            openingBalance: Money,
+            createdAt: Instant,
+            updatedAt: Instant,
+            status: AccountStatus,
+        ): Account = Account(
+            id = id,
+            ownerId = ownerId,
+            name = name,
+            type = type,
+            openingBalance = openingBalance,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            status = status,
+        )
+
         fun create(
             ownerId: UserId,
             name: String,
