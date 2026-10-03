@@ -44,7 +44,7 @@ jobs:
         run: ./gradlew build
 
   android:
-    name: Android build
+    name: Android tests + build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -76,6 +76,10 @@ jobs:
         working-directory: android
         run: chmod +x ./gradlew
 
+      - name: Test Android unit tests
+        working-directory: android
+        run: ./gradlew clean :app:testDebugUnitTest
+
       - name: Build debug APK
         working-directory: android
-        run: ./gradlew clean :app:assembleDebug
+        run: ./gradlew :app:assembleDebug
