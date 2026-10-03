@@ -1,0 +1,36 @@
+package com.nexa.finance.api
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class CreateTransactionRequest(
+    val accountId: String,
+    val amountMinor: Long,
+    val currency: String,
+    val type: String,
+    val direction: String,
+    val occurredOn: String,
+    val description: String? = null,
+    val categoryId: String? = null,
+    val source: String = "MANUAL",
+)
+
+@Serializable
+data class TransactionResponse(
+    val id: String,
+    val accountId: String,
+    val amountMinor: Long,
+    val currency: String,
+    val type: String,
+    val direction: String,
+    val status: String,
+    val occurredOn: String,
+    val description: String?,
+    val categoryId: String?,
+    val source: String,
+)
+
+@Serializable
+data class TransactionStatusResponse(
+    val transaction: TransactionResponse,
+)

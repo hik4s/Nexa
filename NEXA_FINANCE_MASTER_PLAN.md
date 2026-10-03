@@ -1407,3 +1407,14 @@ A microtarefa foi concluÃ­da apÃ³s verificar:
 1.3.6 - Installment.
 
 
+
+
+# Checkpoint 1.9 - 2026-10-03
+
+Status: EM PROGRESSO.
+
+Implementado e validado contra PostgreSQL real: transacoes manuais, calculo de saldo, listagem e consulta, cancelamento, validacao de moeda, contas ativas, autenticacao obrigatoria e isolamento por usuario. A persistencia tambem valida o escopo da categoria referenciada.
+
+Pendentes: transferencias, cartoes/faturas/pagamento de fatura, parcelamento, estorno completo, recorrencia e testes correspondentes.
+
+Este checkpoint e a referencia operacional atual da etapa 1.9. Itens pendentes nao devem ser marcados como concluidos sem implementacao, testes, debugging e validacao real.

@@ -1,0 +1,80 @@
+package com.nexa.finance.application.transaction
+
+import com.nexa.finance.domain.account.AccountId
+import com.nexa.finance.domain.account.AccountStatus
+import com.nexa.finance.domain.category.CategoryId
+import com.nexa.finance.domain.common.DomainValidationException
+import com.nexa.finance.domain.common.Money
+import com.nexa.finance.domain.common.UserId
+import com.nexa.finance.domain.transaction.Transaction
+import com.nexa.finance.domain.transaction.TransactionDirection
+import com.nexa.finance.domain.transaction.TransactionId
+import com.nexa.finance.domain.transaction.TransactionSource
+import com.nexa.finance.domain.transaction.TransactionStatus
+import com.nexa.finance.domain.transaction.TransactionType
+import com.nexa.finance.infrastructure.account.JdbcAccountRepository
+import com.nexa.finance.infrastructure.transaction.JdbcTransactionRepository
+import java.time.LocalDate
+
+class TransactionService(
+    private val transactions: JdbcTransactionRepository,
+    private val accounts: JdbcAccountRepository,
+) {
+    fun create(
+        ownerId: UserId,
+        accountId: AccountId,
+        amount: Money,
+        type: TransactionType,
+        direction: TransactionDirection,
+        occurredOn: LocalDate,
+        description: String?,
+        categoryId: CategoryId?,
+        source: TransactionSource,
+    ): Transaction {
+        val account = accounts.findByOwnerAndId(ownerId, accountId)
+            ?: throw DomainValidationException("Account was not found.")
+        if (account.status != AccountStatus.ACTIVE) {
+            throw DomainValidationException("Archived accounts cannot receive new transactions.")
+        }
+        if (amount.currency != account.currency) {
+            throw DomainValidationException("Transaction currency must match account currency.")
+        }
+        val transaction = Transaction.create(
+            accountId = accountId,
+            amount = amount,
+            type = type,
+            direction = direction,
+            occurredOn = occurredOn,
+            description = description,
+            categoryId = categoryId,
+            source = source,
+        )
+        transactions.create(ownerId, transaction)
+        return transaction
+    }
+
+    fun list(ownerId: UserId, accountId: AccountId?): List<Transaction> =
+        transactions.findByOwner(ownerId, accountId)
+
+    fun get(ownerId: UserId, id: TransactionId): Transaction =
+        transactions.findByOwnerAndId(ownerId, id)
+            ?: throw DomainValidationException("Transaction was not found.")
+
+    fun post(ownerId: UserId, id: TransactionId): Transaction =
+        get(ownerId, id).let {
+            if (it.status != TransactionStatus.PENDING) {
+                throw DomainValidationException("Only pending transactions can be posted.")
+            }
+            transactions.updateStatus(ownerId, id, TransactionStatus.POSTED)
+                ?: throw DomainValidationException("Transaction was not found.")
+        }
+
+    fun cancel(ownerId: UserId, id: TransactionId): Transaction =
+        get(ownerId, id).let {
+            if (it.status == TransactionStatus.CANCELLED) {
+                throw DomainValidationException("Transaction is already cancelled.")
+            }
+            transactions.updateStatus(ownerId, id, TransactionStatus.CANCELLED)
+                ?: throw DomainValidationException("Transaction was not found.")
+        }
+}

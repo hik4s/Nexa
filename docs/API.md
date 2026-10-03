@@ -137,6 +137,46 @@ Resposta:
 
 NEXA Finance API — OK
 
+## Transactions
+
+Todos os endpoints abaixo são protegidos.
+
+### POST /transactions
+
+Cria uma transação manual na conta do usuário autenticado.
+
+Request:
+
+    {
+      "accountId": "uuid",
+      "amountMinor": 12500,
+      "currency": "BRL",
+      "type": "EXPENSE",
+      "direction": "DEBIT",
+      "occurredOn": "2026-10-03",
+      "description": "Mercado",
+      "categoryId": null,
+      "source": "MANUAL"
+    }
+
+A conta precisa pertencer ao usuário, estar ativa e usar a mesma moeda da transação.
+
+### GET /transactions
+
+Lista as transações pertencentes ao usuário autenticado. O parâmetro opcional accountId filtra por conta.
+
+### GET /transactions/{id}
+
+Retorna somente uma transação pertencente ao usuário autenticado.
+
+### POST /transactions/{id}/post
+
+Publica uma transação pendente.
+
+### POST /transactions/{id}/cancel
+
+Cancela uma transação que ainda não esteja cancelada.
+
 ## Estado de implementação
 
 Implementado e validado:
@@ -151,12 +191,19 @@ Implementado e validado:
 - erros HTTP padronizados
 - contas: criação, listagem e consulta
 - isolamento de contas por usuário
+- transações: criação, listagem, consulta e cancelamento
+- saldo derivado das transações publicadas
+- isolamento de transações por usuário
+- validação de moeda da transação
+- validação de escopo da categoria referenciada
 
 Ainda não implementado neste checkpoint:
 
-- endpoints de transações
 - transferências HTTP
 - cartões/faturas HTTP
+- pagamento de fatura HTTP
+- parcelamento HTTP
+- estorno completo
+- recorrência
 - OpenAPI/Swagger servido pela aplicação
 - rate limiting e hardening de produção
-- demais recursos financeiros expostos pela API
