@@ -111,6 +111,8 @@ data class Transaction private constructor(
                 occurredOn = occurredOn,
                 description = normalizedDescription,
                 categoryId = categoryId,
+                cardId = cardId,
+                invoiceId = invoiceId,
                 source = source,
                 relatedTransactionId = relatedTransactionId,
                 createdAt = createdAt,
