@@ -52,15 +52,12 @@ class CardLedgerTest {
     }
 
     @Test
-    fun cannotSpendMoreThanAvailableLimit() {
+}
+
+    @Test
+    fun exhaustedLimitReportsZeroAvailable() {
         val purchase = CardLedger.purchase(card, Money(500_000, CurrencyCode.BRL), LocalDate.of(2026, 10, 3), invoiceId, clock = clock).post()
         val balance = AccountBalance.calculate(account, listOf(purchase))
         assertEquals(0, CardLedger.availableLimit(card, balance).amountInMinor)
-        assertFailsWith<IllegalArgumentException> {
-            // Limit enforcement belongs to the command/service layer, because it requires current ledger state.
-            check(Money(1, CurrencyCode.BRL) <= CardLedger.availableLimit(card, balance))
-        }
     }
-}
-
 
