@@ -1,0 +1,23 @@
+# IDE
+.idea/
+*.iml
+.kotlin/
+
+# Gradle
+.gradle/
+**/build/
+
+# Android
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db

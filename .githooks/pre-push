@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+printf '%s\n' 'NEXA pre-push: running fast verification...'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/verify.ps1 -Fast -SkipAndroid -SkipInfra
