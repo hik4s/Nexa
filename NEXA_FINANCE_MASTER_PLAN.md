@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 → Microtarefas 1.3.1 a 1.3.4 concluídas; automação de desenvolvimento instalada e verificada; pronto para 1.3.5.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.5 concluidas; automacao de desenvolvimento instalada e verificada; pronto para 1.3.6.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -1038,10 +1038,10 @@ Motor financeiro
 
 ### PrÃ³ximas microtarefas 1.3
 
-- [ ] 1.3.2 â€” Account
-- [ ] 1.3.3 â€” Category
-- [ ] 1.3.4 â€” Transfer
-- [ ] 1.3.5 â€” Payment / Refund / Cancellation
+- [x] 1.3.2 â€” Account
+- [x] 1.3.3 â€” Category
+- [x] 1.3.4 â€” Transfer
+- [x] 1.3.5 â€” Payment / Refund / Cancellation
 - [ ] 1.3.6 â€” Installment
 - [ ] 1.3.7 â€” Recurrence
 - [ ] 1.3.8 â€” RevisÃ£o de domÃ­nio
@@ -1327,6 +1327,6 @@ A microtarefa foi concluÃ­da apÃ³s verificar:
 - android/local.properties é local e está protegido pelo .gitignore.
 
 ## Próxima etapa
-1.3.5 - Payment / Refund / Cancellation.
+1.3.6 - Installment.
 
 
