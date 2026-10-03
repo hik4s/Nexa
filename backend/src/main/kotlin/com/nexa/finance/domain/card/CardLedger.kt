@@ -33,6 +33,7 @@ object CardLedger {
             cardId = card.id,
             invoiceId = invoiceId,
             source = source,
+            status = TransactionStatus.PENDING,
             createdAt = java.time.Instant.now(clock),
         )
     }
@@ -58,6 +59,7 @@ object CardLedger {
             cardId = card.id,
             invoiceId = invoiceId,
             source = source,
+            status = TransactionStatus.PENDING,
             createdAt = java.time.Instant.now(clock),
         )
     }
@@ -82,6 +84,7 @@ object CardLedger {
             cardId = card.id,
             invoiceId = invoiceId,
             source = source,
+            status = TransactionStatus.PENDING,
             createdAt = java.time.Instant.now(clock),
         )
     }
