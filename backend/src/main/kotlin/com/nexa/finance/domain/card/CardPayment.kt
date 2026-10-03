@@ -40,7 +40,8 @@ data class CardPayment private constructor(
         if (sourceTransaction.direction != TransactionDirection.DEBIT || liabilityTransaction.direction != TransactionDirection.DEBIT) throw DomainValidationException("Card payment must debit both the cash account and the liability account.")
         if (sourceTransaction.type != TransactionType.PAYMENT || liabilityTransaction.type != TransactionType.PAYMENT) throw DomainValidationException("Card payment transactions must have type PAYMENT.")
         if (sourceTransaction.relatedTransactionId != liabilityTransaction.id || liabilityTransaction.relatedTransactionId != sourceTransaction.id) throw DomainValidationException("Payment transactions must reference each other.")
-        if (sourceTransaction.status != liabilityTransaction.status) throw DomainValidationException("Card payment transaction statuses must match.")`r`n        if (sourceTransaction.status !in setOf(TransactionStatus.PENDING, TransactionStatus.POSTED)) throw DomainValidationException("Card payment must be pending or posted.")
+        if (sourceTransaction.status != liabilityTransaction.status) throw DomainValidationException("Card payment transaction statuses must match.")
+        if (sourceTransaction.status !in setOf(TransactionStatus.PENDING, TransactionStatus.POSTED)) throw DomainValidationException("Card payment must be pending or posted.")
     }
 
     fun post(now: Instant = Instant.now()): CardPayment =
