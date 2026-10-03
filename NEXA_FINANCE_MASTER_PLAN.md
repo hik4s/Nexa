@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.7 concluidas; 1.3.8 em validacao; automacao de desenvolvimento instalada e verificada.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 em andamento, com tokens de cor implementados e validados; automacao de desenvolvimento instalada e verificada.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -412,9 +412,14 @@ Outra mÃ¡quina deve conseguir reproduzir o ambiente seguindo o README sem depe
 
 ## 1.4 â€” Design System
 
+**Status:** EM ANDAMENTO
+
+Microtarefa concluída: tokens de cor e esquema semântico claro/escuro. Validação: assembleDebug.
+
+
 ### Microtarefas
 
-- [ ] Criar tokens de cor
+- [x] Criar tokens de cor
 - [ ] Criar tokens tipogrÃ¡ficos
 - [ ] Criar tokens de espaÃ§amento
 - [ ] Criar tokens de raio
@@ -1044,7 +1049,7 @@ Motor financeiro
 - [x] 1.3.5 â€” Payment / Refund / Cancellation
 - [x] 1.3.6 â€” Installment
 - [x] 1.3.7 â€” Recurrence
-- [ ] 1.3.8 â€” RevisÃ£o de domÃ­nio
+- [x] 1.3.8 â€” RevisÃ£o de domÃ­nio
 
 ### 1.3.6 â€” Installment
 
@@ -1082,7 +1087,7 @@ O agregado representa uma regra de recorrência e seu cronograma determinístico
 
 ### 1.3.8 — Revisão de domínio
 
-**Status:** EM VALIDAÇÃO
+**Status:** CONCLUÍDA
 
 Revisão cruzada dos agregados financeiros, invariantes e fronteiras entre domínio e aplicação.
 
