@@ -88,7 +88,7 @@ object CardLedger {
     fun availableLimit(card: Card, liabilityBalance: Money): Money {
         requireCurrency(card, liabilityBalance)
         val available = card.creditLimit - liabilityBalance
-        return if (available.isNegative) Money.zero(card.creditLimit.currency) else available
+        return if (available.isNegative()) Money.zero(card.creditLimit.currency) else available
     }
 
     private fun requireCurrency(card: Card, amount: Money) {
