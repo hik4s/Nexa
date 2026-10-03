@@ -459,7 +459,7 @@ Novas telas devem conseguir utilizar o Design System sem criar estilos ad hoc.
 
 ### CritÃ©rio de conclusÃ£o
 
-O banco Ã© reproduzÃ­vel por migrations, possui integridade referencial adequada e sua recriaÃ§Ã£o local foi validada do volume vazio atÃ© a aplicaÃ§Ã£o das migrations V1 e V2.
+O banco Ã© reproduzÃ­vel por migrations e possui integridade referencial adequada. A recriaÃ§Ã£o local do volume vazio atÃ© V2 foi validada; a migration V3 foi validada sobre o schema V2 contra PostgreSQL 18.6, com aplicaÃ§Ã£o bem-sucedida.
 
 A reversÃ£o adotada neste estÃ¡gio Ã© por nova migration; para o ambiente local descartÃ¡vel, a reconstruÃ§Ã£o do volume foi testada.
 
@@ -467,9 +467,9 @@ A reversÃ£o adotada neste estÃ¡gio Ã© por nova migration; para o ambiente 
 
 ## 1.6 â€” Modelo de domÃ­nio financeiro
 
-**Status:** EM ANDAMENTO
+**Status:** CONCLUÍDO
 
-Revisão 1.6: User, Account, Transaction, Category, PaymentMethodType, Transfer, Payment, Refund, Cancellation, Installment, Budget, Goal e Recurrence estão modelados e testados. Card e Invoice aguardam a decisão contábil do ledger de cartão.
+Revisão 1.6: User, Account, Transaction, Category, PaymentMethodType, Transfer, Payment, Refund, Cancellation, Installment, Budget, Goal, RecurringTransaction, Card e Invoice estão modelados e testados. O modelo contábil de cartão usa Card como instrumento vinculado a uma Account de passivo; compras/refundos são lançados no ledger do cartão e pagamentos de fatura são eventos de duas pernas entre a conta bancária e o passivo do cartão.
 
 ### Entidades principais
 
@@ -478,8 +478,8 @@ Revisão 1.6: User, Account, Transaction, Category, PaymentMethodType, Transfer,
 - [x] Transaction
 - [x] Category
 - [x] PaymentMethod
-- [ ] Card
-- [ ] Invoice
+- [x] Card
+- [x] Invoice
 - [x] Installment
 - [x] Budget
 - [x] Goal
@@ -487,15 +487,20 @@ Revisão 1.6: User, Account, Transaction, Category, PaymentMethodType, Transfer,
 
 ### Microtarefas
 
-- [ ] Definir campos
-- [ ] Definir relacionamentos
-- [ ] Definir regras de estado
-- [ ] Definir tipos monetÃ¡rios
-- [ ] Definir datas e timezone
-- [ ] Definir regras para valores positivos/negativos
-- [ ] Definir transferÃªncias
-- [ ] Definir estornos
-- [ ] Definir cancelamentos
+- [x] Definir campos
+- [x] Definir relacionamentos
+- [x] Definir regras de estado
+- [x] Definir tipos monetÃ¡rios
+- [x] Definir datas e timezone
+- [x] Definir regras para valores positivos/negativos
+- [x] Definir transferÃªncias
+- [x] Definir estornos
+- [x] Definir cancelamentos
+- [x] Modelar Card como instrumento vinculado a Account de passivo
+- [x] Modelar Invoice e pagamentos parciais
+- [x] Modelar CardPayment como evento de duas pernas
+- [x] Validar ledger de compras, estornos e pagamentos de cartÃ£o
+- [x] Validar migration V3 contra PostgreSQL real
 
 ### CritÃ©rio de conclusÃ£o
 
