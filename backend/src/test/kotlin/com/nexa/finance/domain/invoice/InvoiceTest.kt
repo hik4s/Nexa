@@ -18,7 +18,7 @@ class InvoiceTest {
     private val now = Instant.parse("2026-10-03T12:00:00Z")
     private val clock = Clock.fixed(now, ZoneOffset.UTC)
     private val cardId = CardId(UUID.fromString("00000000-0000-0000-0000-000000000002"))
-    private val txId = TransactionId(UUID.fromString("00000000-0000-0000-0000-000000000003"))
+    private val txId: TransactionId = UUID.fromString("00000000-0000-0000-0000-000000000003")
 
     private fun invoice() = Invoice.create(
         cardId = cardId,
@@ -68,3 +68,4 @@ class InvoiceTest {
         assertEquals(InvoiceStatus.PAID, paid.status)
     }
 }
+
