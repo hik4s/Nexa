@@ -2,10 +2,15 @@ name: NEXA CI
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
   contents: read
+
+concurrency:
+  group: nexa-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend:
@@ -53,6 +58,9 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses >/dev/null || true
 
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-37.0" "build-tools;36.0.0" "platform-tools"
