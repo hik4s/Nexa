@@ -42,6 +42,7 @@ class InvoiceTest {
         val closed = invoice().close(now)
         val partiallyPaid = closed.registerPayment(Money(40_000, CurrencyCode.BRL), txId, now.plusSeconds(1))
         assertEquals(InvoiceStatus.CLOSED, partiallyPaid.status)
+        assertEquals(listOf(txId), partiallyPaid.paymentTransactionIds)
         assertEquals(60_000, partiallyPaid.remainingAmount().amountInMinor)
     }
 
@@ -49,6 +50,7 @@ class InvoiceTest {
     fun fullPaymentMarksInvoicePaid() {
         val paid = invoice().close(now).registerPayment(Money(100_000, CurrencyCode.BRL), txId, now.plusSeconds(1))
         assertEquals(InvoiceStatus.PAID, paid.status)
+        assertEquals(listOf(txId), paid.paymentTransactionIds)
         assertEquals(0, paid.remainingAmount().amountInMinor)
     }
 
