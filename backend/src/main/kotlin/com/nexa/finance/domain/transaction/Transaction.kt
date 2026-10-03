@@ -123,14 +123,16 @@ data class Transaction private constructor(
             direction: TransactionDirection,
         ) {
             val expectedDirection = when (type) {
-                TransactionType.INCOME,
-                TransactionType.REFUND,
-                -> TransactionDirection.CREDIT
+                TransactionType.INCOME -> TransactionDirection.CREDIT
 
-                TransactionType.EXPENSE,
+                TransactionType.EXPENSE -> TransactionDirection.DEBIT
+
+                // PURCHASE, PAYMENT and REFUND are account-contextual:
+                // assets and liabilities have opposite accounting effects.
                 TransactionType.PURCHASE,
                 TransactionType.PAYMENT,
-                -> TransactionDirection.DEBIT
+                TransactionType.REFUND,
+                -> null
 
                 TransactionType.TRANSFER,
                 TransactionType.CANCELLATION,
