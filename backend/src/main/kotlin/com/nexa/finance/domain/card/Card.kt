@@ -1,6 +1,8 @@
 package com.nexa.finance.domain.card
 
+import com.nexa.finance.domain.account.Account
 import com.nexa.finance.domain.account.AccountId
+import com.nexa.finance.domain.account.AccountType
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.common.UserId
@@ -77,7 +79,7 @@ data class Card private constructor(
 
         fun create(
             ownerId: UserId,
-            liabilityAccountId: AccountId,
+            liabilityAccount: Account,
             name: String,
             brand: CardBrand,
             lastFourDigits: String,
@@ -87,11 +89,15 @@ data class Card private constructor(
             clock: Clock = Clock.systemUTC(),
             id: CardId = CardId.new(),
         ): Card {
+            if (liabilityAccount.ownerId != ownerId) throw DomainValidationException("Card and liability account must belong to the same user.")
+            if (liabilityAccount.type != AccountType.CREDIT_CARD) throw DomainValidationException("Card must be backed by a CREDIT_CARD liability account.")
+            if (liabilityAccount.currency != creditLimit.currency) throw DomainValidationException("Card credit limit currency must match the liability account currency.")
+            liabilityAccount.ensureUsable()
             val now = Instant.now(clock)
             return Card(
                 id = id,
                 ownerId = ownerId,
-                liabilityAccountId = liabilityAccountId,
+                liabilityAccountId = liabilityAccount.id,
                 name = name.trim(),
                 brand = brand,
                 lastFourDigits = lastFourDigits,
