@@ -5,6 +5,7 @@ import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.category.CategoryId
 import com.nexa.finance.domain.card.CardId
+import com.nexa.finance.domain.invoice.InvoiceId
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -29,6 +30,7 @@ data class Transaction private constructor(
     val description: String?,
     val categoryId: CategoryId?,
     val cardId: CardId?,
+    val invoiceId: InvoiceId?,
     val source: TransactionSource,
     val relatedTransactionId: TransactionId?,
     val createdAt: Instant,
@@ -85,6 +87,7 @@ data class Transaction private constructor(
             description: String? = null,
             categoryId: CategoryId? = null,
             cardId: CardId? = null,
+            invoiceId: InvoiceId? = null,
             source: TransactionSource = TransactionSource.MANUAL,
             status: TransactionStatus = TransactionStatus.POSTED,
             relatedTransactionId: TransactionId? = null,
