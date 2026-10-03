@@ -467,19 +467,23 @@ A reversÃ£o adotada neste estÃ¡gio Ã© por nova migration; para o ambiente 
 
 ## 1.6 â€” Modelo de domÃ­nio financeiro
 
+**Status:** EM ANDAMENTO
+
+Revisão 1.6: User, Account, Transaction, Category, PaymentMethodType, Transfer, Payment, Refund, Cancellation, Installment, Budget, Goal e Recurrence estão modelados e testados. Card e Invoice aguardam a decisão contábil do ledger de cartão.
+
 ### Entidades principais
 
-- [ ] User
-- [ ] Account
-- [ ] Transaction
-- [ ] Category
-- [ ] PaymentMethod
+- [x] User
+- [x] Account
+- [x] Transaction
+- [x] Category
+- [x] PaymentMethod
 - [ ] Card
 - [ ] Invoice
-- [ ] Installment
-- [ ] Budget
-- [ ] Goal
-- [ ] RecurringTransaction
+- [x] Installment
+- [x] Budget
+- [x] Goal
+- [x] RecurringTransaction
 
 ### Microtarefas
 
