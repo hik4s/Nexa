@@ -414,14 +414,14 @@ Outra mÃ¡quina deve conseguir reproduzir o ambiente seguindo o README sem depe
 
 **Status:** EM ANDAMENTO
 
-Microtarefas concluídas: tokens de cor e tipografia. Validação: assembleDebug.
+Microtarefas concluídas: tokens de cor, tipografia e espaçamento. Validação: assembleDebug.
 
 
 ### Microtarefas
 
 - [x] Criar tokens de cor
-- [ ] Criar tokens tipogrÃ¡ficos
-- [ ] Criar tokens de espaÃ§amento
+- [x] Criar tokens tipogrÃ¡ficos
+- [x] Criar tokens de espaÃ§amento
 - [ ] Criar tokens de raio
 - [ ] Criar tokens de elevaÃ§Ã£o
 - [ ] Criar componentes base
