@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.5 concluidas; automacao de desenvolvimento instalada e verificada; pronto para 1.3.6.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.6 concluidas; automacao de desenvolvimento instalada e verificada; pronto para 1.3.7.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -1008,7 +1008,7 @@ Motor financeiro
 
 ### 1.3.1 â€” Transaction core
 
-**Status:** IMPLEMENTAÃ‡ÃƒO + VALIDAÃ‡ÃƒO LOCAL EM ANDAMENTO
+**Status:** CONCLUÃ�DA
 
 - [x] Definir `TransactionId`, `AccountId` e `CategoryId`
 - [x] Definir `Money` em unidade monetÃ¡ria mÃ­nima
@@ -1034,7 +1034,7 @@ Motor financeiro
 - DescriÃ§Ã£o Ã© opcional, normalizada e limitada a 160 caracteres.
 - Datas financeiras usam `LocalDate`; auditoria usa `Instant`.
 
-**CritÃ©rio 1.3.1:** domÃ­nio compilando no projeto real, testes unitÃ¡rios passando no Gradle do projeto e invariantes documentadas. A compilaÃ§Ã£o isolada do nÃºcleo de domÃ­nio jÃ¡ foi validada; a validaÃ§Ã£o oficial do projeto permanece pendente no ambiente de desenvolvimento do NEXA.
+**CritÃ©rio 1.3.1:** domÃ­nio compilando no projeto real, testes unitÃ¡rios passando no Gradle do projeto e invariantes documentadas. Validado com `clean test` + `build` e CI.
 
 ### PrÃ³ximas microtarefas 1.3
 
@@ -1042,9 +1042,23 @@ Motor financeiro
 - [x] 1.3.3 â€” Category
 - [x] 1.3.4 â€” Transfer
 - [x] 1.3.5 â€” Payment / Refund / Cancellation
-- [ ] 1.3.6 â€” Installment
+- [x] 1.3.6 â€” Installment
 - [ ] 1.3.7 â€” Recurrence
 - [ ] 1.3.8 â€” RevisÃ£o de domÃ­nio
+
+### 1.3.6 â€” Installment
+
+**Status:** CONCLUÃ�DA
+
+O agregado representa o cronograma de parcelamento sem lanÃ§ar automaticamente valores futuros no saldo.
+
+- [x] DivisÃ£o exata do total em unidades monetÃ¡rias mÃ­nimas
+- [x] DistribuiÃ§Ã£o determinÃ­stica do resto da divisÃ£o
+- [x] Cronograma mensal com tratamento correto de fim de mÃªs
+- [x] Limite de 2 a 360 parcelas
+- [x] Estados do plano e das parcelas
+- [x] Cancelamento protegido quando jÃ¡ existe parcela concluÃ­da
+- [x] Testes unitÃ¡rios e build validados localmente
 
 ---
 
