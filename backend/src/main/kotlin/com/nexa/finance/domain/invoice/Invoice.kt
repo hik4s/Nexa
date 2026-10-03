@@ -29,7 +29,7 @@ data class Invoice private constructor(
     val transactionIds: List<TransactionId>,
     val paidAmount: Money,
     val status: InvoiceStatus,
-    val paymentTransactionId: TransactionId?,
+    val paymentTransactionIds: List<TransactionId>,
     val createdAt: Instant,
     val updatedAt: Instant,
 ) {
@@ -43,9 +43,8 @@ data class Invoice private constructor(
         }
         if (transactionIds.distinct().size != transactionIds.size) throw DomainValidationException("Invoice transactions must be unique.")
         if (status == InvoiceStatus.PAID && paidAmount != totalAmount) throw DomainValidationException("Paid invoices must be fully paid.")
-        if (paymentTransactionId != null && paidAmount.amountInMinor == 0L) {
-            throw DomainValidationException("A payment transaction requires a positive paid amount.")
-        }
+        if (paymentTransactionIds.distinct().size != paymentTransactionIds.size) throw DomainValidationException("Invoice payment transactions must be unique.")
+        if (paymentTransactionIds.isNotEmpty() && paidAmount.amountInMinor == 0L) throw DomainValidationException("Payment transactions require a positive paid amount.")
     }
 
     fun close(now: Instant = Instant.now()): Invoice {
@@ -74,7 +73,7 @@ data class Invoice private constructor(
         return copy(
             paidAmount = newPaid,
             status = newStatus,
-            paymentTransactionId = paymentTransactionId,
+            paymentTransactionIds = paymentTransactionIds + paymentTransactionId,
             updatedAt = now,
         )
     }
@@ -109,7 +108,7 @@ data class Invoice private constructor(
                 transactionIds = transactionIds.distinct(),
                 paidAmount = Money.zero(totalAmount.currency),
                 status = InvoiceStatus.OPEN,
-                paymentTransactionId = null,
+                paymentTransactionIds = emptyList(),
                 createdAt = now,
                 updatedAt = now,
             )
