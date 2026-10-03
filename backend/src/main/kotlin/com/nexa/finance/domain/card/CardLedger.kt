@@ -6,7 +6,8 @@ import com.nexa.finance.domain.invoice.InvoiceId
 import com.nexa.finance.domain.transaction.Transaction
 import com.nexa.finance.domain.transaction.TransactionDirection
 import com.nexa.finance.domain.transaction.TransactionSource
-import com.nexa.finance.domain.transaction.TransactionType`r`nimport com.nexa.finance.domain.transaction.TransactionStatus
+import com.nexa.finance.domain.transaction.TransactionType
+import com.nexa.finance.domain.transaction.TransactionStatus
 import java.time.Clock
 import java.time.LocalDate
 
