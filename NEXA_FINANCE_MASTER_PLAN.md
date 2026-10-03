@@ -459,7 +459,7 @@ Novas telas devem conseguir utilizar o Design System sem criar estilos ad hoc.
 
 ### CritÃ©rio de conclusÃ£o
 
-O banco Ã© reproduzÃ­vel por migrations, possui integridade referencial adequada e sua recriaÃ§Ã£o local foi validada do volume vazio atÃ© a aplicaÃ§Ã£o da V1.
+O banco Ã© reproduzÃ­vel por migrations, possui integridade referencial adequada e sua recriaÃ§Ã£o local foi validada do volume vazio atÃ© a aplicaÃ§Ã£o das migrations V1 e V2.
 
 A reversÃ£o adotada neste estÃ¡gio Ã© por nova migration; para o ambiente local descartÃ¡vel, a reconstruÃ§Ã£o do volume foi testada.
 

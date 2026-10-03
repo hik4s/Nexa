@@ -22,6 +22,8 @@
 
 `V1__initial_schema.sql` cria os agregados financeiros já definidos no domínio: accounts, categories, transactions, transfers, installments, installment_items e recurrences.
 
+`V2__align_transaction_source_values.sql` alinha a restrição de `transactions.source` aos valores reais de `TransactionSource` no domínio.
+
 `owner_id` e `user_id` ainda não possuem FK para uma tabela de usuários. Essa relação será criada quando o agregado `User` e a autenticação forem formalizados na Parte 1.7.
 
 ## Executando localmente

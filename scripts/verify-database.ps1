@@ -42,7 +42,9 @@ if ($actualNormalized -ne $expectedNormalized) {
 $migrationQuery = "SELECT version || '|' || success FROM flyway_schema_history ORDER BY installed_rank;"
 $migration = docker exec $container psql -U $dbUser -d $dbName -Atc $migrationQuery
 if ($LASTEXITCODE -ne 0) { throw 'Could not query Flyway schema history.' }
-if ($migration.Trim() -ne '1|true') { throw "Unexpected Flyway history: $migration" }
+$actualMigrations = @($migration -split '\r?\n' | Where-Object { $_.Trim() -ne '' } | ForEach-Object { $_.Trim() })
+$expectedMigrations = @('1|true', '2|true')
+if (($actualMigrations -join '|') -ne ($expectedMigrations -join '|')) { throw "Unexpected Flyway history: $migration" }
 
 $indexQuery = "SELECT count(*) FROM pg_indexes WHERE schemaname='public' AND indexname LIKE 'idx_%';"
 $indexCount = [int](docker exec $container psql -U $dbUser -d $dbName -Atc $indexQuery)
