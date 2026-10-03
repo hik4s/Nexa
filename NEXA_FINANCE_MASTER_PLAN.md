@@ -1418,3 +1418,31 @@ Implementado e validado contra PostgreSQL real: transacoes manuais, calculo de s
 Pendentes: transferencias, cartoes/faturas/pagamento de fatura, parcelamento, estorno completo, recorrencia e testes correspondentes.
 
 Este checkpoint e a referencia operacional atual da etapa 1.9. Itens pendentes nao devem ser marcados como concluidos sem implementacao, testes, debugging e validacao real.
+
+# Checkpoint 1.9.1 - 2026-10-03
+
+Transferências HTTP concluídas e validadas.
+
+Implementado:
+- POST /api/v1/transfers
+- GET /api/v1/transfers
+- GET /api/v1/transfers/{id}
+- POST /api/v1/transfers/{id}/post
+- POST /api/v1/transfers/{id}/cancel
+- persistência atômica da transferência e das duas transações vinculadas;
+- isolamento por usuário;
+- validação de contas pertencentes ao usuário e ativas;
+- validação de contas distintas;
+- validação de mesma moeda;
+- validação de valor positivo;
+- publicação/cancelamento atômico das duas transações;
+- saldo derivado corretamente somente de transações POSTED.
+
+Validação:
+- TransferTest: passou;
+- TransferApiTest contra PostgreSQL real: passou;
+- regressão completa com `clean test` passou;
+- `scripts/verify.ps1` passou com `NEXA verification: PASS`;
+- `git diff --check` passou.
+
+Próximo vertical: cartões/faturas e pagamento de fatura.

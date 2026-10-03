@@ -175,7 +175,44 @@ Publica uma transação pendente.
 
 ### POST /transactions/{id}/cancel
 
-Cancela uma transação que ainda não esteja cancelada.
+Coloca a transação como cancelada se ela ainda não estiver cancelada.
+
+## Transfers
+
+Todos os endpoints abaixo são protegidos.
+
+### POST /transfers
+
+Cria uma transferência entre duas contas ativas do usuário autenticado. A operação cria duas transações vinculadas: débito na origem e crédito no destino. A transferência começa como `PENDING`.
+
+Request:
+
+    {
+      "sourceAccountId": "uuid",
+      "destinationAccountId": "uuid",
+      "amountMinor": 10000,
+      "currency": "BRL",
+      "occurredOn": "2026-10-03",
+      "source": "MANUAL"
+    }
+
+As contas precisam pertencer ao mesmo usuário, estar ativas e usar a mesma moeda. A conta de origem e a conta de destino não podem ser iguais. A persistência da transferência e das duas transações é atômica no PostgreSQL.
+
+### GET /transfers
+
+Lista as transferências do usuário autenticado.
+
+### GET /transfers/{id}
+
+Retorna somente uma transferência pertencente ao usuário autenticado.
+
+### POST /transfers/{id}/post
+
+Publica a transferência e publica as duas transações vinculadas.
+
+### POST /transfers/{id}/cancel
+
+Cancela a transferência pendente e cancela as duas transações vinculadas. Uma transferência cancelada não altera o saldo porque somente transações `POSTED` entram no saldo.
 
 ## Estado de implementação
 
@@ -192,6 +229,7 @@ Implementado e validado:
 - contas: criação, listagem e consulta
 - isolamento de contas por usuário
 - transações: criação, listagem, consulta e cancelamento
+- transferências: criação, listagem, consulta, publicação e cancelamento
 - saldo derivado das transações publicadas
 - isolamento de transações por usuário
 - validação de moeda da transação
@@ -199,7 +237,6 @@ Implementado e validado:
 
 Ainda não implementado neste checkpoint:
 
-- transferências HTTP
 - cartões/faturas HTTP
 - pagamento de fatura HTTP
 - parcelamento HTTP

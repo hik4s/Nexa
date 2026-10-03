@@ -4,8 +4,11 @@ import io.ktor.serialization.kotlinx.json.json
 import com.nexa.finance.api.ApiError
 import com.nexa.finance.api.accountRoutes
 import com.nexa.finance.api.transactionRoutes
+import com.nexa.finance.api.transferRoutes
 import com.nexa.finance.application.transaction.TransactionService
+import com.nexa.finance.application.transfer.TransferService
 import com.nexa.finance.infrastructure.transaction.JdbcTransactionRepository
+import com.nexa.finance.infrastructure.transfer.JdbcTransferRepository
 import com.nexa.finance.domain.common.DomainValidationException
 import io.ktor.http.HttpStatusCode
 import com.nexa.finance.api.authRoutes
@@ -45,6 +48,7 @@ fun Application.module() {
     val accountRepository = JdbcAccountRepository()
     val accounts = AccountService(accountRepository)
     val transactions = TransactionService(JdbcTransactionRepository(), accountRepository)
+    val transfers = TransferService(JdbcTransferRepository(), accountRepository)
 
     install(ContentNegotiation) {
         json()
@@ -84,5 +88,6 @@ fun Application.module() {
         authRoutes(authentication, recovery, profile)
         accountRoutes(accounts)
         transactionRoutes(transactions)
+        transferRoutes(transfers)
     }
 }
