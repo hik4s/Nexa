@@ -3,12 +3,12 @@ package com.nexa.finance.domain.transaction
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.account.AccountId
+import com.nexa.finance.domain.category.CategoryId
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 
  typealias TransactionId = UUID
- typealias CategoryId = UUID
 
 /**
  * Core financial event recorded against a financial account.

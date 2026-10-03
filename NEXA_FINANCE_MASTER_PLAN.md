@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.6 concluidas; 1.3.7 implementada e em validacao; automacao de desenvolvimento instalada e verificada.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.7 concluidas; 1.3.8 em validacao; automacao de desenvolvimento instalada e verificada.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -1043,7 +1043,7 @@ Motor financeiro
 - [x] 1.3.4 â€” Transfer
 - [x] 1.3.5 â€” Payment / Refund / Cancellation
 - [x] 1.3.6 â€” Installment
-- [ ] 1.3.7 â€” Recurrence
+- [x] 1.3.7 â€” Recurrence
 - [ ] 1.3.8 â€” RevisÃ£o de domÃ­nio
 
 ### 1.3.6 â€” Installment
@@ -1064,7 +1064,7 @@ O agregado representa o cronograma de parcelamento sem lanÃ§ar automaticamente
 
 ### 1.3.7 — Recurrence
 
-**Status:** EM VALIDAÇÃO
+**Status:** CONCLUÍDA
 
 O agregado representa uma regra de recorrência e seu cronograma determinístico sem criar automaticamente lançamentos no saldo.
 
@@ -1078,6 +1078,23 @@ O agregado representa uma regra de recorrência e seu cronograma determinístico
 - [x] Pausa, retomada e cancelamento protegidos por estado
 - [x] Consultas de ocorrências por data e por número
 - [x] Testes unitários e build validados localmente
+---
+
+### 1.3.8 — Revisão de domínio
+
+**Status:** EM VALIDAÇÃO
+
+Revisão cruzada dos agregados financeiros, invariantes e fronteiras entre domínio e aplicação.
+
+- [x] Unificar CategoryId em um único identificador fortemente tipado
+- [x] Revisar Transaction, Account e Category
+- [x] Revisar Transfer, Payment, Refund e Cancellation
+- [x] Revisar Installment e Recurrence
+- [x] Identificar invariantes que dependem de histórico persistido
+- [x] Documentar responsabilidades de domínio vs. aplicação
+- [x] Validar regressão da suíte de testes localmente
+
+Documento: docs/domain/domain-review-1.3.8.md.
 ---
 
 # 6. EstratÃ©gia de testes

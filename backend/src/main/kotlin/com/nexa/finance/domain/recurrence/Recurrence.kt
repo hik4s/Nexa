@@ -4,6 +4,7 @@ import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.common.UserId
+import com.nexa.finance.domain.category.CategoryId
 import com.nexa.finance.domain.transaction.TransactionType
 import java.time.Clock
 import java.time.Instant
@@ -56,7 +57,7 @@ data class Recurrence private constructor(
     val endOn: LocalDate?,
     val maxOccurrences: Int?,
     val description: String?,
-    val categoryId: UUID?,
+    val categoryId: CategoryId?,
     val status: RecurrenceStatus,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -290,7 +291,7 @@ data class Recurrence private constructor(
             endOn: LocalDate? = null,
             maxOccurrences: Int? = null,
             description: String? = null,
-            categoryId: UUID? = null,
+            categoryId: CategoryId? = null,
             clock: Clock = Clock.systemUTC(),
             id: RecurrenceId = UUID.randomUUID(),
         ): Recurrence {

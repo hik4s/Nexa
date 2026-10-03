@@ -4,6 +4,7 @@ import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.common.CurrencyCode
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
+import com.nexa.finance.domain.category.CategoryId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -106,6 +107,22 @@ class TransactionTest {
                 createdAt = createdAt,
             )
         }
+    }
+
+    @Test
+    fun acceptsStronglyTypedCategoryId() {
+        val categoryId = CategoryId.new()
+        val tx = Transaction.create(
+            accountId = accountId,
+            amount = Money.fromMinorUnits(100, CurrencyCode.BRL),
+            type = TransactionType.EXPENSE,
+            direction = TransactionDirection.DEBIT,
+            occurredOn = occurredOn,
+            categoryId = categoryId,
+            createdAt = createdAt,
+        )
+
+        assertEquals(categoryId, tx.categoryId)
     }
 
     @Test

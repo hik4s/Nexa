@@ -3,7 +3,7 @@ package com.nexa.finance.domain.installment
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.common.UserId
-import com.nexa.finance.domain.transaction.CategoryId
+import com.nexa.finance.domain.category.CategoryId
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
