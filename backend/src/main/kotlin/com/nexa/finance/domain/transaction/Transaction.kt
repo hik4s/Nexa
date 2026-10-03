@@ -4,6 +4,7 @@ import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.category.CategoryId
+import com.nexa.finance.domain.card.CardId
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -27,6 +28,7 @@ data class Transaction private constructor(
     val occurredOn: LocalDate,
     val description: String?,
     val categoryId: CategoryId?,
+    val cardId: CardId?,
     val source: TransactionSource,
     val relatedTransactionId: TransactionId?,
     val createdAt: Instant,
@@ -82,6 +84,7 @@ data class Transaction private constructor(
             occurredOn: LocalDate,
             description: String? = null,
             categoryId: CategoryId? = null,
+            cardId: CardId? = null,
             source: TransactionSource = TransactionSource.MANUAL,
             status: TransactionStatus = TransactionStatus.POSTED,
             relatedTransactionId: TransactionId? = null,
