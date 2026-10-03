@@ -10,6 +10,7 @@ fun NexaTheme(
 ) {
     MaterialTheme(
         colorScheme = if (darkTheme) NexaDarkColorScheme else NexaLightColorScheme,
+        typography = NexaTypography,
         content = content,
     )
 }

@@ -414,7 +414,7 @@ Outra mÃ¡quina deve conseguir reproduzir o ambiente seguindo o README sem depe
 
 **Status:** EM ANDAMENTO
 
-Microtarefa concluída: tokens de cor e esquema semântico claro/escuro. Validação: assembleDebug.
+Microtarefas concluídas: tokens de cor e tipografia. Validação: assembleDebug.
 
 
 ### Microtarefas
