@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 em andamento, com tokens de cor implementados e validados; automacao de desenvolvimento instalada e verificada.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 em andamento, com tokens de cor, tipografia, espaçamento e raio implementados e validados; automacao de desenvolvimento instalada e verificada.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -414,7 +414,7 @@ Outra mÃ¡quina deve conseguir reproduzir o ambiente seguindo o README sem depe
 
 **Status:** EM ANDAMENTO
 
-Microtarefas concluídas: tokens de cor, tipografia e espaçamento. Validação: assembleDebug.
+Microtarefas concluídas: tokens de cor, tipografia, espaçamento e raio. Validação: assembleDebug.
 
 
 ### Microtarefas
@@ -422,7 +422,7 @@ Microtarefas concluídas: tokens de cor, tipografia e espaçamento. Validação:
 - [x] Criar tokens de cor
 - [x] Criar tokens tipogrÃ¡ficos
 - [x] Criar tokens de espaÃ§amento
-- [ ] Criar tokens de raio
+- [x] Criar tokens de raio
 - [ ] Criar tokens de elevaÃ§Ã£o
 - [ ] Criar componentes base
 - [ ] Criar estados de botÃ£o
