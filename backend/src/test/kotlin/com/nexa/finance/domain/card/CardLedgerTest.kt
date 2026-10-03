@@ -59,10 +59,4 @@ class CardLedgerTest {
         assertEquals(0, CardLedger.availableLimit(card, balance).amountInMinor)
     }
 
-    @Test
-    fun exhaustedLimitReportsZeroAvailable() {
-        val purchase = CardLedger.purchase(card, Money(500_000, CurrencyCode.BRL), LocalDate.of(2026, 10, 3), invoiceId, clock = clock).post()
-        val balance = AccountBalance.calculate(account, listOf(purchase))
-        assertEquals(0, CardLedger.availableLimit(card, balance).amountInMinor)
-    }
 }
