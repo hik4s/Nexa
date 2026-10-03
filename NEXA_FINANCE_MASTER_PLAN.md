@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.6 concluidas; automacao de desenvolvimento instalada e verificada; pronto para 1.3.7.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.6 concluidas; 1.3.7 implementada e em validacao; automacao de desenvolvimento instalada e verificada.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -1060,6 +1060,24 @@ O agregado representa o cronograma de parcelamento sem lanÃ§ar automaticamente
 - [x] Cancelamento protegido quando jÃ¡ existe parcela concluÃ­da
 - [x] Testes unitÃ¡rios e build validados localmente
 
+---
+
+### 1.3.7 — Recurrence
+
+**Status:** EM VALIDAÇÃO
+
+O agregado representa uma regra de recorrência e seu cronograma determinístico sem criar automaticamente lançamentos no saldo.
+
+- [x] Frequências diária, semanal, mensal e anual
+- [x] Intervalo configurável com limite de 1 a 365 unidades
+- [x] Data inicial como âncora do cálculo
+- [x] Limite opcional por data final e/ou quantidade de ocorrências
+- [x] Tratamento de fim de mês sem deriva de datas
+- [x] Tratamento de 29 de fevereiro sem deriva permanente
+- [x] Estados ACTIVE, PAUSED e CANCELLED
+- [x] Pausa, retomada e cancelamento protegidos por estado
+- [x] Consultas de ocorrências por data e por número
+- [x] Testes unitários e build validados localmente
 ---
 
 # 6. EstratÃ©gia de testes
