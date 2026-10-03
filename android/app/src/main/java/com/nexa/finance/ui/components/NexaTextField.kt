@@ -75,7 +75,7 @@ fun NexaTextField(
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             shape = shape,
-            colors = NexaOutlinedTextFieldColors(),
+            colors = nexaOutlinedTextFieldColors(),
         )
 
         NexaTextFieldVariant.Filled -> TextField(
@@ -95,13 +95,13 @@ fun NexaTextField(
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             shape = shape,
-            colors = NexaFilledTextFieldColors(),
+            colors = nexaFilledTextFieldColors(),
         )
     }
 }
 
 @Composable
-private fun NexaOutlinedTextFieldColors() = OutlinedTextFieldDefaults.colors(
+private fun nexaOutlinedTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = MaterialTheme.colorScheme.primary,
     focusedLabelColor = MaterialTheme.colorScheme.primary,
     cursorColor = MaterialTheme.colorScheme.primary,
@@ -112,7 +112,7 @@ private fun NexaOutlinedTextFieldColors() = OutlinedTextFieldDefaults.colors(
 )
 
 @Composable
-private fun NexaFilledTextFieldColors() = TextFieldDefaults.colors(
+private fun nexaFilledTextFieldColors() = TextFieldDefaults.colors(
     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
     focusedLabelColor = MaterialTheme.colorScheme.primary,
     cursorColor = MaterialTheme.colorScheme.primary,

@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 em andamento, com tokens de cor, tipografia, espaçamento, raio, elevação, componentes base, estados de botão, campos de entrada, cards, valores monetários e feedback/loading/error states implementados e validados; automacao de desenvolvimento instalada e verificada.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 em andamento, com tokens de cor, tipografia, espaçamento, raio, elevação, componentes base, estados de botão, campos de entrada, cards, valores monetários, feedback/loading/error states, modos claro/escuro e validação básica de acessibilidade implementados e validados; automacao de desenvolvimento instalada e verificada.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -414,7 +414,7 @@ Outra mÃ¡quina deve conseguir reproduzir o ambiente seguindo o README sem depe
 
 **Status:** EM ANDAMENTO
 
-Microtarefas concluídas: tokens de cor, tipografia, espaçamento, raio, elevação, componentes base, estados de botão, campos de entrada, cards, valores monetários e feedback/loading/error states. Validação: assembleDebug + testDebugUnitTest.
+Microtarefas concluídas: tokens de cor, tipografia, espaçamento, raio, elevação, componentes base, estados de botão, campos de entrada, cards, valores monetários, feedback/loading/error states e modos claro/escuro. Validação: assembleDebug + testDebugUnitTest + lintDebug.
 
 
 ### Microtarefas
@@ -430,9 +430,9 @@ Microtarefas concluídas: tokens de cor, tipografia, espaçamento, raio, elevaç
 - [x] Criar cards
 - [x] Criar componentes de valor monetÃ¡rio
 - [x] Criar feedback/loading/error states
-- [ ] Criar modo claro
-- [ ] Criar modo escuro
-- [ ] Validar acessibilidade bÃ¡sica
+- [x] Criar modo claro
+- [x] Criar modo escuro
+- [x] Validar acessibilidade bÃ¡sica
 
 ### CritÃ©rio de conclusÃ£o
 

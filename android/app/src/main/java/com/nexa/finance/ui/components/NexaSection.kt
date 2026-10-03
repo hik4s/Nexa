@@ -19,8 +19,8 @@ import androidx.compose.material3.MaterialTheme
  */
 @Composable
 fun NexaSection(
-    title: String? = null,
     modifier: Modifier = Modifier,
+    title: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(

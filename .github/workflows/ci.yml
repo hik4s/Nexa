@@ -80,6 +80,10 @@ jobs:
         working-directory: android
         run: ./gradlew clean :app:testDebugUnitTest
 
+      - name: Lint Android
+        working-directory: android
+        run: ./gradlew :app:lintDebug
+
       - name: Build debug APK
         working-directory: android
         run: ./gradlew :app:assembleDebug

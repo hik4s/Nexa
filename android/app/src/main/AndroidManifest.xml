@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/full_backup_content"
+        android:icon="@drawable/ic_nexa"
         android:label="NEXA Finance"
         android:supportsRtl="true"
         android:theme="@style/Theme.NexaFinance">

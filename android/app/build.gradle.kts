@@ -23,6 +23,12 @@ android {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
 
+    lint {
+        // local.properties is machine-local and ignored by Git; its Windows
+        // path triggers a PropertyEscape false positive in Android Lint.
+        disable += "PropertyEscape"
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
