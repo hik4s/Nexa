@@ -20,6 +20,7 @@ enum class AccountType {
     CASH,
     WALLET,
     INVESTMENT,
+    CREDIT_CARD,
     OTHER
 }
 
