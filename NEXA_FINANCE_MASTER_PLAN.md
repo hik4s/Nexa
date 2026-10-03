@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 em andamento, com tokens de cor, tipografia, espaçamento, raio, elevação, componentes base, estados de botão, campos de entrada, cards, valores monetários, feedback/loading/error states, modos claro/escuro e validação básica de acessibilidade implementados e validados; automacao de desenvolvimento instalada e verificada.
+**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 e 1.5 concluidas; automacao de desenvolvimento instalada e verificada.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -412,7 +412,7 @@ Outra mÃ¡quina deve conseguir reproduzir o ambiente seguindo o README sem depe
 
 ## 1.4 â€” Design System
 
-**Status:** EM ANDAMENTO
+**Status:** CONCLUÍDO
 
 Microtarefas concluídas: tokens de cor, tipografia, espaçamento, raio, elevação, componentes base, estados de botão, campos de entrada, cards, valores monetários, feedback/loading/error states e modos claro/escuro. Validação: assembleDebug + testDebugUnitTest + lintDebug.
 
@@ -442,22 +442,26 @@ Novas telas devem conseguir utilizar o Design System sem criar estilos ad hoc.
 
 ## 1.5 â€” Banco de dados e migraÃ§Ãµes
 
+**Status:** CONCLUÍDO
+
 ### Microtarefas
 
-- [ ] Criar PostgreSQL local
-- [ ] Definir convenÃ§Ãµes de tabelas
-- [ ] Criar migrations
-- [ ] Definir chaves primÃ¡rias
-- [ ] Definir foreign keys
-- [ ] Definir Ã­ndices iniciais
-- [ ] Definir timestamps
-- [ ] Definir estratÃ©gia de auditoria quando necessÃ¡ria
-- [ ] Testar criaÃ§Ã£o do banco do zero
-- [ ] Testar rollback quando aplicÃ¡vel
+- [x] Criar PostgreSQL local
+- [x] Definir convenÃ§Ãµes de tabelas
+- [x] Criar migrations
+- [x] Definir chaves primÃ¡rias
+- [x] Definir foreign keys
+- [x] Definir Ã­ndices iniciais
+- [x] Definir timestamps
+- [x] Definir estratÃ©gia de auditoria quando necessÃ¡ria
+- [x] Testar criaÃ§Ã£o do banco do zero
+- [x] Testar rollback quando aplicÃ¡vel
 
 ### CritÃ©rio de conclusÃ£o
 
-O banco deve ser reproduzÃ­vel por migrations e possuir integridade referencial adequada.
+O banco Ã© reproduzÃ­vel por migrations, possui integridade referencial adequada e sua recriaÃ§Ã£o local foi validada do volume vazio atÃ© a aplicaÃ§Ã£o da V1.
+
+A reversÃ£o adotada neste estÃ¡gio Ã© por nova migration; para o ambiente local descartÃ¡vel, a reconstruÃ§Ã£o do volume foi testada.
 
 ---
 

@@ -15,9 +15,9 @@ Edit `.env` and set `POSTGRES_PASSWORD` to a local-only development password.
 Then validate and start the stack:
 
 ```powershell
-docker compose -f .\infra\docker-compose.yml config
-docker compose -f .\infra\docker-compose.yml up -d
-docker compose -f .\infra\docker-compose.yml ps
+docker compose --env-file .env -f .\infra\docker-compose.yml config
+docker compose --env-file .env -f .\infra\docker-compose.yml up -d
+docker compose --env-file .env -f .\infra\docker-compose.yml ps
 ```
 
 The PostgreSQL 18 image uses `/var/lib/postgresql` as the persistent volume mount. Do not change it back to `/var/lib/postgresql/data` for PostgreSQL 18+.
@@ -27,6 +27,6 @@ The PostgreSQL 18 image uses `/var/lib/postgresql` as the persistent volume moun
 This destroys the local PostgreSQL data volume and is safe only for the disposable development database:
 
 ```powershell
-docker compose -f .\infra\docker-compose.yml down -v
-docker compose -f .\infra\docker-compose.yml up -d
+docker compose --env-file .env -f .\infra\docker-compose.yml down -v
+docker compose --env-file .env -f .\infra\docker-compose.yml up -d
 ```
