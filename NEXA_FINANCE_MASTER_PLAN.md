@@ -1544,9 +1544,9 @@ Validação:
 
 Próximo vertical: concluir a validação integrada final e avançar para o próximo item do mapa de dependências.
 
-# Checkpoint 1.10.1 - 2026-10-03
+# Checkpoint 1.10.2 - 2026-10-04
 
-MVP Android conectado à API implementado.
+MVP Android conectado à API implementado e submetido a validação em emulador Android 15 (API 35).
 
 Implementado:
 - cadastro e login contra a API real;
@@ -1557,14 +1557,21 @@ Implementado:
 - histórico de transações;
 - interface Compose mínima para o fluxo Parte 1;
 - configuração de URL da API via BuildConfig;
-- permissão de rede Android.
+- permissão de rede Android;
+- liberação de HTTP apenas no build debug para comunicação local com `10.0.2.2:8080`.
 
 Validação:
+- emulator Android 15 / API 35 instalado e iniciado;
+- ADB `emulator-5554` reconhecido como `device`;
+- APK debug instalado com sucesso;
+- MainActivity abriu em runtime;
+- backend acessível pelo ambiente do emulador;
+- encontrado e corrigido o bloqueio de cleartext HTTP no debug;
+- encontrado e corrigido o ambiente do backend iniciado sem `.env` durante o teste manual;
 - Android testDebugUnitTest: PASS;
 - Android assembleDebug: PASS;
-- Backend clean test/build: PASS no gate anterior;
-- PostgreSQL real: PASS no gate anterior.
+- PostgreSQL real: PASS.
 
-Limitação de ambiente:
-- runtime Android ainda não foi validado nesta máquina porque não há dispositivo ADB conectado nem emulador Android instalado/configurado.
-- Portanto, 1.10 não é marcado como concluído; somente a implementação compilável e seus testes automatizados estão concluídos.
+Limitação residual:
+- O E2E completo de cadastro/login pela UI ainda não foi fechado. A automação via ADB dos campos Compose apresentou instabilidade de foco/IME e chegou a gerar ANR de input, sem exceção fatal do aplicativo. Isso é uma limitação da automação de interação neste emulador; não será tratado como sucesso de E2E.
+- Portanto, 1.10 permanece ABERTA até que o fluxo completo seja validado por instrumentação/UI test ou interação manual confiável no emulador.
