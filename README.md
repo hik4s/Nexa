@@ -4,9 +4,9 @@ Aplicativo Android de finanças pessoais com registro ultrarrápido, visão fina
 
 ## Status
 
-**Parte 1 — Fundação → Microtarefa 1.2 em andamento.**
+**Parte 2 — Produto concluída e validada. Próxima etapa: Parte 3 — 3.1 Backend de produção.**
 
-A estrutura do repositório foi revisada e endurecida. O único bloqueio restante desta microtarefa é a geração do Gradle Wrapper, que exige uma instalação do Gradle fora do ambiente atual.
+O Gate 2.11 foi fechado com backend, PostgreSQL, Android build/lint/unit tests e 9/9 testes instrumentados passando em ambiente local real. O repositório está em uma branch de desenvolvimento dedicada; CI remoto deve ser considerado separado da validação local.
 
 ## Stack fixada
 
@@ -19,8 +19,8 @@ A estrutura do repositório foi revisada e endurecida. O único bloqueio restant
 | Activity | activity-compose 1.12.4 |
 | Backend | Kotlin 2.4.20 + Ktor 3.6.0 |
 | Banco | PostgreSQL |
-| ORM/SQL | Exposed (a fixar na etapa de persistência) |
-| Migrações | Flyway (a fixar na etapa de banco) |
+| ORM/SQL | JDBC + SQL explícito |
+| Migrações | Flyway 13.9.0 |
 | Runtime Java | JDK 17 (toolchain) |
 | Infra local | Docker Compose |
 

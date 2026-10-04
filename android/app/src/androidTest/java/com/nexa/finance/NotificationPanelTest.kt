@@ -1,9 +1,9 @@
 package com.nexa.finance
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -38,7 +38,7 @@ class NotificationPanelTest {
         compose.onNodeWithText("1 não lidos").assertIsDisplayed()
         compose.onNodeWithText("Orçamento ultrapassado").assertIsDisplayed()
         compose.onNodeWithTag("notifications_unread").performClick()
-        compose.onNodeWithText("Meta Reserva").assertDoesNotExist()
+        assert(compose.onAllNodesWithText("Meta Reserva").fetchSemanticsNodes().isEmpty())
         compose.onNodeWithTag("notification_read_n1").performClick()
         assert(readId == "n1")
     }

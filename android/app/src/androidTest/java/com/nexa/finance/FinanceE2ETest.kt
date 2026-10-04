@@ -12,6 +12,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.click
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.UUID
 import org.junit.Assert.assertEquals
@@ -133,7 +135,11 @@ class FinanceE2ETest {
         scrollToDashboard("goal_name")
         compose.onNodeWithTag("goal_name").performTextInput("Meta E2E")
         compose.onNodeWithTag("goal_amount").performTextInput("100,00")
-        compose.onNodeWithTag("goal_submit").performClick()
+        scrollToDashboard("goal_submit")
+        val goalSubmitSemantics = compose.onNodeWithTag("goal_submit").fetchSemanticsNode()
+        assert(!goalSubmitSemantics.config.contains(SemanticsProperties.Disabled))
+        compose.onNodeWithTag("goal_submit").assertIsDisplayed()
+        compose.onNodeWithTag("goal_submit").performTouchInput { click() }
 
         compose.waitUntil(15_000) {
             compose.onAllNodesWithTag("goal_form_message").fetchSemanticsNodes().isNotEmpty()
