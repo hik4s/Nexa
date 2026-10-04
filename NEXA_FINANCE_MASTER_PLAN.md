@@ -840,11 +840,13 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 
 ## 3.1 â€” Backend de produÃ§Ã£o
 
-**Status:** EM PROGRESSO — 3.1.1 configuração de runtime concluída e validada localmente.
+**Status:** EM PROGRESSO — 3.1.1 configuração de runtime e 3.1.2 containerização base concluídas e validadas localmente.
 
 - [x] Host e porta configuráveis por ambiente
 - [x] Configuração de banco por variáveis de ambiente
 - [x] Validação de porta inválida (fail-fast)
+- [x] Containerização do backend em JRE 17 sem root
+- [x] Validação local da imagem com GET /health e usuário não-root
 - [ ] Ambiente de produÃ§Ã£o
 - [ ] ConfiguraÃ§Ã£o segura de secrets
 - [ ] Banco de produÃ§Ã£o
