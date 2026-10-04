@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.7 Recorrências concluído e validado; próximo passo 2.8 Busca, filtros e histórico.
+**Checkpoint atual:** Parte 2 - 2.8 Busca, filtros e histórico concluído e validado; próximo passo 2.9 IA Financeira.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -733,14 +733,14 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 ## 2.8 â€” Busca, filtros e histÃ³rico
 
-- [ ] Busca textual
-- [ ] Filtro por perÃ­odo
-- [ ] Filtro por categoria
-- [ ] Filtro por conta
-- [ ] Filtro por cartÃ£o
-- [ ] Filtro por tipo
-- [ ] OrdenaÃ§Ã£o
-- [ ] Detalhamento da transaÃ§Ã£o
+- [x] Busca textual
+- [x] Filtro por perÃ­odo
+- [x] Filtro por categoria
+- [x] Filtro por conta
+- [x] Filtro por cartÃ£o
+- [x] Filtro por tipo
+- [x] OrdenaÃ§Ã£o
+- [x] Detalhamento da transaÃ§Ã£o
 
 ---
 
@@ -1909,3 +1909,34 @@ Conclusão 2.7:
 
 Próximo passo:
 - iniciar 2.8 Busca, filtros e histórico.
+
+# Checkpoint 2.8.1 - 2026-10-04
+
+Busca, filtros e histórico implementados e validados no Android.
+
+Implementado:
+- busca textual por descrição;
+- filtros por período, categoria, conta, cartão e tipo;
+- ordenação por data e valor;
+- detalhamento expandível da transação;
+- exibição de conta, categoria, cartão, fatura e parcela quando disponíveis;
+- limpeza de todos os filtros;
+- limite visual de 50 resultados para manter o painel responsivo;
+- integração do painel ao Dashboard real usando as transações já carregadas pela API.
+
+Validação:
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- TransactionHistoryPanelTest no emulator-5554: PASS (1/1);
+- git diff --check: PASS.
+
+Observação de ambiente:
+- o teste instrumentado foi executado no Android 15 / API 35 real disponível na máquina;
+- nenhuma alteração destrutiva foi feita no PostgreSQL persistente local.
+
+Conclusão 2.8:
+- todas as microtarefas planejadas de busca, filtros e histórico estão implementadas e validadas;
+- não há pendência técnica conhecida nesta vertical.
+
+Próximo passo:
+- iniciar 2.9 IA Financeira.

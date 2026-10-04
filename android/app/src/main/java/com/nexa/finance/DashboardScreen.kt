@@ -167,6 +167,14 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                 )
             }
             item {
+                TransactionHistoryPanel(
+                    transactions = transactions,
+                    accounts = accounts,
+                    cards = cards,
+                    categories = categories,
+                )
+            }
+            item {
                 DashboardPanel("Insight", Modifier.testTag("dashboard_insight")) {
                     val top = categoryTotals.firstOrNull()
                     Text(
