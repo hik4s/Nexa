@@ -882,6 +882,12 @@ Validação desta microetapa: ApplicationTest com rate limit e isolamento por cl
 - [ ] IdempotÃªncia
 - [ ] ConsistÃªncia entre dispositivos
 
+### Microcheckpoint 3.2.1 — fundação local-first — 2026-10-04
+
+Implementada a fundação persistente no Android com Room 2.8.5 + KSP: banco `NexaDatabase` versionado, schema exportado, `sync_operations` como Outbox por usuário, `sync_checkpoints` por usuário, provider singleton e `SyncQueue` com lifecycle de fila e backoff exponencial limitado a 32s. O protocolo de sincronização servidor↔dispositivo ainda não foi ligado; por isso o item principal de sincronização permanece aberto.
+
+Validação: `:app:testDebugUnitTest` + `:app:assembleDebug` passaram; `:app:connectedDebugAndroidTest` passou com 10/10 testes, 0 falhas e 0 ignorados.
+
 ---
 
 ## 3.3 â€” Open Finance

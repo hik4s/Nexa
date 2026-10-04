@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
+    id("androidx.room")
 }
 
 android {
@@ -23,6 +25,10 @@ android {
 
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    }
+
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 
     lint {
@@ -51,6 +57,12 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.10.2")
+
+    implementation("androidx.room:room-runtime:2.8.5")
+    implementation("androidx.room:room-ktx:2.8.5")
+    ksp("androidx.room:room-compiler:2.8.5")
+    testImplementation("androidx.room:room-testing:2.8.5")
+    androidTestImplementation("androidx.room:room-testing:2.8.5")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 
