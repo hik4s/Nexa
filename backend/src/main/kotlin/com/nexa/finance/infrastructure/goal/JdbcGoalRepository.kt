@@ -207,9 +207,16 @@ class JdbcGoalRepository(
     }
 
     private fun bindGoalUpdate(s: java.sql.PreparedStatement, goal: Goal) {
-        bindGoalFields(s, goal, 1)
-        s.setObject(10, goal.userId.value)
-        s.setObject(11, goal.id)
+        s.setString(1, goal.name)
+        s.setLong(2, goal.targetAmount.amountInMinor)
+        s.setLong(3, goal.currentAmount.amountInMinor)
+        s.setString(4, goal.targetAmount.currency.name)
+        if (goal.targetDate == null) s.setNull(5, java.sql.Types.DATE) else s.setObject(5, goal.targetDate)
+        s.setString(6, goal.description)
+        s.setString(7, goal.status.name)
+        s.setTimestamp(8, Timestamp.from(goal.updatedAt))
+        s.setObject(9, goal.userId.value)
+        s.setObject(10, goal.id)
     }
 
     private fun java.sql.ResultSet.toGoal(): Goal = Goal.restore(

@@ -2,6 +2,7 @@ package com.nexa.finance
 
 import com.nexa.finance.infrastructure.database.DatabaseConnectionProvider
 import io.ktor.client.HttpClient
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -199,19 +200,43 @@ class ApplicationTest {
 
             val contribution = client.post("/api/v1/goals/$goalId/contributions") {
                 header(HttpHeaders.Authorization, "Bearer $token")
-                jsonBody("""{"amountMinor":10000,"currency":"BRL","occurredOn":"2026-10-04"}""")
+                jsonBody("""{"amountMinor":2500,"currency":"BRL","occurredOn":"2026-10-04"}""")
             }
             assertEquals(200, contribution.status.value)
-            assertTrue(contribution.bodyAsText().contains("\"currentAmountMinor\":10000"))
-            assertTrue(contribution.bodyAsText().contains("\"status\":\"ACHIEVED\""))
-            assertTrue(contribution.bodyAsText().contains("\"amountMinor\":10000"))
+            assertTrue(contribution.bodyAsText().contains("\"currentAmountMinor\":2500"))
+            assertTrue(contribution.bodyAsText().contains("\"status\":\"ACTIVE\""))
+            assertTrue(contribution.bodyAsText().contains("\"amountMinor\":2500"))
 
             val detail = client.get("/api/v1/goals/$goalId") {
                 header(HttpHeaders.Authorization, "Bearer $token")
             }
             assertEquals(200, detail.status.value)
-            assertTrue(detail.bodyAsText().contains("\"status\":\"ACHIEVED\""))
+            assertTrue(detail.bodyAsText().contains("\"status\":\"ACTIVE\""))
             assertTrue(detail.bodyAsText().contains("\"contributions\""))
+
+            val pause = client.post("/api/v1/goals/$goalId/pause") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, pause.status.value)
+            assertTrue(pause.bodyAsText().contains("\"status\":\"PAUSED\""))
+
+            val resume = client.post("/api/v1/goals/$goalId/resume") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, resume.status.value)
+            assertTrue(resume.bodyAsText().contains("\"status\":\"ACTIVE\""))
+
+            val cancel = client.delete("/api/v1/goals/$goalId") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, cancel.status.value)
+            assertTrue(cancel.bodyAsText().contains("\"status\":\"CANCELLED\""))
+
+            val cancelledDetail = client.get("/api/v1/goals/$goalId") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, cancelledDetail.status.value)
+            assertTrue(cancelledDetail.bodyAsText().contains("\"status\":\"CANCELLED\""))
         } finally {
             cleanupGoalsByEmail(email)
             cleanupUsers(email)
