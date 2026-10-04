@@ -345,3 +345,23 @@ Neste checkpoint também estão implementados e validados:
 - proteção contra cancellation duplicada;
 - isolamento por usuário nos fluxos de refund/cancellation;
 - validação contra PostgreSQL real.
+
+
+## Recorrências
+
+Endpoints protegidos para regras de lançamentos recorrentes.
+
+- POST /api/v1/recurrences - cria uma recorrência de INCOME ou EXPENSE.
+- GET /api/v1/recurrences - lista somente as recorrências do usuário autenticado.
+- GET /api/v1/recurrences/{id} - consulta uma recorrência pertencente ao usuário.
+- GET /api/v1/recurrences/{id}/occurrences?from=YYYY-MM-DD&to=YYYY-MM-DD - calcula ocorrências determinísticas no intervalo inclusivo.
+- POST /api/v1/recurrences/{id}/pause - pausa uma recorrência ACTIVE.
+- POST /api/v1/recurrences/{id}/resume - retoma uma recorrência PAUSED.
+- POST /api/v1/recurrences/{id}/cancel - cancela uma recorrência.
+- POST /api/v1/recurrences/{id}/occurrences/{number}/execute - materializa uma ocorrência como Transaction SYSTEM.
+
+A execução usa recurrence_id + recurrence_occurrence_number como identidade da ocorrência no ledger. O PostgreSQL possui índice único parcial para impedir materialização duplicada. Repetir a execução da mesma ocorrência retorna a transação já criada, mantendo a operação idempotente no fluxo normal.
+
+Recorrências validam proprietário da conta, conta ACTIVE, moeda e categoria. Contas de cartão de crédito não podem ser usadas diretamente por recorrências INCOME/EXPENSE; compras recorrentes de cartão devem usar a semântica de Card/Purchase.
+
+A execução usa CREDIT para INCOME e DEBIT para EXPENSE e registra a data agendada da ocorrência.

@@ -280,6 +280,40 @@ data class Recurrence private constructor(
             TransactionType.EXPENSE,
         )
 
+        fun restore(
+            id: RecurrenceId,
+            userId: UserId,
+            accountId: AccountId,
+            amount: Money,
+            transactionType: TransactionType,
+            frequency: RecurrenceFrequency,
+            interval: Int,
+            startOn: LocalDate,
+            endOn: LocalDate?,
+            maxOccurrences: Int?,
+            description: String?,
+            categoryId: CategoryId?,
+            status: RecurrenceStatus,
+            createdAt: Instant,
+            updatedAt: Instant,
+        ): Recurrence = Recurrence(
+            id = id,
+            userId = userId,
+            accountId = accountId,
+            amount = amount,
+            transactionType = transactionType,
+            frequency = frequency,
+            interval = interval,
+            startOn = startOn,
+            endOn = endOn,
+            maxOccurrences = maxOccurrences,
+            description = description,
+            categoryId = categoryId,
+            status = status,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+
         fun create(
             userId: UserId,
             accountId: AccountId,

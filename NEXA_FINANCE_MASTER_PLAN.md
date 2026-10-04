@@ -1497,3 +1497,30 @@ Validação:
 - git diff --check deve passar no gate final.
 
 Próximo vertical: recorrência, mantendo parcelamento HTTP como pendência separada.
+
+
+# Checkpoint 1.9.4 - 2026-10-03
+
+Recorrencias integradas ao motor financeiro e API validadas.
+
+Implementado:
+- V6 com recurrence_id e recurrence_occurrence_number em transactions;
+- FK para recurrences e indice unico parcial por recorrencia/ocorrencia;
+- repositorio JDBC de recorrencias;
+- API de criacao, listagem, consulta, preview de ocorrencias, pause, resume e cancel;
+- execucao de ocorrencia como Transaction SYSTEM;
+- INCOME como CREDIT e EXPENSE como DEBIT;
+- validacao de conta do proprietario, ACTIVE, moeda, categoria e bloqueio de conta CREDIT_CARD;
+- execucao idempotente para a mesma ocorrencia;
+- testes HTTP contra PostgreSQL real.
+
+Validacao:
+- RecurrenceApiTest: 4 testes, 0 falhas, 0 skips;
+- suite completa backend clean test: BUILD SUCCESSFUL;
+- backend build: BUILD SUCCESSFUL;
+- Android clean test + assembleDebug: BUILD SUCCESSFUL;
+- Docker Compose config: PASS;
+- verify-database.ps1: PASS com migrations 1 a 6, 22 indices e 28 foreign keys;
+- git diff --check: PASS.
+
+A pendencia de parcelamento HTTP continua separada. O proximo vertical permanece parcelamento HTTP ou, se o mapa de dependencias exigir, hardening/concurrency do fluxo de recorrencia.

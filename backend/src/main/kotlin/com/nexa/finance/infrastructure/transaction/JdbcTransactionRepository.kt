@@ -28,9 +28,9 @@ class JdbcTransactionRepository(
                 """
                 INSERT INTO transactions
                     (id, account_id, amount_minor, currency, type, direction, status,
-                     occurred_on, description, category_id, card_id, invoice_id, source, related_transaction_id,
-                     created_at, updated_at)
-                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                     occurred_on, description, category_id, card_id, invoice_id, recurrence_id, recurrence_occurrence_number,
+                     source, related_transaction_id, created_at, updated_at)
+                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 WHERE EXISTS (
                     SELECT 1 FROM accounts
                     WHERE id = ? AND owner_id = ? AND status = 'ACTIVE'
@@ -46,11 +46,11 @@ class JdbcTransactionRepository(
                 """.trimIndent()
             ).use { s ->
                 bindTransaction(s, transaction)
-                s.setObject(17, transaction.accountId.value)
-                s.setObject(18, ownerId.value)
-                setUuidOrNull(s, 19, transaction.categoryId?.value)
-                setUuidOrNull(s, 20, transaction.categoryId?.value)
-                s.setObject(21, ownerId.value)
+                s.setObject(19, transaction.accountId.value)
+                s.setObject(20, ownerId.value)
+                setUuidOrNull(s, 21, transaction.categoryId?.value)
+                setUuidOrNull(s, 22, transaction.categoryId?.value)
+                s.setObject(23, ownerId.value)
                 if (s.executeUpdate() != 1) {
                     throw DomainValidationException("Account was not found for this user.")
                 }
@@ -118,6 +118,17 @@ class JdbcTransactionRepository(
                 s.executeQuery().use { r ->
                     if (r.next()) r.toTransaction() else null
                 }
+            }
+        }
+
+    fun categoryBelongsToOwner(ownerId: UserId, categoryId: CategoryId): Boolean =
+        connections.open().use { c ->
+            c.prepareStatement(
+                "SELECT 1 FROM categories WHERE id = ? AND status = 'ACTIVE' AND (owner_id IS NULL OR owner_id = ?) LIMIT 1"
+            ).use { s ->
+                s.setObject(1, categoryId.value)
+                s.setObject(2, ownerId.value)
+                s.executeQuery().use { r -> r.next() }
             }
         }
 
@@ -197,10 +208,13 @@ class JdbcTransactionRepository(
         setUuidOrNull(s, 10, t.categoryId?.value)
         setUuidOrNull(s, 11, t.cardId?.value)
         setUuidOrNull(s, 12, t.invoiceId?.value)
-        s.setString(13, t.source.name)
-        setUuidOrNull(s, 14, t.relatedTransactionId)
-        s.setTimestamp(15, Timestamp.from(t.createdAt))
-        s.setTimestamp(16, Timestamp.from(t.updatedAt))
+        setUuidOrNull(s, 13, t.recurrenceId)
+        if (t.recurrenceOccurrenceNumber == null) s.setNull(14, java.sql.Types.INTEGER)
+        else s.setInt(14, t.recurrenceOccurrenceNumber)
+        s.setString(15, t.source.name)
+        setUuidOrNull(s, 16, t.relatedTransactionId)
+        s.setTimestamp(17, Timestamp.from(t.createdAt))
+        s.setTimestamp(18, Timestamp.from(t.updatedAt))
     }
 
     private fun setUuidOrNull(statement: java.sql.PreparedStatement, index: Int, value: UUID?) {
@@ -208,8 +222,11 @@ class JdbcTransactionRepository(
         else statement.setObject(index, value)
     }
 
-    private fun java.sql.ResultSet.toTransaction(): Transaction =
-        Transaction.create(
+    private fun java.sql.ResultSet.toTransaction(): Transaction {
+        val recurrenceOccurrenceNumber = getInt("recurrence_occurrence_number").let { value ->
+            if (wasNull()) null else value
+        }
+        return Transaction.create(
             id = getObject("id", UUID::class.java),
             accountId = AccountId(getObject("account_id", UUID::class.java)),
             amount = Money(getLong("amount_minor"), CurrencyCode.valueOf(getString("currency"))),
@@ -222,8 +239,11 @@ class JdbcTransactionRepository(
             source = TransactionSource.valueOf(getString("source")),
             cardId = getObject("card_id", UUID::class.java)?.let(::CardId),
             invoiceId = getObject("invoice_id", UUID::class.java)?.let(::InvoiceId),
+            recurrenceId = getObject("recurrence_id", UUID::class.java),
+            recurrenceOccurrenceNumber = recurrenceOccurrenceNumber,
             relatedTransactionId = getObject("related_transaction_id", UUID::class.java),
             createdAt = getTimestamp("created_at").toInstant(),
             updatedAt = getTimestamp("updated_at").toInstant(),
         )
+    }
 }
