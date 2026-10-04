@@ -1523,4 +1523,23 @@ Validacao:
 - verify-database.ps1: PASS com migrations 1 a 6, 22 indices e 28 foreign keys;
 - git diff --check: PASS.
 
-A pendencia de parcelamento HTTP continua separada. O proximo vertical permanece parcelamento HTTP ou, se o mapa de dependencias exigir, hardening/concurrency do fluxo de recorrencia.
+A pendencia de parcelamento HTTP foi concluída.
+
+# Checkpoint 1.9.5 - 2026-10-03
+
+Parcelamento HTTP implementado e validado.
+
+Implementado:
+- domínio de parcelamento com divisão exata do valor em centavos;
+- vencimentos mensais com tratamento de fim de mês;
+- repositório JDBC com isolamento por usuário e persistência transacional;
+- serviço de criação, consulta, conclusão de parcela e cancelamento;
+- API autenticada de criação, listagem, consulta, conclusão e cancelamento;
+- validação de moeda, limites, categoria e ownership;
+- testes HTTP de ciclo de vida, isolamento, cancelamento e validações contra PostgreSQL real.
+
+Validação:
+- InstallmentApiTest: 2 testes, 0 falhas, 0 skips, 0 erros;
+- schema PostgreSQL: PASS.
+
+Próximo vertical: concluir a validação integrada final e avançar para o próximo item do mapa de dependências.

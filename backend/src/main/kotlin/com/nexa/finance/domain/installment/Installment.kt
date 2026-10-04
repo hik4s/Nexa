@@ -180,6 +180,9 @@ data class Installment private constructor(
             )
         }
 
+        fun restore(id: InstallmentId, userId: UserId, totalAmount: Money, installmentCount: Int, firstDueOn: LocalDate, description: String?, categoryId: CategoryId?, items: List<InstallmentItem>, status: InstallmentPlanStatus, createdAt: Instant, updatedAt: Instant,
+        ): Installment = Installment(id, userId, totalAmount, installmentCount, firstDueOn, description, categoryId, items, status, createdAt, updatedAt)
+
         private fun splitAmount(totalMinor: Long, count: Int): List<Long> {
             val base = totalMinor / count
             val remainder = totalMinor % count

@@ -5,6 +5,7 @@ import com.nexa.finance.api.ApiError
 import com.nexa.finance.api.accountRoutes
 import com.nexa.finance.api.cardRoutes
 import com.nexa.finance.api.invoiceRoutes
+import com.nexa.finance.api.installmentRoutes
 import com.nexa.finance.api.refundRoutes
 import com.nexa.finance.api.recurrenceRoutes
 import com.nexa.finance.api.transactionRoutes
@@ -22,6 +23,8 @@ import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
 import com.nexa.finance.application.card.CardService
 import com.nexa.finance.application.invoice.InvoiceService
+import com.nexa.finance.application.installment.InstallmentService
+import com.nexa.finance.infrastructure.installment.JdbcInstallmentRepository
 import com.nexa.finance.application.refund.RefundService
 import com.nexa.finance.application.recurrence.RecurrenceService
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
@@ -63,6 +66,7 @@ fun Application.module() {
     val cardRepository = JdbcCardRepository()
     val cards = CardService(cardRepository, accountRepository, JdbcTransactionRepository())
     val invoices = InvoiceService(JdbcInvoiceRepository(), cardRepository, accountRepository)
+    val installments = InstallmentService(JdbcInstallmentRepository(), JdbcTransactionRepository())
     val refunds = RefundService(JdbcTransactionRepository(), cardRepository)
     val recurrences = RecurrenceService(JdbcRecurrenceRepository(), accountRepository, JdbcTransactionRepository())
 
@@ -107,6 +111,7 @@ fun Application.module() {
         transferRoutes(transfers)
         cardRoutes(cards)
         invoiceRoutes(invoices)
+        installmentRoutes(installments)
         refundRoutes(refunds)
         recurrenceRoutes(recurrences)
     }
