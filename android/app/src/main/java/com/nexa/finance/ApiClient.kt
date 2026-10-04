@@ -168,6 +168,52 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         }
     }
 
+    fun budgets(): List<Budget> {
+        val array = requestArray("GET", "/api/v1/budgets")
+        return (0 until array.length()).map { i -> budgetFromJson(array.getJSONObject(i)) }
+    }
+
+    fun createBudget(
+        amountMinor: Long,
+        startOn: String,
+        endOn: String,
+        categoryId: String? = null,
+        description: String? = null,
+    ): Budget {
+        return budgetFromJson(request("POST", "/api/v1/budgets", JSONObject().apply {
+            put("amountMinor", amountMinor)
+            put("currency", "BRL")
+            put("startOn", startOn)
+            put("endOn", endOn)
+            put("categoryId", categoryId ?: JSONObject.NULL)
+            put("description", description ?: JSONObject.NULL)
+        }))
+    }
+
+    fun pauseBudget(id: String): Budget =
+        budgetFromJson(request("POST", "/api/v1/budgets/$id/pause"))
+
+    fun resumeBudget(id: String): Budget =
+        budgetFromJson(request("POST", "/api/v1/budgets/$id/resume"))
+
+    fun cancelBudget(id: String): Budget =
+        budgetFromJson(request("DELETE", "/api/v1/budgets/$id"))
+
+    private fun budgetFromJson(o: JSONObject): Budget = Budget(
+        id = o.getString("id"),
+        amountMinor = o.getLong("amountMinor"),
+        consumedMinor = o.getLong("consumedMinor"),
+        remainingMinor = o.getLong("remainingMinor"),
+        progressPercent = o.getInt("progressPercent"),
+        alertLevel = o.getString("alertLevel"),
+        currency = o.getString("currency"),
+        startOn = o.getString("startOn"),
+        endOn = o.getString("endOn"),
+        categoryId = o.optString("categoryId").ifBlank { null },
+        description = o.optString("description").ifBlank { null },
+        status = o.getString("status"),
+    )
+
     fun recurrences(): List<Recurrence> {
         val array = requestArray("GET", "/api/v1/recurrences")
         return (0 until array.length()).map { i ->
@@ -324,6 +370,21 @@ data class Tx(
     val invoiceId: String? = null,
     val installmentId: String? = null,
     val installmentNumber: Int? = null,
+)
+
+data class Budget(
+    val id: String,
+    val amountMinor: Long,
+    val consumedMinor: Long,
+    val remainingMinor: Long,
+    val progressPercent: Int,
+    val alertLevel: String,
+    val currency: String,
+    val startOn: String,
+    val endOn: String,
+    val categoryId: String?,
+    val description: String?,
+    val status: String,
 )
 
 data class Recurrence(

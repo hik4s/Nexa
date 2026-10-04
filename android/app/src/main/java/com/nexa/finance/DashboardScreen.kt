@@ -32,6 +32,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
     var selectedCardId by remember { mutableStateOf<String?>(null) }
     var transactions by remember { mutableStateOf(emptyList<Tx>()) }
     var recurrences by remember { mutableStateOf(emptyList<Recurrence>()) }
+    var budgets by remember { mutableStateOf(emptyList<Budget>()) }
     var message by remember { mutableStateOf("Carregando...") }
     var accountName by remember { mutableStateOf("") }
     var accountType by remember { mutableStateOf("CHECKING") }
@@ -49,6 +50,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
             runCatching { api.categories() }.onSuccess { runOnMain { categories = it } }.onFailure { failures++ }
             runCatching { api.transactions() }.onSuccess { runOnMain { transactions = it } }.onFailure { failures++ }
             runCatching { api.recurrences() }.onSuccess { runOnMain { recurrences = it } }.onFailure { failures++ }
+            runCatching { api.budgets() }.onSuccess { runOnMain { budgets = it } }.onFailure { failures++ }
             runOnMain { message = if (failures == 0) "" else "Alguns dados não puderam ser carregados." }
         }.start()
     }
@@ -146,10 +148,13 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                 }
             }
             item {
-                DashboardPanel("Orçamento consumido", Modifier.testTag("dashboard_budget")) {
-                    Text("Nenhum orçamento configurado ainda.")
-                    Text("O módulo de orçamento será habilitado na etapa 2.5.", style = MaterialTheme.typography.bodySmall)
-                }
+                BudgetPanel(
+                    api = api,
+                    budgets = budgets,
+                    categories = categories,
+                    onBudgetsChanged = { budgets = it },
+                    onMessage = { message = it },
+                )
             }
             item {
                 DashboardPanel("Insight", Modifier.testTag("dashboard_insight")) {

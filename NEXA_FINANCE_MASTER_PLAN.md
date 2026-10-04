@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.4 Cartões e faturas concluído e validado; próximo passo 2.5 Orçamentos.
+**Checkpoint atual:** Parte 2 - 2.5 Orçamentos concluído e validado; próximo passo 2.6 Metas financeiras.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -698,12 +698,12 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 ## 2.5 â€” OrÃ§amentos
 
-- [ ] OrÃ§amento mensal
-- [ ] OrÃ§amento por categoria
-- [ ] Barra de progresso
-- [ ] Alertas
-- [ ] Limites personalizados
-- [ ] HistÃ³rico de orÃ§amento
+- [x] OrÃ§amento mensal
+- [x] OrÃ§amento por categoria
+- [x] Barra de progresso
+- [x] Alertas
+- [x] Limites personalizados
+- [x] HistÃ³rico de orÃ§amento
 
 ---
 
@@ -1785,3 +1785,44 @@ Conclusão 2.4:
 
 Próximo passo:
 - iniciar 2.5 Orçamentos.
+
+
+# Checkpoint 2.5.1 - 2026-10-04
+
+Orçamentos implementados do backend ao Android.
+
+Implementado:
+- orçamento mensal com janela de vigência;
+- orçamento geral ou vinculado a categoria de despesa;
+- cálculo de consumo apenas sobre eventos POSTED relevantes, com REFUND abatendo consumo;
+- progresso, valor consumido, restante e percentual;
+- alertas OK, WARNING e EXCEEDED;
+- limites personalizados por valor definido para cada orçamento;
+- histórico de orçamentos com estados ACTIVE, PAUSED, COMPLETED e CANCELLED;
+- operações de atualizar, pausar, retomar, concluir e cancelar;
+- migration V10 para persistência de orçamentos;
+- API e painel Android integrados ao dashboard;
+- entrada monetária do painel convertida em centavos com BigDecimal, evitando arredondamento via Double;
+- teste instrumentado do BudgetPanel;
+- E2E Android endurecido para rolagem semântica em LazyColumn, sem depender de índices fixos.
+
+Validação:
+- Flyway V1→V10 em PostgreSQL 18.6 efêmero: PASS;
+- JdbcBudgetRepositoryIntegrationTest: PASS;
+- suíte backend completa: 142/142 PASS;
+- BudgetPanelTest no emulator-5554: PASS (1/1);
+- QuickEntryInstallmentTest no emulator-5554: PASS (1/1);
+- FinanceE2ETest com Ktor real + PostgreSQL efêmero: PASS (2/2);
+- Android assembleDebug: PASS;
+- git diff --check: PASS.
+
+Observação de ambiente:
+- a suíte Android completa executada sem backend ativo apresentou falhas de E2E por ausência do serviço em 10.0.2.2:8080; com Ktor + PostgreSQL efêmero ativos, os dois fluxos FinanceE2ETest passaram 2/2.
+- nenhum volume ou dado do PostgreSQL persistente local foi removido ou alterado.
+
+Conclusão 2.5:
+- todas as microtarefas de orçamentos estão implementadas e validadas;
+- não há pendência técnica conhecida nesta vertical.
+
+Próximo passo:
+- iniciar 2.6 Metas financeiras.

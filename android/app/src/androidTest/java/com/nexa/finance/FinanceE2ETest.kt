@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.UUID
@@ -20,6 +21,10 @@ import org.junit.runner.RunWith
 class FinanceE2ETest {
     @get:Rule
     val compose = createAndroidComposeRule<MainActivity>()
+
+    private fun scrollToDashboard(tag: String) {
+        compose.onNodeWithTag("dashboard_list").performScrollToNode(hasTestTag(tag))
+    }
 
     @Test
     fun quick_entry_parses_natural_language_and_registers_expense() {
@@ -43,13 +48,14 @@ class FinanceE2ETest {
         compose.waitUntil(15_000) {
             compose.onAllNodes(hasText("NEXA Finance")).fetchSemanticsNodes().isNotEmpty()
         }
+        scrollToDashboard("account_name")
 
         compose.onNodeWithTag("account_name").performTextInput("Conta Quick E2E")
         compose.onNodeWithTag("account_submit").performClick()
         compose.waitUntil(15_000) {
             compose.onAllNodes(hasText("Conta Quick E2E")).fetchSemanticsNodes().isNotEmpty()
         }
-        compose.onNodeWithTag("dashboard_list").performScrollToIndex(9)
+        scrollToDashboard("quick_input")
         compose.onNodeWithTag("quick_input").performTextInput("18,90 almoço")
         compose.onNodeWithText("Despesa · almoço").assertIsDisplayed()
         compose.onNodeWithText("R$ 18,90").assertIsDisplayed()
@@ -63,12 +69,17 @@ class FinanceE2ETest {
             compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("quick_status").assertIsDisplayed()
-        compose.onNodeWithTag("dashboard_list").performScrollToIndex(3)
+        scrollToDashboard("dashboard_expenses")
         compose.onNodeWithTag("dashboard_expenses").assertIsDisplayed()
+        scrollToDashboard("dashboard_result")
         compose.onNodeWithTag("dashboard_result").assertIsDisplayed()
+        scrollToDashboard("dashboard_categories")
         compose.onNodeWithTag("dashboard_categories").assertIsDisplayed()
+        scrollToDashboard("dashboard_evolution")
         compose.onNodeWithTag("dashboard_evolution").assertIsDisplayed()
+        scrollToDashboard("dashboard_budget")
         compose.onNodeWithTag("dashboard_budget").assertIsDisplayed()
+        scrollToDashboard("dashboard_insight")
         compose.onNodeWithTag("dashboard_insight").assertIsDisplayed()
     }
 
@@ -99,6 +110,7 @@ class FinanceE2ETest {
             compose.onAllNodes(hasText("NEXA Finance")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText("NEXA Finance").assertIsDisplayed()
+        scrollToDashboard("account_name")
 
         compose.onNodeWithTag("account_name").performTextInput("Conta E2E")
         compose.onNodeWithTag("account_submit").performClick()
@@ -107,7 +119,7 @@ class FinanceE2ETest {
             compose.onAllNodes(hasText("Conta E2E")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText("Conta E2E").assertIsDisplayed()
-        compose.onNodeWithTag("dashboard_list").performScrollToIndex(9)
+        scrollToDashboard("quick_input")
 
         compose.onNodeWithTag("quick_input").performTextInput("123,45 teste e2e")
         compose.onNodeWithTag("quick_submit").performClick()
@@ -115,6 +127,7 @@ class FinanceE2ETest {
             compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("quick_status").assertIsDisplayed()
+        scrollToDashboard("dashboard_expenses")
         compose.onNodeWithTag("dashboard_expenses").assertIsDisplayed()
     }
 }
