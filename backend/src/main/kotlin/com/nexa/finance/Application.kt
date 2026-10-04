@@ -67,7 +67,7 @@ fun Application.module() {
     val transactions = TransactionService(JdbcTransactionRepository(), accountRepository)
     val transfers = TransferService(JdbcTransferRepository(), accountRepository)
     val cardRepository = JdbcCardRepository()
-    val cards = CardService(cardRepository, accountRepository, JdbcTransactionRepository())
+    val cards = CardService(cardRepository, accountRepository, JdbcTransactionRepository(), JdbcInstallmentRepository())
     val invoices = InvoiceService(JdbcInvoiceRepository(), cardRepository, accountRepository)
     val installments = InstallmentService(JdbcInstallmentRepository(), JdbcTransactionRepository())
     val refunds = RefundService(JdbcTransactionRepository(), cardRepository)

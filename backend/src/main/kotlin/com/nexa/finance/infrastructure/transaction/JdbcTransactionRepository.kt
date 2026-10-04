@@ -28,9 +28,9 @@ class JdbcTransactionRepository(
                 """
                 INSERT INTO transactions
                     (id, account_id, amount_minor, currency, type, direction, status,
-                     occurred_on, description, category_id, card_id, invoice_id, recurrence_id, recurrence_occurrence_number,
-                     source, related_transaction_id, created_at, updated_at)
-                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                     occurred_on, description, category_id, card_id, invoice_id, installment_id, installment_number,
+                     recurrence_id, recurrence_occurrence_number, source, related_transaction_id, created_at, updated_at)
+                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 WHERE EXISTS (
                     SELECT 1 FROM accounts
                     WHERE id = ? AND owner_id = ? AND status = 'ACTIVE'
@@ -46,11 +46,11 @@ class JdbcTransactionRepository(
                 """.trimIndent()
             ).use { s ->
                 bindTransaction(s, transaction)
-                s.setObject(19, transaction.accountId.value)
-                s.setObject(20, ownerId.value)
-                setUuidOrNull(s, 21, transaction.categoryId?.value)
-                setUuidOrNull(s, 22, transaction.categoryId?.value)
-                s.setObject(23, ownerId.value)
+                s.setObject(21, transaction.accountId.value)
+                s.setObject(22, ownerId.value)
+                setUuidOrNull(s, 23, transaction.categoryId?.value)
+                setUuidOrNull(s, 24, transaction.categoryId?.value)
+                s.setObject(25, ownerId.value)
                 if (s.executeUpdate() != 1) {
                     throw DomainValidationException("Account was not found for this user.")
                 }
@@ -208,13 +208,16 @@ class JdbcTransactionRepository(
         setUuidOrNull(s, 10, t.categoryId?.value)
         setUuidOrNull(s, 11, t.cardId?.value)
         setUuidOrNull(s, 12, t.invoiceId?.value)
-        setUuidOrNull(s, 13, t.recurrenceId)
-        if (t.recurrenceOccurrenceNumber == null) s.setNull(14, java.sql.Types.INTEGER)
-        else s.setInt(14, t.recurrenceOccurrenceNumber)
-        s.setString(15, t.source.name)
-        setUuidOrNull(s, 16, t.relatedTransactionId)
-        s.setTimestamp(17, Timestamp.from(t.createdAt))
-        s.setTimestamp(18, Timestamp.from(t.updatedAt))
+        setUuidOrNull(s, 13, t.installmentId)
+        if (t.installmentNumber == null) s.setNull(14, java.sql.Types.INTEGER)
+        else s.setInt(14, t.installmentNumber)
+        setUuidOrNull(s, 15, t.recurrenceId)
+        if (t.recurrenceOccurrenceNumber == null) s.setNull(16, java.sql.Types.INTEGER)
+        else s.setInt(16, t.recurrenceOccurrenceNumber)
+        s.setString(17, t.source.name)
+        setUuidOrNull(s, 18, t.relatedTransactionId)
+        s.setTimestamp(19, Timestamp.from(t.createdAt))
+        s.setTimestamp(20, Timestamp.from(t.updatedAt))
     }
 
     private fun setUuidOrNull(statement: java.sql.PreparedStatement, index: Int, value: UUID?) {
@@ -239,6 +242,8 @@ class JdbcTransactionRepository(
             source = TransactionSource.valueOf(getString("source")),
             cardId = getObject("card_id", UUID::class.java)?.let(::CardId),
             invoiceId = getObject("invoice_id", UUID::class.java)?.let(::InvoiceId),
+            installmentId = getObject("installment_id", UUID::class.java),
+            installmentNumber = getInt("installment_number").let { value -> if (wasNull()) null else value },
             recurrenceId = getObject("recurrence_id", UUID::class.java),
             recurrenceOccurrenceNumber = recurrenceOccurrenceNumber,
             relatedTransactionId = getObject("related_transaction_id", UUID::class.java),

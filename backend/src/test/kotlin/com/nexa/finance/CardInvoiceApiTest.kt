@@ -11,6 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assumptions.assumeTrue
@@ -105,6 +106,68 @@ class CardInvoiceApiTest {
     }
 
     @Test
+    fun cardPurchaseInstallmentsFlowIntoFutureInvoices() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("card-installments")
+        application { module() }
+        try {
+            val token = registerAndLogin(client, email, "password-123", "Installment Card User")
+            val cash = createAccount(client, token, "Checking", 200_000, "CHECKING")
+            val liability = createAccount(client, token, "Visa Liability", 0, "CREDIT_CARD")
+            val cardId = json(createCard(client, token, liability, 100_000))["id"]!!.jsonPrimitive.content
+
+            val purchase = client.post("/api/v1/cards/$cardId/purchases") {
+                bearer(token)
+                jsonBody("""{"amountMinor":100000,"currency":"BRL","occurredOn":"2026-10-03","description":"Notebook","post":true,"installmentCount":3}""")
+            }
+            assertEquals(201, purchase.status.value, purchase.bodyAsText())
+            val purchaseBody = json(purchase.bodyAsText())
+            val planId = purchaseBody["installmentId"]!!.jsonPrimitive.content
+            assertEquals(1, purchaseBody["installmentNumber"]!!.jsonPrimitive.content.toInt())
+
+            val plan = client.get("/api/v1/installments/$planId") { bearer(token) }
+            assertEquals(200, plan.status.value, plan.bodyAsText())
+            val items = json(plan.bodyAsText())["items"]!!.jsonArray
+            assertEquals(3, items.size)
+            assertEquals(33334L, items[0].jsonObject["amountMinor"]!!.jsonPrimitive.content.toLong())
+            assertEquals(33333L, items[1].jsonObject["amountMinor"]!!.jsonPrimitive.content.toLong())
+            assertEquals(33333L, items[2].jsonObject["amountMinor"]!!.jsonPrimitive.content.toLong())
+            assertEquals("2026-10-20", items[0].jsonObject["dueOn"]!!.jsonPrimitive.content)
+            assertEquals("2026-11-20", items[1].jsonObject["dueOn"]!!.jsonPrimitive.content)
+            assertEquals("2026-12-20", items[2].jsonObject["dueOn"]!!.jsonPrimitive.content)
+
+            val exhausted = client.get("/api/v1/cards/$cardId") { bearer(token) }
+            assertEquals(0L, json(exhausted.bodyAsText())["availableLimitMinor"]!!.jsonPrimitive.content.toLong())
+
+            val firstInvoice = client.post("/api/v1/invoices") {
+                bearer(token)
+                jsonBody("""{"cardId":"$cardId","periodStart":"2026-10-01","periodEnd":"2026-10-10","dueOn":"2026-10-20"}""")
+            }
+            assertEquals(201, firstInvoice.status.value, firstInvoice.bodyAsText())
+            assertEquals(33334L, json(firstInvoice.bodyAsText())["totalAmountMinor"]!!.jsonPrimitive.content.toLong())
+            val firstInvoiceId = json(firstInvoice.bodyAsText())["id"]!!.jsonPrimitive.content
+            assertEquals(200, client.post("/api/v1/invoices/$firstInvoiceId/close") { bearer(token) }.status.value)
+            val paid = client.post("/api/v1/invoices/$firstInvoiceId/payments") {
+                bearer(token)
+                jsonBody("""{"sourceAccountId":"$cash","amountMinor":33334,"currency":"BRL","occurredOn":"2026-10-20"}""")
+            }
+            assertEquals(200, paid.status.value, paid.bodyAsText())
+            assertEquals("PAID", json(paid.bodyAsText())["status"]!!.jsonPrimitive.content)
+
+            val restored = client.get("/api/v1/cards/$cardId") { bearer(token) }
+            assertEquals(33334L, json(restored.bodyAsText())["availableLimitMinor"]!!.jsonPrimitive.content.toLong())
+
+            val secondInvoice = client.post("/api/v1/invoices") {
+                bearer(token)
+                jsonBody("""{"cardId":"$cardId","periodStart":"2026-10-11","periodEnd":"2026-11-10","dueOn":"2026-11-20"}""")
+            }
+            assertEquals(201, secondInvoice.status.value, secondInvoice.bodyAsText())
+            assertEquals(33333L, json(secondInvoice.bodyAsText())["totalAmountMinor"]!!.jsonPrimitive.content.toLong())
+        } finally {
+            cleanupUser(email)
+        }
+    }
+    @Test
     fun cardPurchaseRejectsCreditLimitOverflow() = testApplication {
         assumeTrue(hasPostgres())
         val email = uniqueEmail("card-limit")
@@ -155,6 +218,8 @@ class CardInvoiceApiTest {
                 c.prepareStatement("UPDATE transactions SET related_transaction_id = NULL WHERE account_id IN (SELECT id FROM accounts WHERE owner_id = ?)").use { s -> s.setObject(1, userId); s.executeUpdate() }
                 c.prepareStatement("DELETE FROM transactions WHERE account_id IN (SELECT id FROM accounts WHERE owner_id = ?)").use { s -> s.setObject(1, userId); s.executeUpdate() }
                 c.prepareStatement("DELETE FROM invoices WHERE card_id IN (SELECT id FROM cards WHERE owner_id = ?)").use { s -> s.setObject(1, userId); s.executeUpdate() }
+                c.prepareStatement("DELETE FROM installment_items WHERE installment_id IN (SELECT id FROM installments WHERE user_id = ?)").use { s -> s.setObject(1, userId); s.executeUpdate() }
+                c.prepareStatement("DELETE FROM installments WHERE user_id = ?").use { s -> s.setObject(1, userId); s.executeUpdate() }
                 c.prepareStatement("DELETE FROM cards WHERE owner_id = ?").use { s -> s.setObject(1, userId); s.executeUpdate() }
                 c.prepareStatement("DELETE FROM accounts WHERE owner_id = ?").use { s -> s.setObject(1, userId); s.executeUpdate() }
                 c.prepareStatement("DELETE FROM users WHERE id = ?").use { s -> s.setObject(1, userId); s.executeUpdate() }

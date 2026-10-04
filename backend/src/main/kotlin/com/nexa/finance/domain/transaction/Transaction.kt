@@ -31,6 +31,8 @@ data class Transaction private constructor(
     val categoryId: CategoryId?,
     val cardId: CardId?,
     val invoiceId: InvoiceId?,
+    val installmentId: UUID?,
+    val installmentNumber: Int?,
     val recurrenceId: UUID?,
     val recurrenceOccurrenceNumber: Int?,
     val source: TransactionSource,
@@ -58,6 +60,12 @@ data class Transaction private constructor(
 
         if (type == TransactionType.CANCELLATION && relatedTransactionId == null) {
             throw DomainValidationException("A cancellation must reference the transaction it cancels.")
+        }
+        if ((installmentId == null) != (installmentNumber == null)) {
+            throw DomainValidationException("Installment metadata must be complete.")
+        }
+        if (installmentNumber != null && installmentNumber <= 0) {
+            throw DomainValidationException("Installment number must be greater than zero.")
         }
         if ((recurrenceId == null) != (recurrenceOccurrenceNumber == null)) {
             throw DomainValidationException("Recurrence execution metadata must be complete.")
@@ -96,6 +104,8 @@ data class Transaction private constructor(
             categoryId: CategoryId? = null,
             cardId: CardId? = null,
             invoiceId: InvoiceId? = null,
+            installmentId: UUID? = null,
+            installmentNumber: Int? = null,
             recurrenceId: UUID? = null,
             recurrenceOccurrenceNumber: Int? = null,
             source: TransactionSource = TransactionSource.MANUAL,
@@ -123,6 +133,8 @@ data class Transaction private constructor(
                 categoryId = categoryId,
                 cardId = cardId,
                 invoiceId = invoiceId,
+                installmentId = installmentId,
+                installmentNumber = installmentNumber,
                 recurrenceId = recurrenceId,
                 recurrenceOccurrenceNumber = recurrenceOccurrenceNumber,
                 source = source,

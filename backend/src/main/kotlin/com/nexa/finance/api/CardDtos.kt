@@ -22,6 +22,7 @@ data class CardPurchaseRequest(
     val description: String? = null,
     val source: String = "MANUAL",
     val post: Boolean = true,
+    val installmentCount: Int = 1,
 )
 
 @Serializable

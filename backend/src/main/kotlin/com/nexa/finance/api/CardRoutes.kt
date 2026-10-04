@@ -52,7 +52,7 @@ fun Route.cardRoutes(service: CardService) {
                 val userId = call.cardPrincipalUserId()
                 val id = CardId(cardUuid(call.parameters["id"] ?: "", "Card ID is invalid."))
                 val r = call.receiveCard<CardPurchaseRequest>()
-                val tx = service.purchase(userId, id, Money(r.amountMinor, cardEnum<CurrencyCode>(r.currency, "Currency is invalid.")), runCatching { LocalDate.parse(r.occurredOn) }.getOrElse { throw DomainValidationException("Purchase date is invalid.") }, null, r.description, cardEnum<TransactionSource>(r.source, "Transaction source is invalid."), r.post)
+                val tx = service.purchase(userId, id, Money(r.amountMinor, cardEnum<CurrencyCode>(r.currency, "Currency is invalid.")), runCatching { LocalDate.parse(r.occurredOn) }.getOrElse { throw DomainValidationException("Purchase date is invalid.") }, null, r.description, cardEnum<TransactionSource>(r.source, "Transaction source is invalid."), r.post, r.installmentCount)
                 call.respond(HttpStatusCode.Created, tx.toCardTransactionResponse())
             }
         }
@@ -60,7 +60,7 @@ fun Route.cardRoutes(service: CardService) {
 }
 
 private fun com.nexa.finance.domain.card.Card.toCardResponse(available: Money) = CardResponse(id.value.toString(), liabilityAccountId.value.toString(), name, brand.name, lastFourDigits, creditLimit.amountInMinor, available.amountInMinor, creditLimit.currency.name, closingDay, dueDay, status.name)
-private fun com.nexa.finance.domain.transaction.Transaction.toCardTransactionResponse() = TransactionResponse(id.toString(), accountId.value.toString(), amount.amountInMinor, amount.currency.name, type.name, direction.name, status.name, occurredOn.toString(), description, categoryId?.value?.toString(), source.name)
+private fun com.nexa.finance.domain.transaction.Transaction.toCardTransactionResponse() = TransactionResponse(id.toString(), accountId.value.toString(), amount.amountInMinor, amount.currency.name, type.name, direction.name, status.name, occurredOn.toString(), description, categoryId?.value?.toString(), source.name, installmentId?.toString(), installmentNumber)
 private fun io.ktor.server.application.ApplicationCall.cardPrincipalUserId(): UserId = principal<UserIdPrincipal>()?.name?.let { runCatching { UserId(UUID.fromString(it)) }.getOrElse { throw DomainValidationException("Invalid authenticated principal.") } } ?: throw DomainValidationException("Invalid authenticated principal.")
 private suspend inline fun <reified T> io.ktor.server.application.ApplicationCall.receiveCard(): T = try { receive() } catch (_: Exception) { throw DomainValidationException("Request body is invalid.") }
 private inline fun <reified T : Enum<T>> cardEnum(value: String, message: String): T = runCatching { enumValueOf<T>(value.trim().uppercase()) }.getOrElse { throw DomainValidationException(message) }

@@ -28,6 +28,8 @@ data class TransactionResponse(
     val description: String?,
     val categoryId: String?,
     val source: String,
+    val installmentId: String? = null,
+    val installmentNumber: Int? = null,
 )
 
 @Serializable

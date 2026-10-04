@@ -87,6 +87,8 @@ private fun com.nexa.finance.domain.transaction.Transaction.toResponse() =
         description = description,
         categoryId = categoryId?.value?.toString(),
         source = source.name,
+        installmentId = installmentId?.toString(),
+        installmentNumber = installmentNumber,
     )
 
 private fun io.ktor.server.application.ApplicationCall.principalUserId(): UserId =

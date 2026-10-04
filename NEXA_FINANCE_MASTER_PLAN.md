@@ -1703,3 +1703,35 @@ Validação desta etapa:
 - Android testDebugUnitTest: PASS;
 - Android assembleDebug: PASS;
 - git diff --check: PASS.
+
+
+# Checkpoint 2.4.7 - 2026-10-04
+
+Integração de compras parceladas no cartão concluída no backend.
+
+Implementado:
+- migration V9 vinculando cada transação a installmentId + installmentNumber;
+- compra no cartão aceita installmentCount (1 mantém o comportamento à vista);
+- criação atômica do plano, itens e transações das parcelas;
+- cada parcela é uma transação POSTED/PENDING real do ledger, mantendo o valor total comprometido no limite quando postada;
+- calendário de cobrança respeita fechamento/vencimento do cartão e distribui as parcelas pelos ciclos futuros;
+- primeira parcela usa a data real da compra e as seguintes usam os fechamentos dos ciclos subsequentes;
+- limite é revalidado sob lock da conta de passivo antes da persistência para evitar corrida de concorrência;
+- resposta da compra expõe installmentId/installmentNumber;
+- listagem de transações expõe metadados de parcelamento;
+- teste de integração cobre 3 parcelas, divisão exata de centavos, vencimentos, limite, primeira fatura, pagamento e segunda fatura;
+- cleanup dos testes atualizado para respeitar as novas FKs.
+
+Validação:
+- Flyway em PostgreSQL efêmero: PASS; 9 migrations aplicadas;
+- teste crítico de integração: PASS;
+- suíte backend completa em PostgreSQL efêmero: PASS;
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- git diff --check: PASS.
+
+Limitação ambiental preservada:
+- o PostgreSQL persistente local continua com credencial divergente da configuração atual do ambiente; nenhum volume ou dado existente foi removido ou alterado. A validação real foi feita em banco PostgreSQL efêmero isolado.
+
+Próximo subitem:
+- integrar a criação de compra parcelada ao fluxo visual Android, evitando deixar a capacidade existente apenas no contrato HTTP.
