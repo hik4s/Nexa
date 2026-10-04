@@ -49,7 +49,7 @@ class FinanceE2ETest {
         compose.waitUntil(15_000) {
             compose.onAllNodes(hasText("Conta Quick E2E")).fetchSemanticsNodes().isNotEmpty()
         }
-        compose.onNodeWithTag("dashboard_list").performScrollToIndex(1)
+        compose.onNodeWithTag("dashboard_list").performScrollToIndex(9)
         compose.onNodeWithTag("quick_input").performTextInput("18,90 almoço")
         compose.onNodeWithText("Despesa · almoço").assertIsDisplayed()
         compose.onNodeWithText("R$ 18,90").assertIsDisplayed()
@@ -63,12 +63,13 @@ class FinanceE2ETest {
             compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("quick_status").assertIsDisplayed()
-        compose.onNodeWithTag("dashboard_list").performScrollToIndex(8)
-        compose.waitUntil(15_000) {
-            compose.onAllNodes(hasText("almoço")).fetchSemanticsNodes().isNotEmpty()
-        }
-        compose.onNodeWithText("almoço").assertIsDisplayed()
-        compose.onNodeWithText("-R$ 18,90").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_list").performScrollToIndex(3)
+        compose.onNodeWithTag("dashboard_expenses").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_result").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_categories").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_evolution").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_budget").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_insight").assertIsDisplayed()
     }
 
     @Test
@@ -105,17 +106,15 @@ class FinanceE2ETest {
         compose.waitUntil(15_000) {
             compose.onAllNodes(hasText("Conta E2E")).fetchSemanticsNodes().isNotEmpty()
         }
-        compose.onNodeWithTag("dashboard_list").performScrollToIndex(2)
         compose.onNodeWithText("Conta E2E").assertIsDisplayed()
-        compose.onNodeWithTag("dashboard_list").performScrollToIndex(5)
+        compose.onNodeWithTag("dashboard_list").performScrollToIndex(9)
 
-        compose.onNodeWithTag("tx_amount").performTextInput("123,45")
-        compose.onNodeWithTag("tx_description").performTextInput("Teste E2E")
-        compose.onNodeWithTag("tx_submit").performClick()
-
+        compose.onNodeWithTag("quick_input").performTextInput("123,45 teste e2e")
+        compose.onNodeWithTag("quick_submit").performClick()
         compose.waitUntil(15_000) {
-            compose.onAllNodes(hasText("Transação registrada.")).fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
         }
-        compose.onNodeWithTag("transaction_status").assertIsDisplayed()
+        compose.onNodeWithTag("quick_status").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_expenses").assertIsDisplayed()
     }
 }

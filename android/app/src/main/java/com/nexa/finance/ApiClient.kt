@@ -81,6 +81,23 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         }
     }
 
+    fun recurrences(): List<Recurrence> {
+        val array = requestArray("GET", "/api/v1/recurrences")
+        return (0 until array.length()).map { i ->
+            val o = array.getJSONObject(i)
+            Recurrence(
+                o.getString("id"),
+                o.getLong("amountMinor"),
+                o.getString("transactionType"),
+                o.getString("frequency"),
+                o.getInt("interval"),
+                o.getString("startOn"),
+                o.optString("description").ifBlank { "Recorrência" },
+                o.getString("status"),
+            )
+        }
+    }
+
     fun createTransaction(
         accountId: String,
         amountMinor: Long,
@@ -180,4 +197,15 @@ data class Tx(
     val direction: String,
     val date: String,
     val categoryId: String?,
+)
+
+data class Recurrence(
+    val id: String,
+    val amountMinor: Long,
+    val transactionType: String,
+    val frequency: String,
+    val interval: Int,
+    val startOn: String,
+    val description: String,
+    val status: String,
 )

@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun NexaApp(api: ApiClient) {
     var loggedIn by remember { mutableStateOf(false) }
-    if (loggedIn) Dashboard(api) { loggedIn = false } else AuthScreen(api) { loggedIn = true }
+    if (loggedIn) DashboardScreen(api) { loggedIn = false } else AuthScreen(api) { loggedIn = true }
 }
 
 @Composable

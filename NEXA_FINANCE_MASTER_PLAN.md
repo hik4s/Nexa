@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.1 Registro ultrarrápido concluído e validado; próximo passo 2.2 Dashboard.
+**Checkpoint atual:** Parte 2 - 2.2 Dashboard concluído e validado; próximo passo 2.3 Contas.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -1621,3 +1621,44 @@ Observação:
 Status:
 - 2.1 CONCLUÍDA.
 - Próxima dependência: 2.2 Dashboard.
+# Checkpoint 2.2 - 2026-10-04
+
+Dashboard da Parte 2 implementado e validado de ponta a ponta.
+
+Implementado:
+- saldo total consolidado das contas;
+- entradas do mês;
+- despesas do mês;
+- resultado do período;
+- comparação de despesas com o mês anterior;
+- gastos agrupados por categoria;
+- evolução temporal semanal do período;
+- gastos recorrentes ativos consumidos pela API existente;
+- insight determinístico baseado nos gastos do período;
+- estado explícito para orçamento ainda não configurado, sem simular dados;
+- Dashboard separado em componente próprio;
+- carregamento paralelo de contas, cartões, categorias, transações e recorrências;
+- atualização imediata das métricas após entrada rápida;
+- test tags para os blocos principais do Dashboard;
+- E2E atualizado para validar o Dashboard real sem depender do histórico, reservado à etapa 2.8.
+
+Validação:
+- PostgreSQL real: PASS; migrations 1-7 aplicadas;
+- backend clean test build: PASS;
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- Android connectedDebugAndroidTest: PASS - 2/2 testes, 0 falhas, 0 skips;
+- teste isolado do fluxo completo: PASS;
+- emulador Android 15 / API 35: PASS;
+- persistência real via backend confirmada durante E2E;
+- git diff --check: PASS.
+
+Dependência explicitamente preservada:
+- orçamento consumido permanece em estado vazio porque o domínio/migration de orçamento ainda não existe; sua implementação é responsabilidade da etapa 2.5. O Dashboard não inventa orçamento nem cria uma segunda fonte de verdade.
+
+Observação:
+- permanece o warning de depreciação de createAndroidComposeRule v1; migração para Compose Test v2 é melhoria futura e não bloqueia 2.2.
+
+Status:
+- 2.2 CONCLUÍDA.
+- Próxima dependência: 2.3 Contas.
