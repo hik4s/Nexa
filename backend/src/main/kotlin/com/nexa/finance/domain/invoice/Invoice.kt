@@ -87,6 +87,21 @@ data class Invoice private constructor(
     }
 
     companion object {
+        fun restore(
+            id: InvoiceId,
+            cardId: CardId,
+            periodStart: LocalDate,
+            periodEnd: LocalDate,
+            dueOn: LocalDate,
+            totalAmount: Money,
+            transactionIds: List<TransactionId>,
+            paidAmount: Money,
+            status: InvoiceStatus,
+            paymentTransactionIds: List<TransactionId>,
+            createdAt: Instant,
+            updatedAt: Instant,
+        ): Invoice = Invoice(id, cardId, periodStart, periodEnd, dueOn, totalAmount, transactionIds, paidAmount, status, paymentTransactionIds, createdAt, updatedAt)
+
         fun create(
             cardId: CardId,
             periodStart: LocalDate,

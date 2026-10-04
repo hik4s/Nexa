@@ -244,3 +244,53 @@ Ainda não implementado neste checkpoint:
 - recorrência
 - OpenAPI/Swagger servido pela aplicação
 - rate limiting e hardening de produção
+
+## Cartões
+
+Todos os endpoints abaixo são protegidos.
+
+### POST /cards
+
+Cria um cartão de crédito vinculado a uma conta de passivo existente do tipo `CREDIT_CARD`. A conta de passivo precisa pertencer ao usuário autenticado e estar ativa.
+
+### GET /cards
+
+Lista os cartões do usuário autenticado, incluindo limite disponível calculado pelo saldo do passivo.
+
+### GET /cards/{id}
+
+Retorna um cartão pertencente ao usuário autenticado.
+
+### POST /cards/{id}/status
+
+Altera o estado entre `ACTIVE`, `BLOCKED` e `CANCELLED`, respeitando as transições válidas do domínio.
+
+### POST /cards/{id}/purchases
+
+Registra uma compra no passivo do cartão. O valor precisa caber no limite disponível e a moeda precisa coincidir com a moeda do cartão. Por padrão a compra é publicada imediatamente; `post=false` mantém a transação `PENDING`.
+
+## Faturas
+
+### POST /invoices
+
+Gera uma fatura para um cartão e período. São consolidadas as transações `POSTED` de `PURCHASE` e `REFUND` ainda não faturadas no período. Não é permitido criar uma segunda fatura ativa para o mesmo cartão e período.
+
+### GET /invoices
+
+Lista as faturas dos cartões do usuário autenticado.
+
+### GET /invoices/{id}
+
+Retorna somente uma fatura pertencente ao usuário autenticado.
+
+### POST /invoices/{id}/close
+
+Fecha uma fatura `OPEN`, tornando-a apta para pagamento.
+
+### POST /invoices/{id}/overdue
+
+Marca uma fatura `CLOSED` como `OVERDUE`.
+
+### POST /invoices/{id}/payments
+
+Registra o pagamento de uma fatura com uma conta não-cartão. A operação é atômica: débito na conta de origem e débito no passivo do cartão, com as duas transações vinculadas, atualização da fatura e registro do pagamento. Pagamentos parciais mantêm a fatura aberta para quitação; o pagamento integral muda o status para `PAID`.

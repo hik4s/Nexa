@@ -77,6 +77,21 @@ data class Card private constructor(
     companion object {
         const val MAX_NAME_LENGTH = 80
 
+        fun restore(
+            id: CardId,
+            ownerId: UserId,
+            liabilityAccountId: AccountId,
+            name: String,
+            brand: CardBrand,
+            lastFourDigits: String,
+            creditLimit: Money,
+            closingDay: Int,
+            dueDay: Int,
+            status: CardStatus,
+            createdAt: Instant,
+            updatedAt: Instant,
+        ): Card = Card(id, ownerId, liabilityAccountId, name, brand, lastFourDigits, creditLimit, closingDay, dueDay, status, createdAt, updatedAt)
+
         fun create(
             ownerId: UserId,
             liabilityAccount: Account,

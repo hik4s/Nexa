@@ -90,7 +90,9 @@ object CardLedger {
     }
 
     fun availableLimit(card: Card, liabilityBalance: Money): Money {
-        requireCurrency(card, liabilityBalance)
+        if (liabilityBalance.currency != card.creditLimit.currency) {
+            throw DomainValidationException("Card balance currency must match the card credit limit currency.")
+        }
         val available = card.creditLimit - liabilityBalance
         return if (available.isNegative()) Money.zero(card.creditLimit.currency) else available
     }

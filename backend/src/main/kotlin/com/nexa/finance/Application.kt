@@ -3,6 +3,8 @@ package com.nexa.finance
 import io.ktor.serialization.kotlinx.json.json
 import com.nexa.finance.api.ApiError
 import com.nexa.finance.api.accountRoutes
+import com.nexa.finance.api.cardRoutes
+import com.nexa.finance.api.invoiceRoutes
 import com.nexa.finance.api.transactionRoutes
 import com.nexa.finance.api.transferRoutes
 import com.nexa.finance.application.transaction.TransactionService
@@ -16,7 +18,11 @@ import com.nexa.finance.application.account.AccountService
 import com.nexa.finance.application.auth.AuthenticationService
 import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
+import com.nexa.finance.application.card.CardService
+import com.nexa.finance.application.invoice.InvoiceService
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
+import com.nexa.finance.infrastructure.card.JdbcCardRepository
+import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
 import com.nexa.finance.infrastructure.user.JdbcUserAuthRepository
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -49,6 +55,9 @@ fun Application.module() {
     val accounts = AccountService(accountRepository)
     val transactions = TransactionService(JdbcTransactionRepository(), accountRepository)
     val transfers = TransferService(JdbcTransferRepository(), accountRepository)
+    val cardRepository = JdbcCardRepository()
+    val cards = CardService(cardRepository, accountRepository, JdbcTransactionRepository())
+    val invoices = InvoiceService(JdbcInvoiceRepository(), cardRepository, accountRepository)
 
     install(ContentNegotiation) {
         json()
@@ -83,11 +92,13 @@ fun Application.module() {
 
     routing {
         get("/health") {
-            call.respondText("NEXA Finance API — OK")
+            call.respondText("NEXA Finance API - OK")
         }
         authRoutes(authentication, recovery, profile)
         accountRoutes(accounts)
         transactionRoutes(transactions)
         transferRoutes(transfers)
+        cardRoutes(cards)
+        invoiceRoutes(invoices)
     }
 }

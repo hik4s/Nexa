@@ -63,7 +63,6 @@ data class CardPayment private constructor(
             id: CardPaymentId = UUID.randomUUID(),
         ): CardPayment {
             sourceAccount.ensureUsable()
-            card.ensurePurchasesAllowed()
             if (sourceAccount.ownerId != userId || card.ownerId != userId) throw DomainValidationException("Payment accounts must belong to the same user.")
             if (sourceAccount.type == AccountType.CREDIT_CARD) throw DomainValidationException("A card payment source must be a non-card account.")
             if (invoice.cardId != card.id) throw DomainValidationException("Invoice does not belong to the selected card.")

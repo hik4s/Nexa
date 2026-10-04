@@ -1446,3 +1446,26 @@ Validação:
 - `git diff --check` passou.
 
 Próximo vertical: cartões/faturas e pagamento de fatura.
+
+# Checkpoint 1.9.2 - 2026-10-03
+
+Cartoes, faturas e pagamento de fatura concluidos e validados.
+
+Validacao:
+- CardInvoiceApiTest contra PostgreSQL real;
+- clean test: 123 testes, 0 falhas;
+- health checks da API validados;
+- git diff --check passou;
+- scripts/verify.ps1 passou com NEXA verification: PASS;
+- build backend, build Android e configuracao Docker Compose passaram.
+
+Implementado:
+- endpoints de cartoes para criacao, consulta, listagem e status;
+- compras de cartao com limite disponivel e moeda validada;
+- persistencia de card_id e invoice_id nas transacoes;
+- geracao, fechamento, vencimento e pagamento parcial/integral de faturas;
+- pagamento atomico em duas pernas entre conta de origem e passivo do cartao;
+- isolamento por usuario e protecao contra fatura duplicada no mesmo periodo;
+- correcao da persistencia dos metadados de cartao/fatura e do vinculo cruzado do pagamento.
+
+Proximo vertical: reembolsos/cancelamentos completos e recorrencia, conforme dependencias do plano.

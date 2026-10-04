@@ -190,7 +190,7 @@ class ApplicationTest {
 
         val response = client.get("/health")
         assertEquals(200, response.status.value)
-        assertEquals("NEXA Finance API — OK", response.bodyAsText())
+        assertEquals("NEXA Finance API - OK", response.bodyAsText().trim())
     }
 
     private suspend fun registerAndLogin(

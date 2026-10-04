@@ -28,9 +28,9 @@ class JdbcTransactionRepository(
                 """
                 INSERT INTO transactions
                     (id, account_id, amount_minor, currency, type, direction, status,
-                     occurred_on, description, category_id, source, related_transaction_id,
+                     occurred_on, description, category_id, card_id, invoice_id, source, related_transaction_id,
                      created_at, updated_at)
-                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 WHERE EXISTS (
                     SELECT 1 FROM accounts
                     WHERE id = ? AND owner_id = ? AND status = 'ACTIVE'
@@ -46,11 +46,11 @@ class JdbcTransactionRepository(
                 """.trimIndent()
             ).use { s ->
                 bindTransaction(s, transaction)
-                s.setObject(15, transaction.accountId.value)
-                s.setObject(16, ownerId.value)
-                setUuidOrNull(s, 17, transaction.categoryId?.value)
-                setUuidOrNull(s, 18, transaction.categoryId?.value)
-                s.setObject(19, ownerId.value)
+                s.setObject(17, transaction.accountId.value)
+                s.setObject(18, ownerId.value)
+                setUuidOrNull(s, 19, transaction.categoryId?.value)
+                setUuidOrNull(s, 20, transaction.categoryId?.value)
+                s.setObject(21, ownerId.value)
                 if (s.executeUpdate() != 1) {
                     throw DomainValidationException("Account was not found for this user.")
                 }
@@ -132,10 +132,12 @@ class JdbcTransactionRepository(
         s.setObject(8, t.occurredOn)
         s.setString(9, t.description)
         setUuidOrNull(s, 10, t.categoryId?.value)
-        s.setString(11, t.source.name)
-        setUuidOrNull(s, 12, t.relatedTransactionId)
-        s.setTimestamp(13, Timestamp.from(t.createdAt))
-        s.setTimestamp(14, Timestamp.from(t.updatedAt))
+        setUuidOrNull(s, 11, t.cardId?.value)
+        setUuidOrNull(s, 12, t.invoiceId?.value)
+        s.setString(13, t.source.name)
+        setUuidOrNull(s, 14, t.relatedTransactionId)
+        s.setTimestamp(15, Timestamp.from(t.createdAt))
+        s.setTimestamp(16, Timestamp.from(t.updatedAt))
     }
 
     private fun setUuidOrNull(statement: java.sql.PreparedStatement, index: Int, value: UUID?) {
