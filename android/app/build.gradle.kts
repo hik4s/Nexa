@@ -13,10 +13,12 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+        buildConfigField("String", "NEXA_API_URL", "\"http://10.0.2.2:8080\"")
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {

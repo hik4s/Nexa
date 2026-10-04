@@ -1543,3 +1543,28 @@ Validação:
 - schema PostgreSQL: PASS.
 
 Próximo vertical: concluir a validação integrada final e avançar para o próximo item do mapa de dependências.
+
+# Checkpoint 1.10.1 - 2026-10-03
+
+MVP Android conectado à API implementado.
+
+Implementado:
+- cadastro e login contra a API real;
+- cliente HTTP autenticado com Bearer token;
+- criação e listagem de contas;
+- saldo agregado das contas;
+- criação de receitas e despesas manuais;
+- histórico de transações;
+- interface Compose mínima para o fluxo Parte 1;
+- configuração de URL da API via BuildConfig;
+- permissão de rede Android.
+
+Validação:
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- Backend clean test/build: PASS no gate anterior;
+- PostgreSQL real: PASS no gate anterior.
+
+Limitação de ambiente:
+- runtime Android ainda não foi validado nesta máquina porque não há dispositivo ADB conectado nem emulador Android instalado/configurado.
+- Portanto, 1.10 não é marcado como concluído; somente a implementação compilável e seus testes automatizados estão concluídos.
