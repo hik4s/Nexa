@@ -868,7 +868,7 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 
 Validado: backend publicado no Railway, PostgreSQL de produção com migrations V1–V13, HTTPS público, health check, E2E autenticado real e correção/regressão do ciclo de vida de metas. Rate limiting agora usa o plugin RateLimit do Ktor por cliente, com configuração por ambiente, `429 RATE_LIMITED`, `Retry-After` e suporte a `X-Forwarded-For` via XForwardedHeaders. Todos os endpoints de negócio estão versionados sob `/api/v1`.
 
-Validação desta microetapa: ApplicationTest com rate limit e isolamento por cliente, `clean test build`, `scripts/verify.ps1 -SkipAndroid` e `git diff --check` passaram. A imagem Docker candidata iniciou o build, mas a preparação do Gradle dentro do BuildKit não concluiu durante a janela de validação local; o artefato de código já está validado pelo Gradle e o build de imagem permanece para o pipeline de deploy.
+Validação desta microetapa: ApplicationTest com rate limit e isolamento por cliente, `clean test build`, `scripts/verify.ps1 -SkipAndroid` e `git diff --check` passaram. O build Docker também foi concluído com sucesso no Railway, seguido de healthcheck e migrations V1–V13 sem alterações. O runtime recebeu `slf4j-simple` para eliminar o warning de ausência de provider.
 
 ---
 
