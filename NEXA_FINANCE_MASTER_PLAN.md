@@ -975,13 +975,23 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 - [ ] Uso de rede
 - [x] PaginaÃ§Ã£o
 - [ ] Cache
-- [ ] Consultas do banco
-- [ ] Ãndices
-- [ ] Teste com grande volume de transaÃ§Ãµes
+- [x] Consultas do banco
+- [x] Ãndices
+- [x] Teste com grande volume de transaÃ§Ãµes
 
 ### CenÃ¡rio-alvo de teste
 
 O aplicativo deve continuar utilizÃ¡vel com histÃ³rico financeiro grande, incluindo milhares de transaÃ§Ãµes por usuÃ¡rio.
+
+### Microcheckpoint 3.7.1 â€” consultas, Ã­ndices e grande volume â€” 2026-10-04
+
+O histÃ³rico de transaÃ§Ãµes foi otimizado para volume alto. A migration V16 substitui idx_transactions_account_date por idx_transactions_account_date_created_id (account_id, occurred_on DESC, created_at DESC, id DESC) e adiciona idx_transactions_related_type_active para operaÃ§Ãµes relacionadas nÃ£o canceladas. A listagem global sem accountId passou a limitar candidatos por conta via CROSS JOIN LATERAL, reduzindo o conjunto que precisa ser ordenado antes da paginaÃ§Ã£o final.
+
+ValidaÃ§Ã£o de grande volume: scripts/benchmark-transactions.ps1 inseriu 50.000 transaÃ§Ãµes sintÃ©ticas distribuÃ­das em cinco contas de performance dentro de uma transaÃ§Ã£o revertida. O EXPLAIN ANALYZE retornou 100 linhas em 1,806 ms, usando o novo idx_transactions_account_date_created_id, com aproximadamente 501 candidatos e top-N heapsort de 63 kB. Nenhum dado permanente foi deixado no banco.
+
+RegressÃ£o: TransactionApiTest passou isoladamente com os fluxos de paginaÃ§Ã£o, ediÃ§Ã£o com versionamento e sincronizaÃ§Ã£o; a suÃ­te backend completa fechou com 181 testes verdes usando pool de teste 2/0. O Gradle agora aplica esses limites somente como padrÃ£o do task de testes, preservando override explÃ­cito por ambiente.
+
+Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com grande volume. InicializaÃ§Ã£o, abertura de telas, memÃ³ria, bateria, rede e cache continuam pendentes; concorrÃªncia/carga/filas/sincronizaÃ§Ã£o e recuperaÃ§Ã£o seguem no bloco 3.8.
 
 ---
 

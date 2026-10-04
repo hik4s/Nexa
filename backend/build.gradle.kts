@@ -48,6 +48,11 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+
+    // Keep the integration suite deterministic when many Ktor test applications run in parallel.
+    // Explicit CI/local overrides remain respected through the environment variables.
+    environment("POSTGRES_POOL_MAX_SIZE", System.getenv("POSTGRES_POOL_MAX_SIZE") ?: "2")
+    environment("POSTGRES_POOL_MIN_IDLE", System.getenv("POSTGRES_POOL_MIN_IDLE") ?: "0")
 }
 
 tasks.register<JavaExec>("migrateDatabase") {

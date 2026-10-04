@@ -60,22 +60,47 @@ class JdbcTransactionRepository(
 
     fun findByOwner(ownerId: UserId, accountId: AccountId? = null, limit: Int = 100, offset: Int = 0): List<Transaction> =
         connections.open().use { c ->
-            c.prepareStatement(
+            val sql = if (accountId == null) {
+                """
+                SELECT t.*
+                FROM accounts a
+                CROSS JOIN LATERAL (
+                    SELECT t.*
+                    FROM transactions t
+                    WHERE t.account_id = a.id
+                    ORDER BY t.occurred_on DESC, t.created_at DESC, t.id DESC
+                    LIMIT ?
+                ) t
+                WHERE a.owner_id = ?
+                ORDER BY t.occurred_on DESC, t.created_at DESC, t.id DESC
+                LIMIT ? OFFSET ?
+                """.trimIndent()
+            } else {
                 """
                 SELECT t.*
                 FROM transactions t
                 JOIN accounts a ON a.id = t.account_id
                 WHERE a.owner_id = ?
-                  AND (CAST(? AS UUID) IS NULL OR t.account_id = CAST(? AS UUID))
+                  AND t.account_id = ?
                 ORDER BY t.occurred_on DESC, t.created_at DESC, t.id DESC
                 LIMIT ? OFFSET ?
                 """.trimIndent()
-            ).use { s ->
-                s.setObject(1, ownerId.value)
-                s.setObject(2, accountId?.value)
-                s.setObject(3, accountId?.value)
-                s.setInt(4, limit)
-                s.setInt(5, offset)
+            }
+
+            c.prepareStatement(sql).use { s ->
+                if (accountId == null) {
+                    // For a global page, taking limit + offset candidates per account is sufficient
+                    // because no single account can contribute more than that many rows to the page.
+                    s.setLong(1, limit.toLong() + offset.toLong())
+                    s.setObject(2, ownerId.value)
+                    s.setInt(3, limit)
+                    s.setInt(4, offset)
+                } else {
+                    s.setObject(1, ownerId.value)
+                    s.setObject(2, accountId.value)
+                    s.setInt(3, limit)
+                    s.setInt(4, offset)
+                }
                 s.executeQuery().use { r ->
                     buildList {
                         while (r.next()) add(r.toTransaction())

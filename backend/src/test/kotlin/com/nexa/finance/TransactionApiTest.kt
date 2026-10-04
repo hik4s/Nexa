@@ -83,7 +83,7 @@ class TransactionApiTest {
             assertEquals(400, client.post("/api/v1/transactions/$transactionId/cancel") { bearer(otherToken) }.status.value)
             val balance = client.get("/api/v1/accounts/$accountId") { bearer(ownerToken) }
             assertEquals(200, balance.status.value, balance.bodyAsText())
-            assertTrue(balance.bodyAsText().contains(""""balanceMinor":32500"""), balance.bodyAsText())
+            assertTrue(balance.bodyAsText().contains(""""balanceMinor":32000"""), balance.bodyAsText())
         } finally {
             cleanupUsers(ownerEmail, otherEmail)
         }

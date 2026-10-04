@@ -63,7 +63,7 @@ class SyncService(
                         source = enumValue<TransactionSource>(payload.source),
                         id = entityId,
                     )
-                    acknowledgement(operation)
+                    acknowledgement(operation, 1)
                 }
 
                 payload.baseVersion == null -> {
