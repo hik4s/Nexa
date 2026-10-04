@@ -1544,9 +1544,9 @@ Validação:
 
 Próximo vertical: concluir a validação integrada final e avançar para o próximo item do mapa de dependências.
 
-# Checkpoint 1.10.2 - 2026-10-04
+# Checkpoint 1.10.3 - 2026-10-04
 
-MVP Android conectado à API implementado e submetido a validação em emulador Android 15 (API 35).
+MVP Android conectado à API e validado em runtime com instrumentação Compose no emulador Android 15 (API 35).
 
 Implementado:
 - cadastro e login contra a API real;
@@ -1558,20 +1558,31 @@ Implementado:
 - interface Compose mínima para o fluxo Parte 1;
 - configuração de URL da API via BuildConfig;
 - permissão de rede Android;
-- liberação de HTTP apenas no build debug para comunicação local com `10.0.2.2:8080`.
+- liberação de HTTP apenas no build debug para comunicação local com `10.0.2.2:8080`;
+- test tags semânticas para os principais controles do fluxo;
+- teste instrumentado `FinanceE2ETest.register_login_account_and_transaction_flow`;
+- formulário de lançamento mantido composto mesmo sem conta, com botão desabilitado até existir conta;
+- atualização local de contas e feedback de sucesso após operações para evitar condições de corrida de refresh.
 
-Validação:
+Validação final:
 - emulator Android 15 / API 35 instalado e iniciado;
 - ADB `emulator-5554` reconhecido como `device`;
 - APK debug instalado com sucesso;
 - MainActivity abriu em runtime;
 - backend acessível pelo ambiente do emulador;
-- encontrado e corrigido o bloqueio de cleartext HTTP no debug;
-- encontrado e corrigido o ambiente do backend iniciado sem `.env` durante o teste manual;
-- Android testDebugUnitTest: PASS;
-- Android assembleDebug: PASS;
-- PostgreSQL real: PASS.
+- bloqueio de cleartext HTTP no debug identificado e corrigido;
+- ambiente do backend iniciado sem `.env` identificado e corrigido durante o teste manual;
+- Android `testDebugUnitTest`: PASS;
+- Android `assembleDebug`: PASS;
+- Android `connectedDebugAndroidTest`: PASS — **1/1 testes, 0 falhas, 0 skips**;
+- PostgreSQL real: PASS;
+- backend `clean test build`: PASS;
+- `git diff --check`: PASS.
 
-Limitação residual:
-- O E2E completo de cadastro/login pela UI ainda não foi fechado. A automação via ADB dos campos Compose apresentou instabilidade de foco/IME e chegou a gerar ANR de input, sem exceção fatal do aplicativo. Isso é uma limitação da automação de interação neste emulador; não será tratado como sucesso de E2E.
-- Portanto, 1.10 permanece ABERTA até que o fluxo completo seja validado por instrumentação/UI test ou interação manual confiável no emulador.
+Observação:
+- O teste instrumentado emite apenas um warning de depreciação da API antiga `createAndroidComposeRule`; não há falha funcional. A migração para a API v2 fica registrada como melhoria técnica futura, sem bloquear 1.10.
+
+Status:
+- **1.10 CONCLUÍDA.**
+- O bloqueio de runtime que existia em 1.10.2 foi fechado com teste instrumentado reproduzível.
+- Próxima dependência: avançar para a próxima etapa da Parte 2 conforme o plano.

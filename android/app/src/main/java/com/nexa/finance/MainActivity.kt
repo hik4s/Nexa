@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -54,19 +55,19 @@ private fun AuthScreen(api: ApiClient, onLogin: () -> Unit) {
         Text("NEXA", style = MaterialTheme.typography.displaySmall)
         Text("Finance", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(24.dp))
-        if (register) OutlinedTextField(name, { name = it }, Modifier.fillMaxWidth(), label = { Text("Nome") })
-        OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth(), label = { Text("E-mail") })
-        OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), label = { Text("Senha") })
+        if (register) OutlinedTextField(name, { name = it }, Modifier.fillMaxWidth().testTag("auth_name"), label = { Text("Nome") })
+        OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth().testTag("auth_email"), label = { Text("E-mail") })
+        OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth().testTag("auth_password"), label = { Text("Senha") })
         Spacer(Modifier.height(16.dp))
         Button(
             enabled = !busy && email.isNotBlank() && password.isNotBlank() && (!register || name.isNotBlank()),
             onClick = { run { if (register) { api.register(email, name, password) } else api.login(email, password) } },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().testTag("auth_submit")
         ) { Text(if (register) "Criar conta" else "Entrar") }
         TextButton(onClick = { register = !register; message = "" }) {
             Text(if (register) "Já tenho uma conta" else "Criar uma conta")
         }
-        if (message.isNotBlank()) Text(message, modifier = Modifier.padding(top = 8.dp))
+        if (message.isNotBlank()) Text(message, modifier = Modifier.padding(top = 8.dp).testTag("auth_message"))
     }
 }
 
@@ -97,7 +98,7 @@ private fun Dashboard(api: ApiClient, logout: () -> Unit) {
     Scaffold(topBar = {
         TopAppBar(title = { Text("NEXA Finance") }, actions = { TextButton(onClick = logout) { Text("Sair") } })
     }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        LazyColumn(Modifier.fillMaxSize().testTag("dashboard_list").padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
                 Text("Saldo total", style = MaterialTheme.typography.labelLarge)
                 Text(formatMoney(balance), style = MaterialTheme.typography.headlineMedium)
@@ -112,35 +113,45 @@ private fun Dashboard(api: ApiClient, logout: () -> Unit) {
                 }
             }
             item {
-                OutlinedTextField(accountName, { accountName = it }, Modifier.fillMaxWidth(), label = { Text("Nova conta") })
-                Button(enabled = accountName.isNotBlank(), onClick = {
-                    Thread { try { api.createAccount(accountName); accountName = ""; refresh() } catch (e: Exception) { runOnMain { message = e.message ?: "Erro" } } }.start()
+                OutlinedTextField(accountName, { accountName = it }, Modifier.fillMaxWidth().testTag("account_name"), label = { Text("Nova conta") })
+                Button(modifier = Modifier.testTag("account_submit"), enabled = accountName.isNotBlank(), onClick = {
+                    Thread { try { val created = api.createAccount(accountName); runOnMain { accounts = accounts + created; accountName = "" } } catch (e: Exception) { runOnMain { message = e.message ?: "Erro" } } }.start()
                 }) { Text("Adicionar conta") }
             }
             item { HorizontalDivider(); Text("Lançamento manual", style = MaterialTheme.typography.titleLarge) }
             item {
-                if (accounts.isEmpty()) Text("Crie uma conta antes de lançar receitas ou despesas.")
-                else {
-                    OutlinedTextField(amount, { amount = it }, Modifier.fillMaxWidth(), label = { Text("Valor (R$)") })
-                    OutlinedTextField(description, { description = it }, Modifier.fillMaxWidth(), label = { Text("Descrição") })
+                Column(Modifier.testTag("transaction_form")) {
+                    if (accounts.isEmpty()) Text("Crie uma conta antes de lançar receitas ou despesas.")
+                    OutlinedTextField(amount, { amount = it }, Modifier.fillMaxWidth().testTag("tx_amount"), label = { Text("Valor (R$)") })
+                    OutlinedTextField(description, { description = it }, Modifier.fillMaxWidth().testTag("tx_description"), label = { Text("Descrição") })
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Despesa")
                         Switch(expense, { expense = it })
                         Text(if (expense) "Despesa" else "Receita")
                     }
-                    Button(enabled = amount.replace(",", ".").toDoubleOrNull()?.let { it > 0 } == true, onClick = {
+                    Button(modifier = Modifier.testTag("tx_submit"), enabled = accounts.isNotEmpty() && amount.replace(",", ".").toDoubleOrNull()?.let { it > 0 } == true, onClick = {
                         val cents = ((amount.replace(",", ".").toDoubleOrNull() ?: 0.0) * 100).toLong()
                         val account = accounts.first()
                         Thread { try {
                             api.createTransaction(account.id, cents, if (expense) "EXPENSE" else "INCOME", if (expense) "DEBIT" else "CREDIT", description.ifBlank { if (expense) "Despesa" else "Receita" })
-                            amount = ""; description = ""; refresh()
+                            runOnMain { amount = ""; description = ""; message = "Transação registrada." }
+                            try { val latest = api.transactions(); runOnMain { transactions = latest } } catch (_: Exception) { }
                         } catch (e: Exception) { runOnMain { message = e.message ?: "Erro" } } }.start()
                     }) { Text("Registrar") }
+                    if (message.isNotBlank()) Text(message, modifier = Modifier.testTag("transaction_status"))
                 }
             }
             item { Text("Histórico", style = MaterialTheme.typography.titleLarge) }
             items(transactions) { tx ->
-                ListItem(headlineContent = { Text(tx.description) }, supportingContent = { Text(tx.date) }, trailingContent = { Text((if (tx.direction == "DEBIT") "-" else "+") + formatMoney(tx.amountMinor)) })
+                Card(Modifier.fillMaxWidth()) {
+                    Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(tx.description, style = MaterialTheme.typography.titleMedium)
+                            Text(tx.date, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Text((if (tx.direction == "DEBIT") "-" else "+") + formatMoney(tx.amountMinor), modifier = Modifier.testTag("tx_history_amount"))
+                    }
+                }
             }
             if (message.isNotBlank()) item { Text(message) }
         }
