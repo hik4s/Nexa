@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.2 Dashboard concluído e validado; próximo passo 2.3 Contas.
+**Checkpoint atual:** Parte 2 - 2.4 Cartões e faturas concluído e validado; próximo passo 2.5 Orçamentos.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -670,29 +670,29 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 ## 2.3 â€” Contas
 
-- [ ] Listagem
-- [ ] Detalhes
+- [x] Listagem
+- [x] Detalhes
 - [x] Cálculo de saldo
-- [ ] HistÃ³rico
-- [ ] TransferÃªncias
-- [ ] Conta principal
-- [ ] Contas secundÃ¡rias
-- [ ] Dinheiro em espÃ©cie
+- [x] HistÃ³rico
+- [x] TransferÃªncias
+- [x] Conta principal
+- [x] Contas secundÃ¡rias
+- [x] Dinheiro em espÃ©cie
 
 ---
 
 ## 2.4 â€” CartÃµes e faturas
 
-- [ ] Cadastro de cartÃ£o
-- [ ] Limite
-- [ ] Limite disponÃ­vel
-- [ ] Fechamento
-- [ ] Vencimento
-- [ ] Fatura atual
-- [ ] PrÃ³ximas faturas
-- [ ] Parcelas
-- [ ] Pagamento
-- [ ] HistÃ³rico
+- [x] Cadastro de cartÃ£o
+- [x] Limite
+- [x] Limite disponÃ­vel
+- [x] Fechamento
+- [x] Vencimento
+- [x] Fatura atual
+- [x] PrÃ³ximas faturas
+- [x] Parcelas
+- [x] Pagamento
+- [x] HistÃ³rico
 
 ---
 
@@ -1760,5 +1760,28 @@ Validação:
 Limitação da validação visual:
 - não foi realizado login no emulador porque não havia credencial de teste disponível; portanto o formulário autenticado de parcelamento não foi clicado manualmente no dispositivo. O caminho compilado e o contrato HTTP estão cobertos pelos testes existentes.
 
-Próximo subitem:
-- adicionar teste Compose/semântico específico para garantir que a seleção de parcelas chega ao ApiClient sem depender de login manual.
+# Checkpoint 2.4.9 - 2026-10-04
+
+Validação semântica do fluxo de parcelas concluída.
+
+Implementado:
+- QuickEntryCard aceita callback opcional de compra de cartão, preservando ApiClient como comportamento padrão de produção;
+- valor inicial opcional permite testes determinísticos do formulário sem depender de teclado/IME;
+- teste instrumentado cobre modo Cartão, seleção de 3 parcelas, envio de cardId, valor, descrição e installmentCount ao callback de compra;
+- o contrato exercitado pelo callback corresponde aos quatro argumentos usados para chamar ApiClient.createCardPurchase.
+
+Validação:
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- Android assembleDebugAndroidTest: PASS;
+- teste instrumentado QuickEntryInstallmentTest no emulator-5554: PASS (1/1);
+- APK principal e APK instrumentado instalados no emulador: PASS;
+- git diff --check: PASS.
+
+Conclusão 2.4:
+- cadastro, limites, fechamento, vencimento, faturas, parcelas, pagamentos e histórico de cartões/faturas estão implementados;
+- integração de parcelas backend + Android está validada;
+- não há pendência técnica conhecida nesta vertical.
+
+Próximo passo:
+- iniciar 2.5 Orçamentos.

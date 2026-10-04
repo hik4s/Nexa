@@ -79,10 +79,12 @@ fun QuickEntryCard(
     categories: List<Category>,
     onTransactionAdded: (Tx) -> Unit,
     onMessage: (String) -> Unit,
+    onCardPurchase: ((String, Long, String, Int) -> Tx)? = null,
+    initialInput: String = "",
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val prefs = remember { context.getSharedPreferences("nexa_preferences", 0) }
-    var input by remember { mutableStateOf("") }
+    var input by remember { mutableStateOf(initialInput) }
     var selectedAccountId by remember {
         mutableStateOf(prefs.getString("default_account_id", "").orEmpty())
     }
@@ -129,7 +131,9 @@ fun QuickEntryCard(
         Thread {
             try {
                 val created = if (useCard) {
-                    api.createCardPurchase(
+                    (onCardPurchase ?: { cardId, amountMinor, description, count ->
+                        api.createCardPurchase(cardId, amountMinor, description, count)
+                    })(
                         selectedCardId,
                         parsed.amountMinor,
                         parsed.description,
