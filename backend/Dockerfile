@@ -17,8 +17,10 @@ RUN useradd --system --create-home --uid 10001 nexa
 WORKDIR /opt/nexa
 
 COPY --from=build /workspace/build/install/nexa-finance-backend/ ./
+COPY docker/migrate-database.sh /usr/local/bin/nexa-migrate
 
-RUN chown -R 10001:10001 /opt/nexa
+RUN chmod +x /usr/local/bin/nexa-migrate \
+    && chown -R 10001:10001 /opt/nexa /usr/local/bin/nexa-migrate
 
 USER 10001:10001
 
