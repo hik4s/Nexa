@@ -239,6 +239,35 @@ class ApplicationTest {
         assertEquals("NEXA Finance API - OK", response.bodyAsText().trim())
     }
 
+    @Test
+    fun serverSettingsUseDevelopmentDefaults() {
+        val settings = ServerSettings.fromEnvironment(emptyMap())
+
+        assertEquals("0.0.0.0", settings.host)
+        assertEquals(8080, settings.port)
+    }
+
+    @Test
+    fun serverSettingsReadRuntimeEnvironment() {
+        val settings = ServerSettings.fromEnvironment(
+            mapOf(
+                "SERVER_HOST" to "127.0.0.1",
+                "SERVER_PORT" to "9090",
+            )
+        )
+
+        assertEquals("127.0.0.1", settings.host)
+        assertEquals(9090, settings.port)
+    }
+
+    @Test
+    fun serverSettingsRejectInvalidPort() {
+        val exception = kotlin.test.assertFailsWith<IllegalArgumentException> {
+            ServerSettings.fromEnvironment(mapOf("SERVER_PORT" to "70000"))
+        }
+        assertTrue(exception.message!!.contains("SERVER_PORT"))
+    }
+
     private suspend fun registerAndLogin(
         client: HttpClient,
         email: String,
