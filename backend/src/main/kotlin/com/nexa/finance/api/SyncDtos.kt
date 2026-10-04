@@ -28,6 +28,7 @@ data class SyncAcknowledgement(
     val entityType: String,
     val entityId: String,
     val status: String,
+    val version: Long? = null,
 )
 
 @Serializable

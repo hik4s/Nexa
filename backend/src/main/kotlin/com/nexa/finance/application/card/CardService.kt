@@ -62,8 +62,12 @@ class CardService(
         if (installmentCount == 1) {
             val transaction = CardLedger.purchase(card, amount, occurredOn, invoiceId = invoiceId, description = description, source = source)
             transactions.create(ownerId, transaction)
-            return if (post) transactions.updateStatus(ownerId, transaction.id, com.nexa.finance.domain.transaction.TransactionStatus.POSTED)
-                ?: throw DomainValidationException("Card purchase could not be posted.") else transaction
+            return if (post) transactions.updateStatus(
+                ownerId,
+                transaction.id,
+                com.nexa.finance.domain.transaction.TransactionStatus.POSTED,
+                transaction.version,
+            ) ?: throw DomainValidationException("Card purchase could not be posted.") else transaction
         }
         if (installmentCount !in Installment.MIN_INSTALLMENTS..Installment.MAX_INSTALLMENTS) {
             throw DomainValidationException("Installment count must be between ${Installment.MIN_INSTALLMENTS} and ${Installment.MAX_INSTALLMENTS}.")

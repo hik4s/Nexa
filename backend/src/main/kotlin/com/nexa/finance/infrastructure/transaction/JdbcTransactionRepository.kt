@@ -102,22 +102,102 @@ class JdbcTransactionRepository(
             }
         }
 
-    fun updateStatus(ownerId: UserId, id: TransactionId, status: TransactionStatus): Transaction? =
+    fun updateStatus(ownerId: UserId, id: TransactionId, status: TransactionStatus, expectedVersion: Long): Transaction? =
         connections.open().use { c ->
             c.prepareStatement(
                 """
                 UPDATE transactions t
-                SET status = ?, updated_at = CURRENT_TIMESTAMP
+                SET status = ?, version = version + 1, updated_at = CURRENT_TIMESTAMP
                 FROM accounts a
                 WHERE t.account_id = a.id
                   AND t.id = ?
                   AND a.owner_id = ?
+                  AND t.version = ?
                 RETURNING t.*
                 """.trimIndent()
             ).use { s ->
                 s.setString(1, status.name)
                 s.setObject(2, id)
                 s.setObject(3, ownerId.value)
+                s.setLong(4, expectedVersion)
+                s.executeQuery().use { r ->
+                    if (r.next()) r.toTransaction() else null
+                }
+            }
+        }
+
+    fun updateEditableFields(
+        ownerId: UserId,
+        id: TransactionId,
+        expectedVersion: Long,
+        accountId: AccountId,
+        amount: Money,
+        type: TransactionType,
+        direction: TransactionDirection,
+        occurredOn: LocalDate,
+        description: String?,
+        categoryId: CategoryId?,
+        source: TransactionSource,
+    ): Transaction? =
+        connections.open().use { c ->
+            c.prepareStatement(
+                """
+                UPDATE transactions t
+                SET account_id = ?,
+                    amount_minor = ?,
+                    currency = ?,
+                    type = ?,
+                    direction = ?,
+                    occurred_on = ?,
+                    description = ?,
+                    category_id = ?,
+                    source = ?,
+                    version = version + 1,
+                    updated_at = CURRENT_TIMESTAMP
+                FROM accounts a
+                WHERE t.account_id = a.id
+                  AND t.id = ?
+                  AND a.owner_id = ?
+                  AND t.version = ?
+                  AND a.status = 'ACTIVE'
+                  AND EXISTS (
+                      SELECT 1
+                      FROM accounts target
+                      WHERE target.id = ?
+                        AND target.owner_id = ?
+                        AND target.status = 'ACTIVE'
+                        AND target.currency = ?
+                  )
+                  AND (
+                      CAST(? AS UUID) IS NULL OR EXISTS (
+                          SELECT 1
+                          FROM categories c
+                          WHERE c.id = CAST(? AS UUID)
+                            AND c.status = 'ACTIVE'
+                            AND (c.owner_id IS NULL OR c.owner_id = ?)
+                      )
+                  )
+                RETURNING t.*
+                """.trimIndent()
+            ).use { s ->
+                s.setObject(1, accountId.value)
+                s.setLong(2, amount.amountInMinor)
+                s.setString(3, amount.currency.name)
+                s.setString(4, type.name)
+                s.setString(5, direction.name)
+                s.setObject(6, occurredOn)
+                s.setString(7, description)
+                setUuidOrNull(s, 8, categoryId?.value)
+                s.setString(9, source.name)
+                s.setObject(10, id)
+                s.setObject(11, ownerId.value)
+                s.setLong(12, expectedVersion)
+                s.setObject(13, accountId.value)
+                s.setObject(14, ownerId.value)
+                s.setString(15, amount.currency.name)
+                setUuidOrNull(s, 16, categoryId?.value)
+                setUuidOrNull(s, 17, categoryId?.value)
+                s.setObject(18, ownerId.value)
                 s.executeQuery().use { r ->
                     if (r.next()) r.toTransaction() else null
                 }
@@ -252,6 +332,7 @@ class JdbcTransactionRepository(
             relatedTransactionId = getObject("related_transaction_id", UUID::class.java),
             createdAt = getTimestamp("created_at").toInstant(),
             updatedAt = getTimestamp("updated_at").toInstant(),
+            version = getLong("version"),
         )
     }
 }

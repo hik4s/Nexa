@@ -20,6 +20,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import java.time.LocalDate
 import java.util.UUID
@@ -65,6 +66,30 @@ fun Route.transactionRoutes(service: TransactionService) {
                 call.respond(service.get(userId, id).toResponse())
             }
 
+            put("/{id}") {
+                val userId = call.principalUserId()
+                val id = parseUuid(call.parameters["id"] ?: "", "Transaction ID is invalid.")
+                val request = call.receiveValidated<UpdateTransactionRequest>()
+                if (request.baseVersion <= 0) {
+                    throw DomainValidationException("Base version must be positive.")
+                }
+                val updated = service.update(
+                    ownerId = userId,
+                    id = id,
+                    baseVersion = request.baseVersion,
+                    accountId = AccountId(parseUuid(request.accountId, "Account ID is invalid.")),
+                    amount = Money(request.amountMinor, parseEnum(request.currency, "Currency is invalid.")),
+                    type = parseEnum(request.type, "Transaction type is invalid."),
+                    direction = parseEnum(request.direction, "Transaction direction is invalid."),
+                    occurredOn = runCatching { LocalDate.parse(request.occurredOn) }
+                        .getOrElse { throw DomainValidationException("Transaction date is invalid.") },
+                    description = request.description,
+                    categoryId = request.categoryId?.let { CategoryId(parseUuid(it, "Category ID is invalid.")) },
+                    source = parseEnum(request.source, "Transaction source is invalid."),
+                )
+                call.respond(updated.toResponse())
+            }
+
             post("/{id}/post") {
                 val userId = call.principalUserId()
                 val id = parseUuid(call.parameters["id"] ?: "", "Transaction ID is invalid.")
@@ -95,6 +120,7 @@ private fun com.nexa.finance.domain.transaction.Transaction.toResponse() =
         source = source.name,
         installmentId = installmentId?.toString(),
         installmentNumber = installmentNumber,
+        version = version,
     )
 
 private fun io.ktor.server.application.ApplicationCall.principalUserId(): UserId =

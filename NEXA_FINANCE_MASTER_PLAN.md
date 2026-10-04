@@ -875,7 +875,7 @@ Validação desta microetapa: ApplicationTest com rate limit e isolamento por cl
 ## 3.2 â€” SincronizaÃ§Ã£o
 
 - [x] SincronizaÃ§Ã£o de dados
-- [ ] Controle de versÃ£o
+- [x] Controle de versÃ£o
 - [x] EstratÃ©gia offline
 - [x] Retry
 - [x] Estados de conflito
@@ -2082,3 +2082,13 @@ Limitações deliberadas: o modelo geral de revisão/baseVersion para edição c
 Os itens que dependem de terceiros não são marcados como concluídos artificialmente: Open Finance real exige provedor/participante, credenciais e onboarding; produção precisa de backup externo/DR, alertas/crash reporting e RPO/RTO; LGPD precisa de política de privacidade, termos, finalidade/base legal, retenção e revisão jurídica; distribuição exige keystore de release, Play Console e materiais da loja.
 
 Documentos adicionados: docs/PRODUCTION_READINESS.md, docs/OPEN_FINANCE_ARCHITECTURE.md e docs/LGPD_DATA_MAP.md. O export técnico foi implementado em GET /api/v1/auth/me/export.
+
+### Microcheckpoint 3.2.3 — versionamento otimista e conflitos entre dispositivos — 2026-10-04
+
+Fechado o controle de concorrência das transações. A tabela transactions agora possui version monotônica; atualizações usam comparação atômica de versão; a API expõe PUT /api/v1/transactions/{id} com baseVersion e retorna HTTP 409 CONFLICT para revisão obsoleta. O protocolo de sync passou a aceitar baseVersion, devolver a versão efetivamente confirmada e reconhecer retries idempotentes de uma atualização já aplicada.
+
+No Android, a entidade local_transactions evoluiu para Room V3 com campo version e migration V2→V3; o SyncWorker persiste a revisão recebida e existe helper de Outbox para atualizações com baseVersion.
+
+Validação: TransactionApiTest e ApplicationTest passaram; o cenário de atualização + edição obsoleta + retry do sync passou; Android testDebugUnitTest e assembleDebug passaram; NexaDatabaseTest instrumentado passou 1/1 no emulador API 35. O build gerou o schema Room V3.
+
+Escopo ainda deliberado: este versionamento cobre o agregado TRANSACTION. Antes de sincronizar cartões, metas, orçamentos ou outros agregados entre dispositivos, cada um deve receber uma estratégia de revisão equivalente.

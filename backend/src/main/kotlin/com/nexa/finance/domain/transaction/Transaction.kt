@@ -39,8 +39,13 @@ data class Transaction private constructor(
     val relatedTransactionId: TransactionId?,
     val createdAt: Instant,
     val updatedAt: Instant,
+    val version: Long,
 ) {
     init {
+        if (version <= 0) {
+            throw DomainValidationException("Transaction version must be positive.")
+        }
+
         if (amount.amountInMinor <= 0) {
             throw DomainValidationException("Transaction amount must be greater than zero.")
         }
@@ -114,6 +119,7 @@ data class Transaction private constructor(
             id: TransactionId = UUID.randomUUID(),
             createdAt: Instant = Instant.now(),
             updatedAt: Instant = createdAt,
+            version: Long = 1,
         ): Transaction {
             if (accountId.value == UUID(0, 0)) {
                 throw DomainValidationException("Account ID cannot be the zero UUID.")
@@ -141,6 +147,7 @@ data class Transaction private constructor(
                 relatedTransactionId = relatedTransactionId,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
+                version = version,
             )
         }
 

@@ -526,7 +526,12 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         return com.nexa.finance.sync.SyncPushResult(
             (0 until acks.length()).map { i ->
                 val item = acks.getJSONObject(i)
-                com.nexa.finance.sync.SyncPushAck(item.getString("operationId"), item.getString("entityId"), item.getString("status"))
+                com.nexa.finance.sync.SyncPushAck(
+                    operationId = item.getString("operationId"),
+                    entityId = item.getString("entityId"),
+                    status = item.getString("status"),
+                    version = item.optLong("version", 0L).takeIf { item.has("version") && !item.isNull("version") },
+                )
             },
             response.getLong("cursor"),
         )
@@ -555,6 +560,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
                         source = o.getString("source"),
                         installmentId = o.optString("installmentId").ifBlank { null },
                         installmentNumber = o.optInt("installmentNumber", 0).takeIf { it > 0 },
+                        version = o.optLong("version", 1L),
                     )
                 }
                 com.nexa.finance.sync.SyncPullChange(item.getLong("cursor"), item.getString("entityId"), item.getString("operation"), tx)

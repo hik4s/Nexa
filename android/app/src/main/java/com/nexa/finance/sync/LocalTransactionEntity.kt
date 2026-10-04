@@ -18,4 +18,5 @@ data class LocalTransactionEntity(
     val source: String,
     val installmentId: String?,
     val installmentNumber: Int?,
+    val version: Long,
 )

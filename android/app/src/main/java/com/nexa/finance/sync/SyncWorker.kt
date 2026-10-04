@@ -52,6 +52,7 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Coroutin
                                 source = tx.source,
                                 installmentId = tx.installmentId,
                                 installmentNumber = tx.installmentNumber,
+                                version = tx.version,
                             ),
                         )
                     }
@@ -70,5 +71,8 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Coroutin
     private fun isTransient(error: Exception): Boolean =
         error is IOException || error is java.net.SocketTimeoutException || error is java.net.ConnectException
 
-    companion object { const val OP_TRANSACTION_CREATE = "TRANSACTION_CREATE" }
+    companion object {
+        const val OP_TRANSACTION_CREATE = "TRANSACTION_CREATE"
+        const val OP_TRANSACTION_UPDATE = "TRANSACTION_UPDATE"
+    }
 }

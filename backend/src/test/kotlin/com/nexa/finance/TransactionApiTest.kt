@@ -44,6 +44,22 @@ class TransactionApiTest {
             assertEquals(201, create.status.value, create.bodyAsText())
             val transactionId = json(create.bodyAsText())["id"]!!.jsonPrimitive.content
             assertTrue(create.bodyAsText().contains(""""status":"POSTED""""))
+            assertEquals(1, json(create.bodyAsText())["version"]!!.jsonPrimitive.content.toLong())
+            val update = client.put("/api/v1/transactions/$transactionId") {
+                bearer(ownerToken)
+                jsonBody("""{"baseVersion":1,"accountId":"$accountId","amountMinor":13000,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-03","description":"Mercado atualizado","source":"MANUAL"}""")
+            }
+            assertEquals(200, update.status.value, update.bodyAsText())
+            assertEquals(2, json(update.bodyAsText())["version"]!!.jsonPrimitive.content.toLong())
+            assertTrue(update.bodyAsText().contains("Mercado atualizado"))
+
+            val stale = client.put("/api/v1/transactions/$transactionId") {
+                bearer(ownerToken)
+                jsonBody("""{"baseVersion":1,"accountId":"$accountId","amountMinor":14000,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-03","description":"Stale edit","source":"MANUAL"}""")
+            }
+            assertEquals(409, stale.status.value, stale.bodyAsText())
+            assertTrue(stale.bodyAsText().contains("CONFLICT"), stale.bodyAsText())
+
             val secondCreate = client.post("/api/v1/transactions") {
                 bearer(ownerToken)
                 jsonBody("""{"accountId":"$accountId","amountMinor":5000,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-04","description":"Padaria","source":"MANUAL"}""")
@@ -176,14 +192,29 @@ class TransactionApiTest {
             val firstPush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(pushBody) }
             assertEquals(200, firstPush.status.value, firstPush.bodyAsText())
             assertTrue(firstPush.bodyAsText().contains("ACKNOWLEDGED"))
+            assertTrue(firstPush.bodyAsText().contains("\"version\":1"), firstPush.bodyAsText())
             val firstCursor = json(firstPush.bodyAsText())["cursor"]!!.jsonPrimitive.content.toLong()
 
-            val secondPush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(pushBody) }
-            assertEquals(200, secondPush.status.value, secondPush.bodyAsText())
-            assertEquals(firstCursor, json(secondPush.bodyAsText())["cursor"]!!.jsonPrimitive.content.toLong())
+            val updatePayload = payload.replace("\"source\":\"MANUAL\"}", "\"source\":\"MANUAL\",\"baseVersion\":1}")
+                .replace("\"amountMinor\":2500", "\"amountMinor\":2600")
+            val updateBody = """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":$updatePayload}]}"""
+            val updatePush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(updateBody) }
+            assertEquals(200, updatePush.status.value, updatePush.bodyAsText())
+            assertTrue(updatePush.bodyAsText().contains("\"status\":\"ACKNOWLEDGED\""), updatePush.bodyAsText())
+            assertTrue(updatePush.bodyAsText().contains("\"version\":2"), updatePush.bodyAsText())
 
-            val conflictingPayload = payload.replace("\"amountMinor\":2500", "\"amountMinor\":2600")
-            val conflictBody = """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":$conflictingPayload}]}"""
+            val stalePayload = updatePayload.replace("\"amountMinor\":2600", "\"amountMinor\":2700")
+            val staleBody = """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":$stalePayload}]}"""
+            val stalePush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(staleBody) }
+            assertEquals(200, stalePush.status.value, stalePush.bodyAsText())
+            assertTrue(stalePush.bodyAsText().contains("\"status\":\"CONFLICT\""), stalePush.bodyAsText())
+
+            val retryUpdate = client.post("/api/v1/sync/push") { bearer(token); jsonBody(updateBody) }
+            assertEquals(200, retryUpdate.status.value, retryUpdate.bodyAsText())
+            assertTrue(retryUpdate.bodyAsText().contains("\"status\":\"ACKNOWLEDGED\""), retryUpdate.bodyAsText())
+            assertTrue(retryUpdate.bodyAsText().contains("\"version\":2"), retryUpdate.bodyAsText())
+
+            val conflictBody = """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":$stalePayload}]}"""
             val conflictPush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(conflictBody) }
             assertEquals(200, conflictPush.status.value, conflictPush.bodyAsText())
             assertTrue(conflictPush.bodyAsText().contains("\"status\":\"CONFLICT\""), conflictPush.bodyAsText())

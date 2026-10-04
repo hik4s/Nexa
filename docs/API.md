@@ -25,6 +25,8 @@ Corpos inválidos usam o mesmo contrato VALIDATION_ERROR com a mensagem Request 
 
 Erros inesperados usam HTTP 500 com código INTERNAL_ERROR, sem expor detalhes internos.
 
+Conflitos de edição otimista usam HTTP 409 com código CONFLICT.
+
 ## Auth
 
 ### POST /auth/register
@@ -168,6 +170,29 @@ Lista as transações pertencentes ao usuário autenticado. O parâmetro opciona
 ### GET /transactions/{id}
 
 Retorna somente uma transação pertencente ao usuário autenticado.
+
+A resposta inclui `version`. Uma nova transação começa em `version = 1`.
+
+### PUT /transactions/{id}
+
+Atualiza os campos editáveis de uma transação existente.
+
+Request:
+
+    {
+      "baseVersion": 1,
+      "accountId": "uuid",
+      "amountMinor": 13000,
+      "currency": "BRL",
+      "type": "EXPENSE",
+      "direction": "DEBIT",
+      "occurredOn": "2026-10-03",
+      "description": "Mercado atualizado",
+      "categoryId": null,
+      "source": "MANUAL"
+    }
+
+A gravação só é aplicada quando `baseVersion` ainda é a versão corrente no PostgreSQL. Em sucesso, a versão é incrementada atomicamente. Se outro dispositivo já alterou a transação, a resposta é `409 CONFLICT` e nenhuma alteração é aplicada.
 
 ### POST /transactions/{id}/post
 

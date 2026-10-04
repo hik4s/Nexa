@@ -14,6 +14,21 @@ data class CreateTransactionRequest(
     val description: String? = null,
     val categoryId: String? = null,
     val source: String = "MANUAL",
+    val baseVersion: Long? = null,
+)
+
+@Serializable
+data class UpdateTransactionRequest(
+    val baseVersion: Long,
+    val accountId: String,
+    val amountMinor: Long,
+    val currency: String,
+    val type: String,
+    val direction: String,
+    val occurredOn: String,
+    val description: String? = null,
+    val categoryId: String? = null,
+    val source: String = "MANUAL",
 )
 
 @Serializable
@@ -31,6 +46,7 @@ data class TransactionResponse(
     val source: String,
     val installmentId: String? = null,
     val installmentNumber: Int? = null,
+    val version: Long = 1,
 )
 
 @Serializable

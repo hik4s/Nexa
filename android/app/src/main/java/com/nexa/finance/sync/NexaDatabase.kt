@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
         SyncCheckpointEntity::class,
         LocalTransactionEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class NexaDatabase : RoomDatabase() {

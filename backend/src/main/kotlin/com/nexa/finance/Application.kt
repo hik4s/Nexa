@@ -36,6 +36,7 @@ import com.nexa.finance.application.refund.RefundService
 import com.nexa.finance.application.transaction.TransactionService
 import com.nexa.finance.application.sync.SyncService
 import com.nexa.finance.application.transfer.TransferService
+import com.nexa.finance.domain.common.ConflictException
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
 import com.nexa.finance.infrastructure.ai.JdbcAiUsageRepository
@@ -156,6 +157,9 @@ fun Application.module() {
     }
 
     install(StatusPages) {
+        exception<ConflictException> { call, cause ->
+            call.respond(HttpStatusCode.Conflict, ApiError("CONFLICT", cause.message ?: "Resource has changed."))
+        }
         exception<DomainValidationException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ApiError("VALIDATION_ERROR", cause.message ?: "Invalid request."))
         }
