@@ -1469,3 +1469,31 @@ Implementado:
 - correcao da persistencia dos metadados de cartao/fatura e do vinculo cruzado do pagamento.
 
 Proximo vertical: reembolsos/cancelamentos completos e recorrencia, conforme dependencias do plano.
+
+# Checkpoint 1.9.3 - 2026-10-03
+
+Reembolsos e cancelamentos contábeis completos implementados e validados.
+
+Implementado:
+- POST /api/v1/transactions/{id}/refunds;
+- POST /api/v1/transactions/{id}/cancellation;
+- reembolso integral e parcial de despesas;
+- reembolso de compras de cartão como DEBIT no passivo;
+- reembolso permitido para cartão bloqueado/cancelado;
+- limite acumulado de reembolso sem ultrapassar o valor original;
+- cancellation como novo evento contábil, sem apagar o evento original;
+- cancellation com direção oposta à transação original;
+- proteção contra cancellation duplicada por regra de aplicação e índice único parcial;
+- isolamento por usuário;
+- proteção de operações de duas pernas: transferências continuam sob o agregado de transferência e pagamentos de fatura continuam sob o agregado da fatura.
+
+Validação:
+- RefundCancellationApiTest contra PostgreSQL real: 5 testes, 0 falhas, 0 skips;
+- cenário de refund parcial acumulado validado;
+- cenário de refund de compra de cartão com cartão BLOCKED validado;
+- cenário de cancellation duplicada validado;
+- isolamento entre usuários validado;
+- compileKotlin passou;
+- git diff --check deve passar no gate final.
+
+Próximo vertical: recorrência, mantendo parcelamento HTTP como pendência separada.

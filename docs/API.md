@@ -135,7 +135,7 @@ Endpoint público para verificar disponibilidade básica do processo.
 
 Resposta:
 
-NEXA Finance API — OK
+NEXA Finance API - OK
 
 ## Transactions
 
@@ -237,10 +237,7 @@ Implementado e validado:
 
 Ainda não implementado neste checkpoint:
 
-- cartões/faturas HTTP
-- pagamento de fatura HTTP
 - parcelamento HTTP
-- estorno completo
 - recorrência
 - OpenAPI/Swagger servido pela aplicação
 - rate limiting e hardening de produção
@@ -294,3 +291,57 @@ Marca uma fatura `CLOSED` como `OVERDUE`.
 ### POST /invoices/{id}/payments
 
 Registra o pagamento de uma fatura com uma conta não-cartão. A operação é atômica: débito na conta de origem e débito no passivo do cartão, com as duas transações vinculadas, atualização da fatura e registro do pagamento. Pagamentos parciais mantêm a fatura aberta para quitação; o pagamento integral muda o status para `PAID`.
+
+## Reembolsos e cancelamentos contábeis
+
+Todos os endpoints abaixo são protegidos.
+
+### POST /transactions/{id}/refunds
+
+Cria um reembolso contábil para uma transação POSTED do tipo EXPENSE ou PURCHASE.
+
+Request:
+
+    {
+      "amountMinor": 2000,
+      "currency": "BRL",
+      "occurredOn": "2026-10-04",
+      "description": "Reembolso parcial"
+    }
+
+Reembolsos parciais são permitidos, mas a soma dos reembolsos ativos não pode ultrapassar o valor original. O reembolso referencia a transação original por relatedTransactionId.
+
+Para compras de cartão, o reembolso é lançado como DEBIT no passivo do cartão, reduzindo a dívida e restaurando o limite disponível. O reembolso de uma despesa de conta comum é lançado como CREDIT.
+
+O reembolso de cartão continua permitido quando o cartão está BLOCKED ou CANCELLED, pois bloqueio/cancelamento impede novas compras, não a correção contábil de uma compra existente.
+
+### POST /transactions/{id}/cancellation
+
+Cria uma transação CANCELLATION POSTED para reverter contabilmente uma transação publicada.
+
+Request:
+
+    {
+      "occurredOn": "2026-10-04",
+      "description": "Correção"
+    }
+
+A direção da transação de cancelamento é oposta à transação original. Um mesmo evento só pode possuir uma cancellation ativa; a regra também é protegida por índice único parcial no PostgreSQL.
+
+Transações de transferência são revertidas pelo agregado de transferência. Transações que participam de pagamento de fatura são revertidas pelo agregado da fatura para preservar a operação de duas pernas.
+
+A operação não apaga nem altera a transação original: registra um novo evento contábil relacionado a ela.
+
+## Estado de implementação
+
+Neste checkpoint também estão implementados e validados:
+
+- cartões: criação, consulta, listagem, status e compras;
+- faturas: geração, consulta, fechamento, vencimento e pagamentos parciais/integrais;
+- reembolsos parciais e integrais;
+- reembolso de compras de cartão;
+- cancelamento contábil de transações publicadas;
+- proteção contra reembolso acima do valor original;
+- proteção contra cancellation duplicada;
+- isolamento por usuário nos fluxos de refund/cancellation;
+- validação contra PostgreSQL real.

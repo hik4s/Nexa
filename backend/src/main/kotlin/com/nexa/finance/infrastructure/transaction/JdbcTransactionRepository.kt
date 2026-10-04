@@ -121,6 +121,69 @@ class JdbcTransactionRepository(
             }
         }
 
+    fun sumRelatedAmount(ownerId: UserId, relatedId: TransactionId, type: TransactionType): Long =
+        connections.open().use { c ->
+            c.prepareStatement(
+                """
+                SELECT COALESCE(SUM(t.amount_minor), 0)
+                FROM transactions t
+                JOIN accounts a ON a.id = t.account_id
+                WHERE a.owner_id = ?
+                  AND t.related_transaction_id = ?
+                  AND t.type = ?
+                  AND t.status <> 'CANCELLED'
+                """.trimIndent()
+            ).use { s ->
+                s.setObject(1, ownerId.value)
+                s.setObject(2, relatedId)
+                s.setString(3, type.name)
+                s.executeQuery().use { r ->
+                    r.next()
+                    r.getLong(1)
+                }
+            }
+        }
+
+    fun isInvoicePaymentTransaction(ownerId: UserId, id: TransactionId): Boolean =
+        connections.open().use { c ->
+            c.prepareStatement(
+                """
+                SELECT 1
+                FROM invoice_payment_transactions ipt
+                JOIN transactions t ON t.id = ipt.transaction_id
+                JOIN accounts a ON a.id = t.account_id
+                WHERE ipt.transaction_id = ?
+                  AND a.owner_id = ?
+                LIMIT 1
+                """.trimIndent()
+            ).use { s ->
+                s.setObject(1, id)
+                s.setObject(2, ownerId.value)
+                s.executeQuery().use { r -> r.next() }
+            }
+        }
+
+    fun existsRelated(ownerId: UserId, relatedId: TransactionId, type: TransactionType): Boolean =
+        connections.open().use { c ->
+            c.prepareStatement(
+                """
+                SELECT 1
+                FROM transactions t
+                JOIN accounts a ON a.id = t.account_id
+                WHERE a.owner_id = ?
+                  AND t.related_transaction_id = ?
+                  AND t.type = ?
+                  AND t.status <> 'CANCELLED'
+                LIMIT 1
+                """.trimIndent()
+            ).use { s ->
+                s.setObject(1, ownerId.value)
+                s.setObject(2, relatedId)
+                s.setString(3, type.name)
+                s.executeQuery().use { r -> r.next() }
+            }
+        }
+
     private fun bindTransaction(s: java.sql.PreparedStatement, t: Transaction) {
         s.setObject(1, t.id)
         s.setObject(2, t.accountId.value)

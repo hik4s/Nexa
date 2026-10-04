@@ -5,6 +5,7 @@ import com.nexa.finance.api.ApiError
 import com.nexa.finance.api.accountRoutes
 import com.nexa.finance.api.cardRoutes
 import com.nexa.finance.api.invoiceRoutes
+import com.nexa.finance.api.refundRoutes
 import com.nexa.finance.api.transactionRoutes
 import com.nexa.finance.api.transferRoutes
 import com.nexa.finance.application.transaction.TransactionService
@@ -20,6 +21,7 @@ import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
 import com.nexa.finance.application.card.CardService
 import com.nexa.finance.application.invoice.InvoiceService
+import com.nexa.finance.application.refund.RefundService
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
 import com.nexa.finance.infrastructure.card.JdbcCardRepository
 import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
@@ -58,6 +60,7 @@ fun Application.module() {
     val cardRepository = JdbcCardRepository()
     val cards = CardService(cardRepository, accountRepository, JdbcTransactionRepository())
     val invoices = InvoiceService(JdbcInvoiceRepository(), cardRepository, accountRepository)
+    val refunds = RefundService(JdbcTransactionRepository(), cardRepository)
 
     install(ContentNegotiation) {
         json()
@@ -100,5 +103,6 @@ fun Application.module() {
         transferRoutes(transfers)
         cardRoutes(cards)
         invoiceRoutes(invoices)
+        refundRoutes(refunds)
     }
 }

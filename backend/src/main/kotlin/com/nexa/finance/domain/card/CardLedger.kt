@@ -47,7 +47,6 @@ object CardLedger {
         source: TransactionSource = TransactionSource.MANUAL,
         clock: Clock = Clock.systemUTC(),
     ): Transaction {
-        card.ensurePurchasesAllowed()
         requireCurrency(card, amount)
         return Transaction.create(
             accountId = card.liabilityAccountId,
