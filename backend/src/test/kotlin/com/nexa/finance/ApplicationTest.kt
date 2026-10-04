@@ -20,6 +20,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 import org.junit.jupiter.api.Assumptions.assumeTrue
 
 class ApplicationTest {
@@ -291,6 +292,60 @@ class ApplicationTest {
             ServerSettings.fromEnvironment(mapOf("SERVER_PORT" to "70000"))
         }
         assertTrue(exception.message!!.contains("SERVER_PORT"))
+    }
+
+    @Test
+    fun rateLimitSettingsUseSafeDefaults() {
+        val settings = RateLimitSettings.fromEnvironment(emptyMap())
+
+        assertEquals(120, settings.requestsPerMinute)
+        assertEquals(60.seconds, settings.refillPeriod)
+    }
+
+    @Test
+    fun rateLimitSettingsReadRuntimeEnvironment() {
+        val settings = RateLimitSettings.fromEnvironment(
+            mapOf(
+                "RATE_LIMIT_REQUESTS_PER_MINUTE" to "250",
+                "RATE_LIMIT_WINDOW_SECONDS" to "30",
+            )
+        )
+
+        assertEquals(250, settings.requestsPerMinute)
+        assertEquals(30.seconds, settings.refillPeriod)
+    }
+
+    @Test
+    fun rateLimitSettingsRejectInvalidConfiguration() {
+        val exception = kotlin.test.assertFailsWith<IllegalArgumentException> {
+            RateLimitSettings.fromEnvironment(mapOf("RATE_LIMIT_REQUESTS_PER_MINUTE" to "0"))
+        }
+        assertTrue(exception.message!!.contains("RATE_LIMIT_REQUESTS_PER_MINUTE"))
+    }
+
+    @Test
+    fun apiRateLimitIsScopedPerClientAndReturnsStandardError() = testApplication {
+        application { module() }
+
+        repeat(120) {
+            val response = client.get("/api/v1/goals") {
+                header("X-Forwarded-For", "rate-limit-test-client")
+            }
+            assertEquals(401, response.status.value)
+        }
+
+        val limited = client.get("/api/v1/goals") {
+            header("X-Forwarded-For", "rate-limit-test-client")
+        }
+
+        assertEquals(429, limited.status.value)
+        assertTrue(limited.headers["Retry-After"] != null)
+        assertTrue(limited.bodyAsText().contains("RATE_LIMITED"))
+
+        val otherClient = client.get("/api/v1/goals") {
+            header("X-Forwarded-For", "different-client")
+        }
+        assertEquals(401, otherClient.status.value)
     }
 
     private suspend fun registerAndLogin(

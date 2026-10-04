@@ -59,9 +59,14 @@ import io.ktor.server.auth.bearer
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
+import io.ktor.server.plugins.ratelimit.RateLimit
+import io.ktor.server.plugins.ratelimit.RateLimitName
+import io.ktor.server.plugins.ratelimit.rateLimit
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.plugins.statuspages.exception
 import io.ktor.server.request.ContentTransformationException
+import io.ktor.server.plugins.origin
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
@@ -74,6 +79,7 @@ fun main() {
 }
 
 fun Application.module() {
+    val rateLimitSettings = RateLimitSettings.fromEnvironment()
     val database = DatabaseConnectionProvider()
 
     val userRepository = JdbcUserAuthRepository(database)
@@ -126,6 +132,9 @@ fun Application.module() {
         exception<DomainValidationException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, ApiError("VALIDATION_ERROR", cause.message ?: "Invalid request."))
         }
+        status(HttpStatusCode.TooManyRequests) { call, _ ->
+            call.respond(HttpStatusCode.TooManyRequests, ApiError("RATE_LIMITED", "Too many requests. Please try again later."))
+        }
         exception<ContentTransformationException> { call, _ ->
             call.respond(HttpStatusCode.BadRequest, ApiError("INVALID_BODY", "Request body is invalid."))
         }
@@ -134,6 +143,17 @@ fun Application.module() {
         }
         exception<Throwable> { call, _ ->
             call.respond(HttpStatusCode.InternalServerError, ApiError("INTERNAL_ERROR", "An unexpected error occurred."))
+        }
+    }
+
+    install(XForwardedHeaders)
+
+    install(RateLimit) {
+        register(RateLimitName("api")) {
+            rateLimiter(limit = rateLimitSettings.requestsPerMinute, refillPeriod = rateLimitSettings.refillPeriod)
+            requestKey { call ->
+                call.request.origin.remoteHost
+            }
         }
     }
 
@@ -153,8 +173,9 @@ fun Application.module() {
         get("/health") {
             call.respondText("NEXA Finance API - OK")
         }
-        authRoutes(authentication, recovery, profile)
-        accountRoutes(accounts)
+        rateLimit(RateLimitName("api")) {
+            authRoutes(authentication, recovery, profile)
+            accountRoutes(accounts)
         categoryRoutes(categoryRepository)
         transactionRoutes(transactions)
         transferRoutes(transfers)
@@ -166,6 +187,7 @@ fun Application.module() {
         budgetRoutes(budgets)
         goalRoutes(goals)
         aiRoutes(ai)
-        notificationRoutes(notifications)
+            notificationRoutes(notifications)
+        }
     }
 }

@@ -15,6 +15,10 @@ O processo usa configuração por ambiente. Para um ambiente de produção, inje
 - POSTGRES_PASSWORD ou POSTGRES_PASSWORD_FILE
 - POSTGRES_POOL_MAX_SIZE — padrão 10.
 - POSTGRES_POOL_MIN_IDLE — padrão 2.
+- RATE_LIMIT_REQUESTS_PER_MINUTE — padrão 120 por cliente.
+- RATE_LIMIT_WINDOW_SECONDS — padrão 60 segundos.
+
+O backend usa o plugin RateLimit do Ktor com algoritmo token bucket. O limite é aplicado às rotas da API, não ao `/health`, e é separado por cliente. Em ambientes atrás de reverse proxy, o `XForwardedHeaders` do Ktor usa `X-Forwarded-For` para identificar o cliente original. A resposta limitada é `429 Too Many Requests` com `Retry-After` e erro `RATE_LIMITED`. O limite é mantido em memória por processo; distribuição futura em múltiplas instâncias deverá usar um mecanismo compartilhado antes de considerar escala horizontal.
 
 Prefira POSTGRES_PASSWORD_FILE em ambientes que disponibilizam secrets como arquivo montado. A aplicação rejeita a definição simultânea das duas fontes para evitar ambiguidade.
 

@@ -840,7 +840,7 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 
 ## 3.1 â€” Backend de produÃ§Ã£o
 
-**Status:** EM PROGRESSO — 3.1.1 runtime, 3.1.2 containerização base e 3.1.3 pool JDBC concluídos e validados localmente.
+**Status:** EM PROGRESSO — produção publicada e validada; runtime, containerização base, secrets, pool JDBC, banco/migrations, HTTPS, rate limiting e versionamento de API concluídos. Permanecem timeout HTTP, retries controlados, tratamento de falhas, backups e recuperação de desastre.
 
 - [x] Host e porta configuráveis por ambiente
 - [x] Configuração de banco por variáveis de ambiente
@@ -851,18 +851,24 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 - [x] Pool JDBC compartilhado com limites configuráveis
 - [x] Encerramento do pool no ciclo de vida da aplicação
 - [x] Validação real do pool contra PostgreSQL local
-- [ ] Ambiente de produÃ§Ã£o
-- [ ] ConfiguraÃ§Ã£o segura de secrets
-- [ ] Banco de produÃ§Ã£o
-- [ ] Migrations de produÃ§Ã£o
-- [ ] HTTPS
-- [ ] Rate limiting
-- [ ] Versionamento de API
+- [x] Ambiente de produÃ§Ã£o
+- [x] ConfiguraÃ§Ã£o segura de secrets
+- [x] Banco de produÃ§Ã£o
+- [x] Migrations de produÃ§Ã£o
+- [x] HTTPS
+- [x] Rate limiting
+- [x] Versionamento de API
 - [ ] PolÃ­ticas de timeout
 - [ ] Retries controlados
 - [ ] Tratamento de falhas
 - [ ] Backups
 - [ ] RecuperaÃ§Ã£o de desastre
+
+### Checkpoint 3.1 — produção/rate limiting — 2026-10-04
+
+Validado: backend publicado no Railway, PostgreSQL de produção com migrations V1–V13, HTTPS público, health check, E2E autenticado real e correção/regressão do ciclo de vida de metas. Rate limiting agora usa o plugin RateLimit do Ktor por cliente, com configuração por ambiente, `429 RATE_LIMITED`, `Retry-After` e suporte a `X-Forwarded-For` via XForwardedHeaders. Todos os endpoints de negócio estão versionados sob `/api/v1`.
+
+Validação desta microetapa: ApplicationTest com rate limit e isolamento por cliente, `clean test build`, `scripts/verify.ps1 -SkipAndroid` e `git diff --check` passaram. A imagem Docker candidata iniciou o build, mas a preparação do Gradle dentro do BuildKit não concluiu durante a janela de validação local; o artefato de código já está validado pelo Gradle e o build de imagem permanece para o pipeline de deploy.
 
 ---
 
