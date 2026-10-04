@@ -219,6 +219,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         cardId: String,
         amountMinor: Long,
         description: String,
+        installmentCount: Int = 1,
     ): Tx {
         val o = request("POST", "/api/v1/cards/$cardId/purchases", JSONObject().apply {
             put("amountMinor", amountMinor)
@@ -227,6 +228,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
             put("description", description)
             put("source", "MANUAL")
             put("post", true)
+            put("installmentCount", installmentCount)
         })
         return Tx(
             o.getString("id"),
@@ -235,7 +237,11 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
             o.getLong("amountMinor"),
             o.getString("direction"),
             o.getString("occurredOn"),
-            o.optString("categoryId").ifBlank { null }
+            o.optString("categoryId").ifBlank { null },
+            o.optString("cardId").ifBlank { null },
+            o.optString("invoiceId").ifBlank { null },
+            o.optString("installmentId").ifBlank { null },
+            o.optInt("installmentNumber", 0).takeIf { it > 0 },
         )
     }
 
@@ -316,6 +322,8 @@ data class Tx(
     val categoryId: String?,
     val cardId: String? = null,
     val invoiceId: String? = null,
+    val installmentId: String? = null,
+    val installmentNumber: Int? = null,
 )
 
 data class Recurrence(

@@ -1735,3 +1735,30 @@ Limitação ambiental preservada:
 
 Próximo subitem:
 - integrar a criação de compra parcelada ao fluxo visual Android, evitando deixar a capacidade existente apenas no contrato HTTP.
+
+
+# Checkpoint 2.4.8 - 2026-10-04
+
+Fluxo Android de compras parceladas integrado ao registro rápido.
+
+Implementado:
+- ApiClient.createCardPurchase agora envia installmentCount;
+- registro rápido no modo Cartão oferece seleção de 1 a 12 parcelas;
+- seleção de parcelas é enviada ao backend real, mantendo o mesmo fluxo de compra;
+- resposta de compra preserva metadados de parcelamento no modelo Tx;
+- seletor possui testTag quick_installments para validação automatizada;
+- APK debug instalado com sucesso no emulador Android local;
+- aplicação iniciou no emulador e a tela de autenticação foi validada via UIAutomator.
+
+Validação:
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- APK install no emulator-5554: PASS;
+- launch da aplicação: PASS;
+- UIAutomator encontrou a tela NEXA Finance e controles de autenticação.
+
+Limitação da validação visual:
+- não foi realizado login no emulador porque não havia credencial de teste disponível; portanto o formulário autenticado de parcelamento não foi clicado manualmente no dispositivo. O caminho compilado e o contrato HTTP estão cobertos pelos testes existentes.
+
+Próximo subitem:
+- adicionar teste Compose/semântico específico para garantir que a seleção de parcelas chega ao ApiClient sem depender de login manual.

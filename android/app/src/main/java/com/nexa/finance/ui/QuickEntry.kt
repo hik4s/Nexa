@@ -94,6 +94,8 @@ fun QuickEntryCard(
     var categoryMenu by remember { mutableStateOf(false) }
     var accountMenu by remember { mutableStateOf(false) }
     var cardMenu by remember { mutableStateOf(false) }
+    var installmentMenu by remember { mutableStateOf(false) }
+    var installmentCount by remember { mutableIntStateOf(1) }
     var busy by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("") }
 
@@ -127,7 +129,12 @@ fun QuickEntryCard(
         Thread {
             try {
                 val created = if (useCard) {
-                    api.createCardPurchase(selectedCardId, parsed.amountMinor, parsed.description)
+                    api.createCardPurchase(
+                        selectedCardId,
+                        parsed.amountMinor,
+                        parsed.description,
+                        installmentCount,
+                    )
                 } else {
                     api.createTransaction(
                         accountId = selectedAccountId,
@@ -268,6 +275,28 @@ fun QuickEntryCard(
                                         selectedCardId = card.id
                                         prefs.edit().putString("default_card_id", card.id).apply()
                                         cardMenu = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    Box {
+                        OutlinedButton(
+                            onClick = { installmentMenu = true },
+                            modifier = Modifier.testTag("quick_installments")
+                        ) {
+                            Text("Parcelas: " + if (installmentCount == 1) "À vista" else "$installmentCount x")
+                        }
+                        DropdownMenu(
+                            expanded = installmentMenu,
+                            onDismissRequest = { installmentMenu = false }
+                        ) {
+                            (1..12).forEach { count ->
+                                DropdownMenuItem(
+                                    text = { Text(if (count == 1) "À vista" else "$count parcelas") },
+                                    onClick = {
+                                        installmentCount = count
+                                        installmentMenu = false
                                     }
                                 )
                             }
