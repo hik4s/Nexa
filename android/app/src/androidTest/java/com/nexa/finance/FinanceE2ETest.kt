@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -13,6 +14,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.UUID
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -127,6 +129,38 @@ class FinanceE2ETest {
             compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("quick_status").assertIsDisplayed()
+
+        scrollToDashboard("goal_name")
+        compose.onNodeWithTag("goal_name").performTextInput("Meta E2E")
+        compose.onNodeWithTag("goal_amount").performTextInput("100,00")
+        compose.onNodeWithTag("goal_submit").performClick()
+
+        compose.waitUntil(15_000) {
+            compose.onAllNodesWithTag("goal_form_message").fetchSemanticsNodes().isNotEmpty()
+        }
+        val createMessage = compose.onNodeWithTag("goal_form_message")
+            .fetchSemanticsNode()
+            .config[SemanticsProperties.Text]
+            .joinToString()
+        assertEquals("Meta criada.", createMessage)
+
+        scrollToDashboard("goal_contribution_amount")
+        compose.onNodeWithTag("goal_contribution_amount").performTextInput("100,00")
+        compose.onNodeWithTag("goal_contribute").performClick()
+
+        compose.waitUntil(15_000) {
+            compose.onNodeWithTag("goal_form_message")
+                .fetchSemanticsNode()
+                .config[SemanticsProperties.Text]
+                .joinToString() == "Meta atingida."
+        }
+        assertEquals(
+            "Meta atingida.",
+            compose.onNodeWithTag("goal_form_message")
+                .fetchSemanticsNode()
+                .config[SemanticsProperties.Text]
+                .joinToString()
+        )
         scrollToDashboard("dashboard_expenses")
         compose.onNodeWithTag("dashboard_expenses").assertIsDisplayed()
     }

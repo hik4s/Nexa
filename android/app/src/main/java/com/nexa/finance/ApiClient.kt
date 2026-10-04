@@ -212,6 +212,63 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         categoryId = o.optString("categoryId").ifBlank { null },
         description = o.optString("description").ifBlank { null },
         status = o.getString("status"),
+        projectedDate = o.optString("projectedDate").ifBlank { null },
+        averageMonthlyContributionMinor = o.optLong("averageMonthlyContributionMinor", 0L).takeIf { o.has("averageMonthlyContributionMinor") && !o.isNull("averageMonthlyContributionMinor") },
+        projectionStatus = o.optString("projectionStatus").ifBlank { null },
+    )
+
+    fun goals(): List<Goal> {
+        val array = requestArray("GET", "/api/v1/goals")
+        return (0 until array.length()).map { i -> goalFromJson(array.getJSONObject(i)) }
+    }
+
+    fun createGoal(
+        name: String,
+        targetAmountMinor: Long,
+        targetDate: String?,
+        description: String?,
+    ): Goal {
+        return goalFromJson(request("POST", "/api/v1/goals", JSONObject().apply {
+            put("name", name)
+            put("targetAmountMinor", targetAmountMinor)
+            put("currency", "BRL")
+            put("targetDate", targetDate ?: JSONObject.NULL)
+            put("description", description ?: JSONObject.NULL)
+        }))
+    }
+
+    fun contributeGoal(id: String, amountMinor: Long, occurredOn: String): Goal {
+        val detail = request("POST", "/api/v1/goals/$id/contributions", JSONObject().apply {
+            put("amountMinor", amountMinor)
+            put("currency", "BRL")
+            put("occurredOn", occurredOn)
+        })
+        return goalFromJson(detail.getJSONObject("goal"))
+    }
+
+    fun pauseGoal(id: String): Goal =
+        goalFromJson(request("POST", "/api/v1/goals/$id/pause"))
+
+    fun resumeGoal(id: String): Goal =
+        goalFromJson(request("POST", "/api/v1/goals/$id/resume"))
+
+    fun cancelGoal(id: String): Goal =
+        goalFromJson(request("DELETE", "/api/v1/goals/$id"))
+
+    private fun goalFromJson(o: JSONObject): Goal = Goal(
+        id = o.getString("id"),
+        name = o.getString("name"),
+        targetAmountMinor = o.getLong("targetAmountMinor"),
+        currentAmountMinor = o.getLong("currentAmountMinor"),
+        remainingMinor = o.getLong("remainingMinor"),
+        progressPercent = o.getInt("progressPercent"),
+        currency = o.getString("currency"),
+        targetDate = o.optString("targetDate").ifBlank { null },
+        description = o.optString("description").ifBlank { null },
+        status = o.getString("status"),
+        projectedDate = o.optString("projectedDate").ifBlank { null },
+        averageMonthlyContributionMinor = if (o.isNull("averageMonthlyContributionMinor")) null else o.getLong("averageMonthlyContributionMinor"),
+        projectionStatus = o.optString("projectionStatus", "NO_CONTRIBUTION"),
     )
 
     fun recurrences(): List<Recurrence> {
@@ -317,9 +374,16 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
             val stream = if (status in 200..299) c.inputStream else c.errorStream
             val text = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
             if (status !in 200..299) {
-                throw IllegalStateException(
-                    JSONObject(text).optString("message").ifBlank { "HTTP $status" }
-                )
+                val message = if (text.isBlank()) {
+                    "HTTP $status"
+                } else {
+                    runCatching { JSONObject(text).optString("message").ifBlank { "HTTP $status" } }
+                        .getOrDefault("HTTP $status")
+                }
+                throw IllegalStateException(message)
+            }
+            if (text.isBlank()) {
+                throw IllegalStateException("HTTP $status returned an empty body.")
             }
             return text
         } finally {
@@ -385,6 +449,25 @@ data class Budget(
     val categoryId: String?,
     val description: String?,
     val status: String,
+    val projectedDate: String? = null,
+    val averageMonthlyContributionMinor: Long? = null,
+    val projectionStatus: String? = null,
+)
+
+data class Goal(
+    val id: String,
+    val name: String,
+    val targetAmountMinor: Long,
+    val currentAmountMinor: Long,
+    val remainingMinor: Long,
+    val progressPercent: Int,
+    val currency: String,
+    val targetDate: String?,
+    val description: String?,
+    val status: String,
+    val projectedDate: String?,
+    val averageMonthlyContributionMinor: Long?,
+    val projectionStatus: String,
 )
 
 data class Recurrence(

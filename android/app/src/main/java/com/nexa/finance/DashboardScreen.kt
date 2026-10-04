@@ -33,6 +33,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
     var transactions by remember { mutableStateOf(emptyList<Tx>()) }
     var recurrences by remember { mutableStateOf(emptyList<Recurrence>()) }
     var budgets by remember { mutableStateOf(emptyList<Budget>()) }
+    var goals by remember { mutableStateOf(emptyList<Goal>()) }
     var message by remember { mutableStateOf("Carregando...") }
     var accountName by remember { mutableStateOf("") }
     var accountType by remember { mutableStateOf("CHECKING") }
@@ -51,6 +52,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
             runCatching { api.transactions() }.onSuccess { runOnMain { transactions = it } }.onFailure { failures++ }
             runCatching { api.recurrences() }.onSuccess { runOnMain { recurrences = it } }.onFailure { failures++ }
             runCatching { api.budgets() }.onSuccess { runOnMain { budgets = it } }.onFailure { failures++ }
+            runCatching { api.goals() }.onSuccess { runOnMain { goals = it } }.onFailure { failures++ }
             runOnMain { message = if (failures == 0) "" else "Alguns dados não puderam ser carregados." }
         }.start()
     }
@@ -153,6 +155,14 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                     budgets = budgets,
                     categories = categories,
                     onBudgetsChanged = { budgets = it },
+                    onMessage = { message = it },
+                )
+            }
+            item {
+                GoalPanel(
+                    api = api,
+                    goals = goals,
+                    onGoalsChanged = { goals = it },
                     onMessage = { message = it },
                 )
             }

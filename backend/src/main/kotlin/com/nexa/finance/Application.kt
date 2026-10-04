@@ -19,8 +19,10 @@ import com.nexa.finance.domain.common.DomainValidationException
 import io.ktor.http.HttpStatusCode
 import com.nexa.finance.api.authRoutes
 import com.nexa.finance.api.budgetRoutes
+import com.nexa.finance.api.goalRoutes
 import com.nexa.finance.application.account.AccountService
 import com.nexa.finance.application.budget.BudgetService
+import com.nexa.finance.application.goal.GoalService
 import com.nexa.finance.application.auth.AuthenticationService
 import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
@@ -32,6 +34,7 @@ import com.nexa.finance.application.refund.RefundService
 import com.nexa.finance.application.recurrence.RecurrenceService
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
 import com.nexa.finance.infrastructure.budget.JdbcBudgetRepository
+import com.nexa.finance.infrastructure.goal.JdbcGoalRepository
 import com.nexa.finance.infrastructure.category.JdbcCategoryRepository
 import com.nexa.finance.infrastructure.card.JdbcCardRepository
 import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
@@ -76,6 +79,7 @@ fun Application.module() {
     val refunds = RefundService(JdbcTransactionRepository(), cardRepository)
     val recurrences = RecurrenceService(JdbcRecurrenceRepository(), accountRepository, JdbcTransactionRepository())
     val budgets = BudgetService(JdbcBudgetRepository())
+    val goals = GoalService(JdbcGoalRepository())
 
     install(ContentNegotiation) {
         json()
@@ -123,5 +127,6 @@ fun Application.module() {
         refundRoutes(refunds)
         recurrenceRoutes(recurrences)
         budgetRoutes(budgets)
+        goalRoutes(goals)
     }
 }

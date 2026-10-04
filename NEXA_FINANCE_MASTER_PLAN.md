@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.5 Orçamentos concluído e validado; próximo passo 2.6 Metas financeiras.
+**Checkpoint atual:** Parte 2 - 2.6 Metas financeiras concluído e validado; próximo passo 2.7 Recorrências.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -709,13 +709,13 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 ## 2.6 â€” Metas financeiras
 
-- [ ] Criar meta
-- [ ] Valor-alvo
-- [ ] Valor acumulado
-- [ ] Prazo
-- [ ] Progresso
-- [ ] ContribuiÃ§Ãµes
-- [ ] ProjeÃ§Ã£o
+- [x] Criar meta
+- [x] Valor-alvo
+- [x] Valor acumulado
+- [x] Prazo
+- [x] Progresso
+- [x] ContribuiÃ§Ãµes
+- [x] ProjeÃ§Ã£o
 
 ---
 
@@ -1826,3 +1826,49 @@ Conclusão 2.5:
 
 Próximo passo:
 - iniciar 2.6 Metas financeiras.
+
+
+# Checkpoint 2.6.1 - 2026-10-04
+
+Metas financeiras implementadas e validadas do domínio ao Android.
+
+Implementado:
+- criação de meta com nome, valor-alvo, moeda, prazo e descrição;
+- valor acumulado e progresso percentual;
+- contribuições persistidas individualmente com histórico;
+- aporte transacional com lock da meta, impedindo ultrapassar o alvo em concorrência;
+- estados ACTIVE, PAUSED, ACHIEVED e CANCELLED;
+- pausar, retomar e cancelar meta;
+- projeção baseada no ritmo médio mensal, com estados ON_TRACK, AT_RISK, NO_CONTRIBUTION, NO_DEADLINE, ACHIEVED e PAUSED;
+- migration V11 para metas e contribuições;
+- API autenticada de criação, listagem, detalhe, aporte e ciclo de vida;
+- integração Android no dashboard;
+- criação de meta, aporte, progresso, prazo, histórico e projeção no painel;
+- conversão monetária do formulário para centavos com BigDecimal;
+- testes de domínio, serviço/projeção, integração PostgreSQL e API;
+- E2E Android autenticado cobrindo criação da meta e aporte até atingir o alvo.
+
+Validação:
+- Flyway V1→V11 em PostgreSQL 18.6 efêmero: PASS;
+- GoalTest: PASS;
+- GoalProjectionTest: PASS;
+- JdbcGoalRepositoryIntegrationTest: PASS;
+- ApplicationTest com fluxo de metas: PASS;
+- suíte backend completa: PASS;
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- GoalPanelTest no emulator-5554: PASS (1/1);
+- FinanceE2ETest com Ktor real + PostgreSQL efêmero: PASS (2/2);
+- suíte Android instrumentada completa: PASS (5/5, 0 falhas);
+- git diff --check: PASS.
+
+Observação de ambiente:
+- a validação usou PostgreSQL efêmero e Ktor local; o volume PostgreSQL persistente existente não foi removido nem alterado.
+- o CI do commit 972f0a5 (Orçamentos) concluiu com sucesso no GitHub Actions.
+
+Conclusão 2.6:
+- todas as microtarefas planejadas de metas financeiras estão implementadas e validadas;
+- não há pendência técnica conhecida nesta vertical.
+
+Próximo passo:
+- iniciar 2.7 Recorrências.

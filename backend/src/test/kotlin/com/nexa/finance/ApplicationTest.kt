@@ -173,6 +173,52 @@ class ApplicationTest {
     }
 
     @Test
+    fun goalApiCreatesContributesAndReturnsHistoryAgainstPostgres() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("goal-api")
+        application { module() }
+
+        try {
+            val token = registerAndLogin(client, email, "goal-password", "Goal API User")
+
+            val create = client.post("/api/v1/goals") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                jsonBody(
+                    """{"name":"Viagem","targetAmountMinor":10000,"currency":"BRL","targetDate":"2027-01-15","description":"Férias"}"""
+                )
+            }
+            assertEquals(201, create.status.value)
+            val goalId = json(create.bodyAsText())["id"]!!.jsonPrimitive.content
+            assertTrue(create.bodyAsText().contains("\"progressPercent\":0"))
+
+            val list = client.get("/api/v1/goals") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, list.status.value)
+            assertTrue(list.bodyAsText().contains(goalId))
+
+            val contribution = client.post("/api/v1/goals/$goalId/contributions") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                jsonBody("""{"amountMinor":10000,"currency":"BRL","occurredOn":"2026-10-04"}""")
+            }
+            assertEquals(200, contribution.status.value)
+            assertTrue(contribution.bodyAsText().contains("\"currentAmountMinor\":10000"))
+            assertTrue(contribution.bodyAsText().contains("\"status\":\"ACHIEVED\""))
+            assertTrue(contribution.bodyAsText().contains("\"amountMinor\":10000"))
+
+            val detail = client.get("/api/v1/goals/$goalId") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, detail.status.value)
+            assertTrue(detail.bodyAsText().contains("\"status\":\"ACHIEVED\""))
+            assertTrue(detail.bodyAsText().contains("\"contributions\""))
+        } finally {
+            cleanupGoalsByEmail(email)
+            cleanupUsers(email)
+        }
+    }
+
+    @Test
     fun invalidJsonReturnsStandardApiError() = testApplication {
         application { module() }
 
@@ -222,6 +268,15 @@ class ApplicationTest {
         prefix + "-" + UUID.randomUUID() + "@example.com"
 
     private fun hasPostgres(): Boolean = !System.getenv("POSTGRES_PASSWORD").isNullOrBlank()
+
+    private fun cleanupGoalsByEmail(email: String) {
+        DatabaseConnectionProvider().open().use { connection ->
+            connection.prepareStatement("DELETE FROM goals WHERE user_id IN (SELECT id FROM users WHERE email = ?)").use { statement ->
+                statement.setString(1, email)
+                statement.executeUpdate()
+            }
+        }
+    }
 
     private fun cleanupUsers(vararg emails: String) {
         DatabaseConnectionProvider().open().use { connection ->

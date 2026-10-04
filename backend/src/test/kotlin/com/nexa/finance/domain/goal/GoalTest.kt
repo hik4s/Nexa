@@ -67,4 +67,30 @@ class GoalTest {
         assertEquals(GoalStatus.ACTIVE, reopened.status)
         assertEquals(Money(90_00, CurrencyCode.BRL), reopened.currentAmount)
     }
+
+    @Test
+    fun targetDateCannotBeInThePast() {
+        assertFailsWith<DomainValidationException> {
+            Goal.create(
+                userId = UserId.new(),
+                name = "Reserva",
+                targetAmount = Money(100_00, CurrencyCode.BRL),
+                targetDate = LocalDate.of(2026, 10, 2),
+                clock = clock,
+            )
+        }
+    }
+
+    @Test
+    fun contributionCurrencyMustMatchGoal() {
+        val goal = Goal.create(
+            userId = UserId.new(),
+            name = "Reserva",
+            targetAmount = Money(100_00, CurrencyCode.BRL),
+            clock = clock,
+        )
+        assertFailsWith<DomainValidationException> {
+            goal.addContribution(Money(10_00, CurrencyCode.USD))
+        }
+    }
 }
