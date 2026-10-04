@@ -13,8 +13,12 @@ O processo usa configuração por ambiente. Para um ambiente de produção, inje
 - POSTGRES_DB
 - POSTGRES_USER
 - POSTGRES_PASSWORD ou POSTGRES_PASSWORD_FILE
+- POSTGRES_POOL_MAX_SIZE — padrão 10.
+- POSTGRES_POOL_MIN_IDLE — padrão 2.
 
 Prefira POSTGRES_PASSWORD_FILE em ambientes que disponibilizam secrets como arquivo montado. A aplicação rejeita a definição simultânea das duas fontes para evitar ambiguidade.
+
+As conexões JDBC usam um pool HikariCP compartilhado pelo backend. Cada processo mantém um único pool e o encerra no desligamento da aplicação. O pool também habilita TCP keepalive para o driver PostgreSQL.
 
 A aplicação também aceita POSTGRES_JDBC_URL quando o ambiente precisar controlar a URL JDBC inteira.
 

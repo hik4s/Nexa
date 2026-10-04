@@ -19,6 +19,7 @@ val ktorVersion = "3.6.0"
 val serializationVersion = "1.11.0"
 val flywayVersion = "13.9.0"
 val postgresqlVersion = "42.7.13"
+val hikariVersion = "7.1.0"
 
 kotlin {
     jvmToolchain(17)
@@ -35,6 +36,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")

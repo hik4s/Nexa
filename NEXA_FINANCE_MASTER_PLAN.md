@@ -840,7 +840,7 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 
 ## 3.1 â€” Backend de produÃ§Ã£o
 
-**Status:** EM PROGRESSO — 3.1.1 configuração de runtime e 3.1.2 containerização base concluídas e validadas localmente.
+**Status:** EM PROGRESSO — 3.1.1 runtime, 3.1.2 containerização base e 3.1.3 pool JDBC concluídos e validados localmente.
 
 - [x] Host e porta configuráveis por ambiente
 - [x] Configuração de banco por variáveis de ambiente
@@ -848,6 +848,9 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 - [x] Containerização do backend em JRE 17 sem root
 - [x] Validação local da imagem com GET /health e usuário não-root
 - [x] Contrato de secret por POSTGRES_PASSWORD_FILE
+- [x] Pool JDBC compartilhado com limites configuráveis
+- [x] Encerramento do pool no ciclo de vida da aplicação
+- [x] Validação real do pool contra PostgreSQL local
 - [ ] Ambiente de produÃ§Ã£o
 - [ ] ConfiguraÃ§Ã£o segura de secrets
 - [ ] Banco de produÃ§Ã£o
