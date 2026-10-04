@@ -21,13 +21,16 @@ import com.nexa.finance.api.authRoutes
 import com.nexa.finance.api.budgetRoutes
 import com.nexa.finance.api.goalRoutes
 import com.nexa.finance.api.aiRoutes
+import com.nexa.finance.api.notificationRoutes
 import com.nexa.finance.application.account.AccountService
 import com.nexa.finance.application.budget.BudgetService
 import com.nexa.finance.application.goal.GoalService
 import com.nexa.finance.application.ai.AiContextBuilder
 import com.nexa.finance.application.ai.AiService
 import com.nexa.finance.application.ai.RuleBasedAiProvider
+import com.nexa.finance.application.notification.NotificationService
 import com.nexa.finance.infrastructure.ai.JdbcAiUsageRepository
+import com.nexa.finance.infrastructure.notification.JdbcNotificationRepository
 import com.nexa.finance.application.auth.AuthenticationService
 import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
@@ -87,6 +90,14 @@ fun Application.module() {
     val goals = GoalService(JdbcGoalRepository())
     val aiContext = AiContextBuilder(JdbcTransactionRepository(), JdbcBudgetRepository(), JdbcGoalRepository(), categories)
     val ai = AiService(aiContext, RuleBasedAiProvider(), JdbcAiUsageRepository())
+    val notifications = NotificationService(
+        repository = JdbcNotificationRepository(),
+        budgets = budgets,
+        goals = goals,
+        recurrences = recurrences,
+        invoices = JdbcInvoiceRepository(),
+        aiContext = aiContext,
+    )
 
     install(ContentNegotiation) {
         json()
@@ -136,5 +147,6 @@ fun Application.module() {
         budgetRoutes(budgets)
         goalRoutes(goals)
         aiRoutes(ai)
+        notificationRoutes(notifications)
     }
 }

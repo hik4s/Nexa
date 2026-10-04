@@ -271,6 +271,27 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         projectionStatus = o.optString("projectionStatus", "NO_CONTRIBUTION"),
     )
 
+    fun notifications(unreadOnly: Boolean = false): List<NexaNotification> {
+        val path = "/api/v1/notifications?unreadOnly=$unreadOnly"
+        val array = requestArray("GET", path)
+        return (0 until array.length()).map { i ->
+            val o = array.getJSONObject(i)
+            NexaNotification(
+                id = o.getString("id"),
+                type = o.getString("type"),
+                severity = o.getString("severity"),
+                title = o.getString("title"),
+                message = o.getString("message"),
+                readAt = o.optString("readAt").ifBlank { null },
+                createdAt = o.getString("createdAt"),
+            )
+        }
+    }
+
+    fun markNotificationRead(id: String) {
+        raw("POST", "/api/v1/notifications/$id/read", null)
+    }
+
     fun aiAnalysis(month: String = java.time.YearMonth.now().toString()): AiAnalysis {
         val o = request("GET", "/api/v1/ai/analysis?month=$month")
         val array = o.optJSONArray("insights")
@@ -653,4 +674,13 @@ data class AiAnalysis(
 data class AiAnswer(
     val answer: String,
     val sourceFactIds: List<String>,
+)
+data class NexaNotification(
+    val id: String,
+    val type: String,
+    val severity: String,
+    val title: String,
+    val message: String,
+    val readAt: String?,
+    val createdAt: String,
 )

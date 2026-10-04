@@ -38,6 +38,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
     var aiAnalysis by remember { mutableStateOf<AiAnalysis?>(null) }
     var aiAnswer by remember { mutableStateOf<AiAnswer?>(null) }
     var aiLoading by remember { mutableStateOf(false) }
+    var notifications by remember { mutableStateOf(emptyList<NexaNotification>()) }
     var message by remember { mutableStateOf("Carregando...") }
     var accountName by remember { mutableStateOf("") }
     var accountType by remember { mutableStateOf("CHECKING") }
@@ -59,6 +60,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
             runCatching { api.budgets() }.onSuccess { runOnMain { budgets = it } }.onFailure { failures++ }
             runCatching { api.goals() }.onSuccess { runOnMain { goals = it } }.onFailure { failures++ }
             runCatching { api.aiAnalysis() }.onSuccess { runOnMain { aiAnalysis = it } }.onFailure { failures++ }
+            runCatching { api.notifications() }.onSuccess { runOnMain { notifications = it } }.onFailure { failures++ }
             runOnMain { message = if (failures == 0) "" else "Alguns dados não puderam ser carregados." }
         }.start()
     }
@@ -176,6 +178,17 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                     accounts = accounts,
                     cards = cards,
                     categories = categories,
+                )
+            }
+            item {
+                NotificationPanel(
+                    notifications = notifications,
+                    onRead = { id ->
+                        Thread {
+                            runCatching { api.markNotificationRead(id) }
+                            runOnMain { notifications = notifications.map { item -> if (item.id == id) item.copy(readAt = java.time.Instant.now().toString()) else item } }
+                        }.start()
+                    },
                 )
             }
             item {

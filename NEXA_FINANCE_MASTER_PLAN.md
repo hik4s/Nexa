@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.9 IA Financeira concluído e validado; próximo passo 2.10 Notificações e insights proativos.
+**Checkpoint atual:** Parte 2 - 2.10 Notificações e insights proativos concluído e validado; próximo passo 2.11 Gate de aprovação da Parte 2.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -786,13 +786,13 @@ A IA nÃ£o deve inventar nÃºmeros. Toda afirmaÃ§Ã£o quantitativa precisa 
 
 ## 2.10 â€” NotificaÃ§Ãµes e insights proativos
 
-- [ ] Alertas de orÃ§amento
-- [ ] Despesas recorrentes prÃ³ximas
-- [ ] Fatura prÃ³xima do vencimento
-- [ ] Meta
-- [ ] AlteraÃ§Ã£o significativa de gasto
-- [ ] Insight periÃ³dico
-- [ ] ConfiguraÃ§Ãµes de notificaÃ§Ãµes
+- [x] Alertas de orÃ§amento
+- [x] Despesas recorrentes prÃ³ximas
+- [x] Fatura prÃ³xima do vencimento
+- [x] Meta
+- [x] AlteraÃ§Ã£o significativa de gasto
+- [x] Insight periÃ³dico
+- [x] ConfiguraÃ§Ãµes de notificaÃ§Ãµes
 
 ---
 
