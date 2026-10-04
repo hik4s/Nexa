@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CreateTransactionRequest(
+    val id: String? = null,
     val accountId: String,
     val amountMinor: Long,
     val currency: String,

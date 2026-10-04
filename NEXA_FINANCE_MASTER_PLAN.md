@@ -884,9 +884,11 @@ Validação desta microetapa: ApplicationTest com rate limit e isolamento por cl
 
 ### Microcheckpoint 3.2.1 — fundação local-first — 2026-10-04
 
-Implementada a fundação persistente no Android com Room 2.8.5 + KSP: banco `NexaDatabase` versionado, schema exportado, `sync_operations` como Outbox por usuário, `sync_checkpoints` por usuário, provider singleton e `SyncQueue` com lifecycle de fila e backoff exponencial limitado a 32s. O protocolo de sincronização servidor↔dispositivo ainda não foi ligado; por isso o item principal de sincronização permanece aberto.
+Implementada e integrada a primeira camada local-first no Android com Room 2.8.5 + KSP: banco `NexaDatabase` versionado, schema exportado, `sync_operations` como Outbox por usuário, `sync_checkpoints` por usuário, provider singleton, `SessionStore` com token protegido pelo Android Keystore, agendamento via WorkManager e `SyncQueue` com lifecycle de fila e backoff exponencial limitado a 32s. O lançamento rápido passou a persistir localmente antes da sincronização; o backend aceita IDs fornecidos pelo cliente para idempotência. Operações `PROCESSING` antigas são recuperadas automaticamente após interrupção do worker.
 
-Validação: `:app:testDebugUnitTest` + `:app:assembleDebug` passaram; `:app:connectedDebugAndroidTest` passou com 10/10 testes, 0 falhas e 0 ignorados.
+O protocolo de sincronização servidor↔dispositivo ainda não foi ligado; por isso o item principal de sincronização permanece aberto. Esta etapa cobre somente a fundação persistente, sessão segura e outbox/retry.
+
+Validação: backend `clean test` passou; Android `testDebugUnitTest` + `assembleDebug` passaram; teste instrumentado da sessão segura passou 2/2; fluxo E2E autenticado afetado pela alteração passou 1/1 com Ktor + PostgreSQL + emulador API 35 ativos; `git diff --check` passou.
 
 ---
 

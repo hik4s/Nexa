@@ -61,6 +61,44 @@ class TransactionApiTest {
     }
 
     @Test
+    fun transactionApiIsIdempotentForClientGeneratedTransactionId() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("tx-idempotent")
+        application { module() }
+        try {
+            val token = registerAndLogin(client, email, "password-123", "Idempotent User")
+            val account = client.post("/api/v1/accounts") {
+                bearer(token)
+                jsonBody("""{"name":"Idempotent Account","type":"CHECKING","openingBalanceMinor":10000,"currency":"BRL"}""")
+            }
+            assertEquals(201, account.status.value)
+            val accountId = json(account.bodyAsText())["id"]!!.jsonPrimitive.content
+            val transactionId = UUID.randomUUID().toString()
+            val body = """{"id":"$transactionId","accountId":"$accountId","amountMinor":2500,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-04","description":"Offline retry","source":"MANUAL"}"""
+
+            val first = client.post("/api/v1/transactions") {
+                bearer(token)
+                jsonBody(body)
+            }
+            val second = client.post("/api/v1/transactions") {
+                bearer(token)
+                jsonBody(body)
+            }
+
+            assertEquals(201, first.status.value, first.bodyAsText())
+            assertEquals(201, second.status.value, second.bodyAsText())
+            assertEquals(transactionId, json(first.bodyAsText())["id"]!!.jsonPrimitive.content)
+            assertEquals(transactionId, json(second.bodyAsText())["id"]!!.jsonPrimitive.content)
+
+            val list = client.get("/api/v1/transactions?accountId=$accountId") { bearer(token) }
+            assertEquals(200, list.status.value)
+            assertEquals(1, list.bodyAsText().split(transactionId).size - 1)
+        } finally {
+            cleanupUsers(email)
+        }
+    }
+
+    @Test
     fun transactionApiRejectsCurrencyMismatchAgainstPostgres() = testApplication {
         assumeTrue(hasPostgres())
         val email = uniqueEmail("tx-validation")

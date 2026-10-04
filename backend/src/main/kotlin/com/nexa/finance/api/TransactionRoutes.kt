@@ -41,6 +41,7 @@ fun Route.transactionRoutes(service: TransactionService) {
                     description = request.description,
                     categoryId = request.categoryId?.let { CategoryId(parseUuid(it, "Category ID is invalid.")) },
                     source = parseEnum(request.source, "Transaction source is invalid."),
+                    id = request.id?.let { parseUuid(it, "Transaction ID is invalid.") },
                 )
                 call.respond(HttpStatusCode.Created, transaction.toResponse())
             }

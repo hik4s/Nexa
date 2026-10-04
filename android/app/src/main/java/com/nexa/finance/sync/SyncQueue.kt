@@ -32,6 +32,10 @@ class SyncQueue(
     suspend fun claimBatch(userId: String, limit: Int = 20): List<SyncOperationEntity> {
         require(limit in 1..100) { "Sync batch limit must be between 1 and 100." }
         val now = clock()
+        operationDao.recoverStaleProcessing(
+            nowEpochMillis = now,
+            cutoffEpochMillis = now - PROCESSING_RECOVERY_TIMEOUT_MILLIS,
+        )
         val pending = operationDao.pending(userId, now, limit)
         pending.forEach { operationDao.updateStatus(it.id, SyncOperationEntity.STATUS_PROCESSING) }
         return pending.map { it.copy(status = SyncOperationEntity.STATUS_PROCESSING) }
@@ -52,6 +56,8 @@ class SyncQueue(
     }
 
     companion object {
+        private const val PROCESSING_RECOVERY_TIMEOUT_MILLIS = 5 * 60 * 1_000L
+
         fun backoffMillis(attemptCount: Int): Long {
             require(attemptCount >= 1) { "Sync attempt count must be at least 1." }
             val exponent = (attemptCount - 1).coerceAtMost(5)

@@ -30,7 +30,11 @@ class TransactionService(
         description: String?,
         categoryId: CategoryId?,
         source: TransactionSource,
+        id: TransactionId? = null,
     ): Transaction {
+        val existing = id?.let { transactions.findByOwnerAndId(ownerId, it) }
+        if (existing != null) return existing
+
         val account = accounts.findByOwnerAndId(ownerId, accountId)
             ?: throw DomainValidationException("Account was not found.")
         if (account.status != AccountStatus.ACTIVE) {
@@ -48,6 +52,7 @@ class TransactionService(
             description = description,
             categoryId = categoryId,
             source = source,
+            id = id ?: java.util.UUID.randomUUID(),
         )
         transactions.create(ownerId, transaction)
         return transaction

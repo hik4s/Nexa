@@ -8,6 +8,11 @@ import java.net.URL
 class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
     var token: String? = null
 
+    fun withToken(value: String): ApiClient {
+        token = value
+        return this
+    }
+
     fun login(email: String, password: String): String {
         val body = request("POST", "/api/v1/auth/login", JSONObject().apply {
             put("email", email)
@@ -448,14 +453,17 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         direction: String,
         description: String,
         categoryId: String? = null,
+        id: String? = null,
+        occurredOn: String = java.time.LocalDate.now().toString(),
     ): Tx {
         val o = request("POST", "/api/v1/transactions", JSONObject().apply {
             put("accountId", accountId)
+            put("id", id ?: JSONObject.NULL)
             put("amountMinor", amountMinor)
             put("currency", "BRL")
             put("type", type)
             put("direction", direction)
-            put("occurredOn", java.time.LocalDate.now().toString())
+            put("occurredOn", occurredOn)
             put("description", description)
             put("categoryId", categoryId ?: JSONObject.NULL)
             put("source", "MANUAL")

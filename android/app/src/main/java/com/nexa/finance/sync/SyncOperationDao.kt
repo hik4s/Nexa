@@ -29,6 +29,18 @@ interface SyncOperationDao {
         """
         UPDATE sync_operations
         SET status = 'FAILED',
+            nextAttemptAtEpochMillis = :nowEpochMillis,
+            lastError = 'Recovered after interrupted sync.'
+        WHERE status = 'PROCESSING'
+          AND createdAtEpochMillis < :cutoffEpochMillis
+        """,
+    )
+    suspend fun recoverStaleProcessing(nowEpochMillis: Long, cutoffEpochMillis: Long)
+
+    @Query(
+        """
+        UPDATE sync_operations
+        SET status = 'FAILED',
             attemptCount = :attemptCount,
             nextAttemptAtEpochMillis = :nextAttemptAtEpochMillis,
             lastError = :lastError

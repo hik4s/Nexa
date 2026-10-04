@@ -15,7 +15,9 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.nexa.finance.sync.SessionStore
 import java.util.UUID
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -25,6 +27,11 @@ import org.junit.runner.RunWith
 class FinanceE2ETest {
     @get:Rule
     val compose = createAndroidComposeRule<MainActivity>()
+
+    @After
+    fun clearSession() {
+        SessionStore(compose.activity).clear()
+    }
 
     private fun scrollToDashboard(tag: String) {
         compose.onNodeWithTag("dashboard_list").performScrollToNode(hasTestTag(tag))
@@ -70,7 +77,7 @@ class FinanceE2ETest {
         compose.onNodeWithTag("quick_submit").performClick()
 
         compose.waitUntil(15_000) {
-            compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodes(hasText("Lançamento salvo localmente; sincronização agendada.")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("quick_status").assertIsDisplayed()
         scrollToDashboard("dashboard_expenses")
@@ -128,7 +135,7 @@ class FinanceE2ETest {
         compose.onNodeWithTag("quick_input").performTextInput("123,45 teste e2e")
         compose.onNodeWithTag("quick_submit").performClick()
         compose.waitUntil(15_000) {
-            compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodes(hasText("Lançamento salvo localmente; sincronização agendada.")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("quick_status").assertIsDisplayed()
 

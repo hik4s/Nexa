@@ -36,6 +36,22 @@ class SyncQueueTest {
     }
 
     @Test
+    fun staleProcessingOperationIsRecoveredBeforeClaim() = runBlocking {
+        val dao = FakeSyncOperationDao()
+        val queue = SyncQueue(dao, clock = { 400_000L }, idFactory = { "operation-stale" })
+
+        queue.enqueue("user-1", "TRANSACTION", "tx-1", "UPSERT", "{}")
+        dao.items[0] = dao.items[0].copy(createdAtEpochMillis = 0L)
+        dao.updateStatus("operation-stale", SyncOperationEntity.STATUS_PROCESSING)
+
+        val claimed = queue.claimBatch("user-1")
+
+        assertEquals(1, claimed.size)
+        assertEquals(SyncOperationEntity.STATUS_PROCESSING, claimed.single().status)
+        assertEquals(0, claimed.single().attemptCount)
+    }
+
+    @Test
     fun failedOperationUsesCappedExponentialBackoff() = runBlocking {
         val dao = FakeSyncOperationDao()
         val queue = SyncQueue(dao, clock = { 10_000L }, idFactory = { "operation-2" })
@@ -92,6 +108,20 @@ class SyncQueueTest {
         override suspend fun updateStatus(id: String, status: String) {
             val index = items.indexOfFirst { it.id == id }
             items[index] = items[index].copy(status = status)
+        }
+
+        override suspend fun recoverStaleProcessing(nowEpochMillis: Long, cutoffEpochMillis: Long) {
+            items.replaceAll { operation ->
+                if (operation.status == SyncOperationEntity.STATUS_PROCESSING && operation.createdAtEpochMillis < cutoffEpochMillis) {
+                    operation.copy(
+                        status = SyncOperationEntity.STATUS_FAILED,
+                        nextAttemptAtEpochMillis = nowEpochMillis,
+                        lastError = "Recovered after interrupted sync.",
+                    )
+                } else {
+                    operation
+                }
+            }
         }
 
         override suspend fun markFailed(

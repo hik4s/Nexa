@@ -7,7 +7,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.nexa.finance.*
+import com.nexa.finance.sync.SessionStore
+import com.nexa.finance.sync.TransactionSyncEnqueuer
 import java.text.Normalizer
+import java.time.LocalDate
+import kotlinx.coroutines.runBlocking
 import java.util.Locale
 
 private data class ParsedQuickEntry(
@@ -140,12 +144,26 @@ fun QuickEntryCard(
                         installmentCount,
                     )
                 } else {
-                    api.createTransaction(
+                    val userId = SessionStore(context).userId() ?: error("Sessão expirada.")
+                    val operationId = runBlocking {
+                        TransactionSyncEnqueuer.enqueue(
+                            context = context,
+                            userId = userId,
+                            accountId = selectedAccountId,
+                            amountMinor = parsed.amountMinor,
+                            type = if (parsed.isIncome) "INCOME" else "EXPENSE",
+                            direction = if (parsed.isIncome) "CREDIT" else "DEBIT",
+                            description = parsed.description,
+                            categoryId = selectedCategory?.id,
+                        )
+                    }
+                    Tx(
+                        id = operationId,
                         accountId = selectedAccountId,
-                        amountMinor = parsed.amountMinor,
-                        type = if (parsed.isIncome) "INCOME" else "EXPENSE",
-                        direction = if (parsed.isIncome) "CREDIT" else "DEBIT",
                         description = parsed.description,
+                        amountMinor = parsed.amountMinor,
+                        direction = if (parsed.isIncome) "CREDIT" else "DEBIT",
+                        date = LocalDate.now().toString(),
                         categoryId = selectedCategory?.id,
                     )
                 }
@@ -153,8 +171,8 @@ fun QuickEntryCard(
                     onTransactionAdded(created)
                     input = ""
                     busy = false
-                    status = "Lançamento registrado."
-                    onMessage("Lançamento registrado.")
+                    status = "Lançamento salvo localmente; sincronização agendada."
+                    onMessage("Lançamento salvo localmente; sincronização agendada.")
                 }
             } catch (e: Exception) {
                 runOnMain {

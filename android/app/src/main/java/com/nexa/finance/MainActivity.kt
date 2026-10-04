@@ -13,26 +13,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nexa.finance.ui.theme.NexaTheme
+import com.nexa.finance.sync.LocalDatabaseProvider
+import com.nexa.finance.sync.SessionStore
+import com.nexa.finance.sync.SyncQueue
+import com.nexa.finance.sync.SyncScheduler
+import com.nexa.finance.sync.SyncWorker
 import com.nexa.finance.ui.QuickEntryCard
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private val api = ApiClient()
+    private lateinit var sessionStore: SessionStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { NexaTheme { NexaApp(api) } }
+        sessionStore = SessionStore(this)
+        sessionStore.token()?.let(api::withToken)
+        setContent { NexaTheme { NexaApp(api, sessionStore) } }
     }
 }
 
 @Composable
-private fun NexaApp(api: ApiClient) {
-    var loggedIn by remember { mutableStateOf(false) }
-    if (loggedIn) DashboardScreen(api) { loggedIn = false } else AuthScreen(api) { loggedIn = true }
+private fun NexaApp(api: ApiClient, sessionStore: SessionStore) {
+    var loggedIn by remember { mutableStateOf(sessionStore.token() != null && sessionStore.userId() != null) }
+    if (loggedIn) DashboardScreen(api) { sessionStore.clear(); api.token = null; loggedIn = false } else AuthScreen(api, sessionStore) { loggedIn = true }
 }
 
 @Composable
-private fun AuthScreen(api: ApiClient, onLogin: () -> Unit) {
+private fun AuthScreen(api: ApiClient, sessionStore: SessionStore, onLogin: () -> Unit) {
     var register by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
@@ -40,11 +48,12 @@ private fun AuthScreen(api: ApiClient, onLogin: () -> Unit) {
     var message by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
 
-    fun run(action: () -> Unit) {
+    fun run(action: () -> String?) {
         busy = true
         Thread {
             try {
-                action()
+                val userId = action()
+                if (!register && userId != null) sessionStore.save(userId, api.token ?: error("Sessão inválida."))
                 runOnMain { message = if (register) "Conta criada. Faça login." else "Login realizado."; busy = false; if (!register) onLogin() }
             } catch (e: Exception) {
                 runOnMain { message = e.message ?: "Falha na operação"; busy = false }
@@ -62,7 +71,7 @@ private fun AuthScreen(api: ApiClient, onLogin: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Button(
             enabled = !busy && email.isNotBlank() && password.isNotBlank() && (!register || name.isNotBlank()),
-            onClick = { run { if (register) { api.register(email, name, password) } else api.login(email, password) } },
+            onClick = { run { if (register) { api.register(email, name, password); null } else api.login(email, password) } },
             modifier = Modifier.fillMaxWidth().testTag("auth_submit")
         ) { Text(if (register) "Criar conta" else "Entrar") }
         TextButton(onClick = { register = !register; message = "" }) {
@@ -74,7 +83,7 @@ private fun AuthScreen(api: ApiClient, onLogin: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Dashboard(api: ApiClient, logout: () -> Unit) {
+private fun Dashboard(api: ApiClient, sessionStore: SessionStore, logout: () -> Unit) {
     var accounts by remember { mutableStateOf(emptyList<Account>()) }
     var cards by remember { mutableStateOf(emptyList<Card>()) }
     var categories by remember { mutableStateOf(emptyList<Category>()) }
