@@ -847,6 +847,7 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 - [x] Validação de porta inválida (fail-fast)
 - [x] Containerização do backend em JRE 17 sem root
 - [x] Validação local da imagem com GET /health e usuário não-root
+- [x] Contrato de secret por POSTGRES_PASSWORD_FILE
 - [ ] Ambiente de produÃ§Ã£o
 - [ ] ConfiguraÃ§Ã£o segura de secrets
 - [ ] Banco de produÃ§Ã£o

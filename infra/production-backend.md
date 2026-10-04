@@ -12,7 +12,9 @@ O processo usa configuração por ambiente. Para um ambiente de produção, inje
 - POSTGRES_PORT
 - POSTGRES_DB
 - POSTGRES_USER
-- POSTGRES_PASSWORD
+- POSTGRES_PASSWORD ou POSTGRES_PASSWORD_FILE
+
+Prefira POSTGRES_PASSWORD_FILE em ambientes que disponibilizam secrets como arquivo montado. A aplicação rejeita a definição simultânea das duas fontes para evitar ambiguidade.
 
 A aplicação também aceita POSTGRES_JDBC_URL quando o ambiente precisar controlar a URL JDBC inteira.
 
