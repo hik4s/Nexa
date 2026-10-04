@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.8 Busca, filtros e histórico concluído e validado; próximo passo 2.9 IA Financeira.
+**Checkpoint atual:** Parte 2 - 2.9 IA Financeira concluído e validado; próximo passo 2.10 Notificações e insights proativos.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -764,19 +764,19 @@ NEXA App
 
 ### Microtarefas
 
-- [ ] Criar interface de provider de IA
-- [ ] Criar camada de contexto
-- [ ] Definir quais dados podem ser enviados
-- [ ] Criar anÃ¡lise mensal
-- [ ] Criar explicaÃ§Ã£o de gastos
-- [ ] Criar detecÃ§Ã£o de padrÃµes
-- [ ] Criar insights
-- [ ] Criar perguntas financeiras
-- [ ] Criar anÃ¡lise de metas
-- [ ] Criar anÃ¡lise de orÃ§amento
-- [ ] Criar proteÃ§Ã£o contra respostas inventadas
-- [ ] Registrar origem dos nÃºmeros utilizados
-- [ ] Criar limites de uso
+- [x] Criar interface de provider de IA
+- [x] Criar camada de contexto
+- [x] Definir quais dados podem ser enviados
+- [x] Criar anÃ¡lise mensal
+- [x] Criar explicaÃ§Ã£o de gastos
+- [x] Criar detecÃ§Ã£o de padrÃµes
+- [x] Criar insights
+- [x] Criar perguntas financeiras
+- [x] Criar anÃ¡lise de metas
+- [x] Criar anÃ¡lise de orÃ§amento
+- [x] Criar proteÃ§Ã£o contra respostas inventadas
+- [x] Registrar origem dos nÃºmeros utilizados
+- [x] Criar limites de uso
 
 ### PrincÃ­pio
 
@@ -1940,3 +1940,47 @@ Conclusão 2.8:
 
 Próximo passo:
 - iniciar 2.9 IA Financeira.
+
+# Checkpoint 2.9.1 - 2026-10-04
+
+IA Financeira implementada como uma camada segura e desacoplada de fornecedor.
+
+Implementado:
+- interface AiProvider desacoplada do fornecedor/modelo;
+- RuleBasedAiProvider como provider inicial determinístico e testável;
+- Context Builder com allowlist de dados financeiros agregados;
+- análise mensal de entradas, despesas e resultado;
+- análise de categorias e concentração de gastos;
+- análise de orçamentos e metas;
+- detecção de tendência mensal de despesas;
+- perguntas financeiras com respostas somente quando há dados suficientes;
+- proteção contra respostas inventadas por meio de respostas estruturadas + sourceFactIds;
+- origem dos números registrada em cada insight/resposta;
+- limite de 20 consultas de IA por usuário/dia, persistido e atômico;
+- migration V12 para controle de uso;
+- API autenticada de análise, perguntas e uso diário;
+- painel Android de IA com insights, fontes e perguntas;
+- nenhum dado de descrição/transação pessoal é enviado ao provider atual.
+
+Validação:
+- RuleBasedAiProviderTest: PASS (3/3);
+- JdbcAiUsageRepositoryIntegrationTest: PASS;
+- AiContextBuilderIntegrationTest: PASS;
+- Flyway V1→V12 em PostgreSQL 18.6: PASS;
+- suíte backend completa: PASS (142/142);
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- AiPanelTest no emulator-5554: PASS (1/1);
+- git diff --check: PASS.
+
+Decisão arquitetural importante:
+- o NEXA ainda não chama um LLM externo nesta etapa porque nenhuma credencial de provider está configurada na máquina e não seria correto enviar dados financeiros para um serviço externo sem uma configuração explícita.
+- quando um provider externo for escolhido, ele deverá implementar AiProvider e receber apenas o AiFinancialContext permitido.
+
+Conclusão 2.9:
+- todas as microtarefas planejadas da camada segura de IA estão implementadas e validadas;
+- não há pendência técnica conhecida nesta vertical;
+- integração com um LLM externo fica como implementação de provider, sem alteração do contrato ou da UI.
+
+Próximo passo:
+- iniciar 2.10 Notificações e insights proativos.

@@ -20,9 +20,14 @@ import io.ktor.http.HttpStatusCode
 import com.nexa.finance.api.authRoutes
 import com.nexa.finance.api.budgetRoutes
 import com.nexa.finance.api.goalRoutes
+import com.nexa.finance.api.aiRoutes
 import com.nexa.finance.application.account.AccountService
 import com.nexa.finance.application.budget.BudgetService
 import com.nexa.finance.application.goal.GoalService
+import com.nexa.finance.application.ai.AiContextBuilder
+import com.nexa.finance.application.ai.AiService
+import com.nexa.finance.application.ai.RuleBasedAiProvider
+import com.nexa.finance.infrastructure.ai.JdbcAiUsageRepository
 import com.nexa.finance.application.auth.AuthenticationService
 import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
@@ -80,6 +85,8 @@ fun Application.module() {
     val recurrences = RecurrenceService(JdbcRecurrenceRepository(), accountRepository, JdbcTransactionRepository())
     val budgets = BudgetService(JdbcBudgetRepository())
     val goals = GoalService(JdbcGoalRepository())
+    val aiContext = AiContextBuilder(JdbcTransactionRepository(), JdbcBudgetRepository(), JdbcGoalRepository(), categories)
+    val ai = AiService(aiContext, RuleBasedAiProvider(), JdbcAiUsageRepository())
 
     install(ContentNegotiation) {
         json()
@@ -128,5 +135,6 @@ fun Application.module() {
         recurrenceRoutes(recurrences)
         budgetRoutes(budgets)
         goalRoutes(goals)
+        aiRoutes(ai)
     }
 }

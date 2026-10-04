@@ -271,6 +271,43 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         projectionStatus = o.optString("projectionStatus", "NO_CONTRIBUTION"),
     )
 
+    fun aiAnalysis(month: String = java.time.YearMonth.now().toString()): AiAnalysis {
+        val o = request("GET", "/api/v1/ai/analysis?month=$month")
+        val array = o.optJSONArray("insights")
+        val insights = if (array == null) emptyList() else {
+            (0 until array.length()).map { i ->
+                val item = array.getJSONObject(i)
+                val sources = item.optJSONArray("sourceFactIds")
+                AiInsight(
+                    id = item.getString("id"),
+                    level = item.getString("level"),
+                    title = item.getString("title"),
+                    message = item.getString("message"),
+                    sourceFactIds = if (sources == null) emptyList() else (0 until sources.length()).map { index -> sources.getString(index) },
+                )
+            }
+        }
+        return AiAnalysis(
+            month = o.getString("month"),
+            provider = o.getString("provider"),
+            monthlySummary = o.getString("monthlySummary"),
+            contextFactCount = o.getInt("contextFactCount"),
+            insights = insights,
+        )
+    }
+
+    fun askAi(question: String, month: String = java.time.YearMonth.now().toString()): AiAnswer {
+        val o = request("POST", "/api/v1/ai/questions", JSONObject().apply {
+            put("question", question)
+            put("month", month)
+        })
+        val sources = o.optJSONArray("sourceFactIds")
+        return AiAnswer(
+            answer = o.getString("answer"),
+            sourceFactIds = if (sources == null) emptyList() else (0 until sources.length()).map { i -> sources.getString(i) },
+        )
+    }
+
     fun recurrences(): List<Recurrence> {
         val array = requestArray("GET", "/api/v1/recurrences")
         return (0 until array.length()).map { i -> recurrenceFromJson(array.getJSONObject(i)) }
@@ -595,4 +632,25 @@ data class RecurrenceCandidate(
     val occurrenceCount: Int,
     val confidencePercent: Int,
     val nextOccurrenceOn: String,
+)
+
+data class AiInsight(
+    val id: String,
+    val level: String,
+    val title: String,
+    val message: String,
+    val sourceFactIds: List<String>,
+)
+
+data class AiAnalysis(
+    val month: String,
+    val provider: String,
+    val monthlySummary: String,
+    val contextFactCount: Int,
+    val insights: List<AiInsight>,
+)
+
+data class AiAnswer(
+    val answer: String,
+    val sourceFactIds: List<String>,
 )
