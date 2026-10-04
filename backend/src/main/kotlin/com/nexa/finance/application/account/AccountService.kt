@@ -31,6 +31,10 @@ class AccountService(
         repository.findByOwnerAndId(ownerId, accountId)
             ?: throw DomainValidationException("Account was not found.")
 
+    fun setPrimary(ownerId: UserId, accountId: AccountId): Account =
+        repository.setPrimary(ownerId, accountId)
+            ?: throw DomainValidationException("Active account was not found.")
+
     fun balance(ownerId: UserId, accountId: AccountId): Money {
         val account = get(ownerId, accountId)
         return repository.balance(account)

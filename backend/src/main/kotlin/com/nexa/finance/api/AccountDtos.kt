@@ -19,4 +19,5 @@ data class AccountResponse(
     val openingBalanceMinor: Long,
     val balanceMinor: Long,
     val status: String,
+    val isPrimary: Boolean,
 )

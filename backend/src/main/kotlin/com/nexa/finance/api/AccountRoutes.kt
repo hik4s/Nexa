@@ -48,6 +48,14 @@ fun Route.accountRoutes(service: AccountService) {
                 )
             }
 
+            post("/{id}/primary") {
+                val userId = call.principalUserId()
+                val accountId = call.parameters["id"]?.let(::parseUuid)
+                    ?: throw DomainValidationException("Account ID is invalid.")
+                val account = service.setPrimary(userId, AccountId(accountId))
+                call.respond(account.toResponse(service.balance(userId, account.id)))
+            }
+
             get("/{id}") {
                 val userId = call.principalUserId()
                 val accountId = call.parameters["id"]?.let(::parseUuid)
@@ -89,4 +97,5 @@ private fun com.nexa.finance.domain.account.Account.toResponse(balance: Money) =
         openingBalanceMinor = openingBalance.amountInMinor,
         balanceMinor = balance.amountInMinor,
         status = status.name,
+        isPrimary = isPrimary,
     )

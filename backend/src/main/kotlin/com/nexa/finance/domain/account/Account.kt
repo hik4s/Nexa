@@ -37,7 +37,8 @@ class Account private constructor(
     val openingBalance: Money,
     val createdAt: Instant,
     updatedAt: Instant,
-    status: AccountStatus
+    status: AccountStatus,
+    val isPrimary: Boolean,
 ) {
     val currency get() = openingBalance.currency
 
@@ -88,6 +89,7 @@ class Account private constructor(
             createdAt: Instant,
             updatedAt: Instant,
             status: AccountStatus,
+            isPrimary: Boolean = false,
         ): Account = Account(
             id = id,
             ownerId = ownerId,
@@ -97,6 +99,7 @@ class Account private constructor(
             createdAt = createdAt,
             updatedAt = updatedAt,
             status = status,
+            isPrimary = isPrimary,
         )
 
         fun create(
@@ -116,7 +119,8 @@ class Account private constructor(
                 openingBalance = openingBalance,
                 createdAt = now,
                 updatedAt = now,
-                status = AccountStatus.ACTIVE
+                status = AccountStatus.ACTIVE,
+                isPrimary = false
             )
         }
 

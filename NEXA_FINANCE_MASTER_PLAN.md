@@ -1662,3 +1662,22 @@ Observação:
 Status:
 - 2.2 CONCLUÍDA.
 - Próxima dependência: 2.3 Contas.
+
+# Checkpoint 2.3 - 2026-10-04
+
+Contas concluídas e validadas no aplicativo.
+
+Implementado:
+- listagem e detalhes de contas;
+- histórico filtrado por conta com accountId real;
+- tipos corrente, poupança e dinheiro em espécie;
+- conta principal persistida por usuário com migration V8 e índice único;
+- transferência entre contas integrada ao endpoint existente;
+- fluxo Android com estados e test tags dos principais controles.
+
+Validação:
+- backend clean test build: PASS;
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- scripts/verify.ps1 completo: PASS;
+- git diff --check: PASS.

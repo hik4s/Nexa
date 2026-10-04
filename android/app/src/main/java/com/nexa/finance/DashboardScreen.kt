@@ -25,6 +25,11 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
     var recurrences by remember { mutableStateOf(emptyList<Recurrence>()) }
     var message by remember { mutableStateOf("Carregando...") }
     var accountName by remember { mutableStateOf("") }
+    var accountType by remember { mutableStateOf("CHECKING") }
+    var selectedAccountId by remember { mutableStateOf<String?>(null) }
+    var transferSourceId by remember { mutableStateOf("") }
+    var transferDestinationId by remember { mutableStateOf("") }
+    var transferAmount by remember { mutableStateOf("") }
 
     fun refresh() {
         Thread {
@@ -158,12 +163,118 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                     onMessage = { message = it }
                 )
             }
+            item {
+                DashboardPanel("Transferir entre contas", Modifier.testTag("account_transfer")) {
+                    if (accounts.size < 2) {
+                        Text("Crie pelo menos duas contas para transferir valores.")
+                    } else {
+                        Text("Origem")
+                        accounts.forEach { account ->
+                            FilterChip(
+                                selected = transferSourceId == account.id,
+                                onClick = { transferSourceId = account.id },
+                                label = { Text(account.name) }
+                            )
+                        }
+                        Text("Destino")
+                        accounts.filter { it.id != transferSourceId }.forEach { account ->
+                            FilterChip(
+                                selected = transferDestinationId == account.id,
+                                onClick = { transferDestinationId = account.id },
+                                label = { Text(account.name) }
+                            )
+                        }
+                        OutlinedTextField(
+                            transferAmount,
+                            { transferAmount = it },
+                            Modifier.fillMaxWidth().testTag("transfer_amount"),
+                            label = { Text("Valor (R$)") }
+                        )
+                        Button(
+                            enabled = transferSourceId.isNotBlank() &&
+                                transferDestinationId.isNotBlank() &&
+                                transferSourceId != transferDestinationId &&
+                                transferAmount.replace(",", ".").toDoubleOrNull()?.let { it > 0 } == true,
+                            onClick = {
+                                val cents = ((transferAmount.replace(",", ".").toDoubleOrNull() ?: 0.0) * 100).toLong()
+                                Thread {
+                                    try {
+                                        api.createTransfer(transferSourceId, transferDestinationId, cents)
+                                        val latest = api.accounts()
+                                        val latestTx = api.transactions()
+                                        runOnMain {
+                                            accounts = latest
+                                            transactions = latestTx
+                                            transferAmount = ""
+                                            message = "Transferência registrada."
+                                        }
+                                    } catch (e: Exception) {
+                                        runOnMain { message = e.message ?: "Erro na transferência." }
+                                    }
+                                }.start()
+                            },
+                            modifier = Modifier.testTag("transfer_submit")
+                        ) { Text("Transferir") }
+                    }
+                }
+            }
             item { Text("Contas", style = MaterialTheme.typography.titleLarge) }
             items(accounts) { account ->
-                Card(Modifier.fillMaxWidth()) {
+                Card(Modifier.fillMaxWidth().testTag("account_" + account.id)) {
                     Column(Modifier.padding(16.dp)) {
-                        Text(account.name, style = MaterialTheme.typography.titleMedium)
-                        Text(formatMoney(account.balanceMinor))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Column(Modifier.weight(1f)) {
+                                Text(account.name, style = MaterialTheme.typography.titleMedium)
+                                Text(account.type.lowercase(Locale.ROOT).replaceFirstChar { it.uppercase() } + " • " + account.currency, style = MaterialTheme.typography.bodySmall)
+                                Text(formatMoney(account.balanceMinor))
+                            }
+                            if (account.isPrimary) Text("Principal", style = MaterialTheme.typography.labelMedium)
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = { selectedAccountId = account.id }) { Text("Detalhes") }
+                            if (!account.isPrimary) {
+                                OutlinedButton(onClick = {
+                                    Thread {
+                                        try {
+                                            api.setPrimaryAccount(account.id)
+                                            val latest = api.accounts()
+                                            runOnMain { accounts = latest; message = "Conta principal atualizada." }
+                                        } catch (e: Exception) {
+                                            runOnMain { message = e.message ?: "Erro" }
+                                        }
+                                    }.start()
+                                }) { Text("Tornar principal") }
+                            }
+                        }
+                    }
+                }
+            }
+            selectedAccountId?.let { id ->
+                accounts.firstOrNull { it.id == id }?.let { account ->
+                    item {
+                        DashboardPanel("Detalhes da conta", Modifier.testTag("account_details")) {
+                            Text(account.name, style = MaterialTheme.typography.titleMedium)
+                            Text("Tipo: " + account.type)
+                            Text("Moeda: " + account.currency)
+                            Text("Saldo: " + formatMoney(account.balanceMinor))
+                            Text(if (account.isPrimary) "Esta é a conta principal." else "Conta secundária.")
+                            TextButton(onClick = { selectedAccountId = null }) { Text("Fechar detalhes") }
+                        }
+                    }
+                    item {
+                        DashboardPanel("Histórico da conta", Modifier.testTag("account_history")) {
+                            val accountTx = transactions.filter { it.accountId == account.id }
+                            if (accountTx.isEmpty()) Text("Nenhuma movimentação encontrada.")
+                            else accountTx.take(20).forEach { tx ->
+                                Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(tx.description)
+                                        Text(tx.date, style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    Text((if (tx.direction == "DEBIT") "-" else "+") + formatMoney(tx.amountMinor))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -174,14 +285,19 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                     Modifier.fillMaxWidth().testTag("account_name"),
                     label = { Text("Nova conta") }
                 )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(selected = accountType == "CHECKING", onClick = { accountType = "CHECKING" }, label = { Text("Corrente") })
+                    FilterChip(selected = accountType == "SAVINGS", onClick = { accountType = "SAVINGS" }, label = { Text("Poupança") })
+                    FilterChip(selected = accountType == "CASH", onClick = { accountType = "CASH" }, label = { Text("Dinheiro") })
+                }
                 Button(
                     modifier = Modifier.testTag("account_submit"),
                     enabled = accountName.isNotBlank(),
                     onClick = {
                         Thread {
                             try {
-                                val created = api.createAccount(accountName)
-                                runOnMain { accounts = accounts + created; accountName = "" }
+                                val created = api.createAccount(accountName, accountType)
+                                runOnMain { accounts = accounts + created; accountName = ""; message = "Conta criada." }
                             } catch (e: Exception) {
                                 runOnMain { message = e.message ?: "Erro" }
                             }

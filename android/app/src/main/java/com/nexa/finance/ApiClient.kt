@@ -30,18 +30,34 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         val array = requestArray("GET", "/api/v1/accounts")
         return (0 until array.length()).map { i ->
             val o = array.getJSONObject(i)
-            Account(o.getString("id"), o.getString("name"), o.getLong("balanceMinor"))
+            Account(o.getString("id"), o.getString("name"), o.getLong("balanceMinor"), o.optBoolean("isPrimary", false), o.optString("type", "CHECKING"), o.optString("currency", "BRL"))
         }
     }
 
-    fun createAccount(name: String): Account {
+    fun createAccount(name: String, type: String = "CHECKING"): Account {
         val o = request("POST", "/api/v1/accounts", JSONObject().apply {
             put("name", name)
-            put("type", "CHECKING")
+            put("type", type)
             put("openingBalanceMinor", 0)
             put("currency", "BRL")
         })
-        return Account(o.getString("id"), o.getString("name"), o.getLong("balanceMinor"))
+        return Account(o.getString("id"), o.getString("name"), o.getLong("balanceMinor"), o.optBoolean("isPrimary", false), o.optString("type", type), o.optString("currency", "BRL"))
+    }
+
+    fun setPrimaryAccount(accountId: String): Account {
+        val o = request("POST", "/api/v1/accounts/$accountId/primary")
+        return Account(o.getString("id"), o.getString("name"), o.getLong("balanceMinor"), o.optBoolean("isPrimary", false), o.optString("type", "CHECKING"), o.optString("currency", "BRL"))
+    }
+
+    fun createTransfer(sourceAccountId: String, destinationAccountId: String, amountMinor: Long) {
+        request("POST", "/api/v1/transfers", JSONObject().apply {
+            put("sourceAccountId", sourceAccountId)
+            put("destinationAccountId", destinationAccountId)
+            put("amountMinor", amountMinor)
+            put("currency", "BRL")
+            put("occurredOn", java.time.LocalDate.now().toString())
+            put("source", "MANUAL")
+        })
     }
 
     fun categories(type: String? = null): List<Category> {
@@ -72,6 +88,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
             val o = array.getJSONObject(i)
             Tx(
                 o.getString("id"),
+                o.getString("accountId"),
                 o.optString("description").ifBlank { o.getString("type") },
                 o.getLong("amountMinor"),
                 o.getString("direction"),
@@ -119,6 +136,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         })
         return Tx(
             o.getString("id"),
+            o.getString("accountId"),
             o.optString("description").ifBlank { type },
             o.getLong("amountMinor"),
             o.getString("direction"),
@@ -142,6 +160,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         })
         return Tx(
             o.getString("id"),
+            o.getString("accountId"),
             o.optString("description").ifBlank { "Compra no cartão" },
             o.getLong("amountMinor"),
             o.getString("direction"),
@@ -187,11 +206,12 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
     }
 }
 
-data class Account(val id: String, val name: String, val balanceMinor: Long)
+data class Account(val id: String, val name: String, val balanceMinor: Long, val isPrimary: Boolean = false, val type: String = "CHECKING", val currency: String = "BRL")
 data class Card(val id: String, val name: String, val availableLimitMinor: Long, val status: String)
 data class Category(val id: String, val name: String, val type: String, val iconKey: String?)
 data class Tx(
     val id: String,
+    val accountId: String,
     val description: String,
     val amountMinor: Long,
     val direction: String,

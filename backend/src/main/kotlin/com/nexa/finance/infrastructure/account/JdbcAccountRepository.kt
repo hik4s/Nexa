@@ -19,8 +19,8 @@ class JdbcAccountRepository(
             c.prepareStatement(
                 """
                 INSERT INTO accounts
-                    (id, owner_id, name, type, currency, opening_balance_minor, status, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (id, owner_id, name, type, currency, opening_balance_minor, status, is_primary, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """.trimIndent()
             ).use { s ->
                 s.setObject(1, account.id.value)
@@ -30,8 +30,9 @@ class JdbcAccountRepository(
                 s.setString(5, account.currency.name)
                 s.setLong(6, account.openingBalance.amountInMinor)
                 s.setString(7, account.status.name)
-                s.setTimestamp(8, Timestamp.from(account.createdAt))
-                s.setTimestamp(9, Timestamp.from(account.updatedAt))
+                s.setBoolean(8, account.isPrimary)
+                s.setTimestamp(9, Timestamp.from(account.createdAt))
+                s.setTimestamp(10, Timestamp.from(account.updatedAt))
                 s.executeUpdate()
             }
         }
@@ -41,7 +42,7 @@ class JdbcAccountRepository(
         connections.open().use { c ->
             c.prepareStatement(
                 """
-                SELECT id, owner_id, name, type, currency, opening_balance_minor, status, created_at, updated_at
+                SELECT id, owner_id, name, type, currency, opening_balance_minor, status, is_primary, created_at, updated_at
                 FROM accounts
                 WHERE owner_id = ?
                 ORDER BY created_at, id
@@ -60,7 +61,7 @@ class JdbcAccountRepository(
         connections.open().use { c ->
             c.prepareStatement(
                 """
-                SELECT id, owner_id, name, type, currency, opening_balance_minor, status, created_at, updated_at
+                SELECT id, owner_id, name, type, currency, opening_balance_minor, status, is_primary, created_at, updated_at
                 FROM accounts
                 WHERE owner_id = ? AND id = ?
                 """.trimIndent()
@@ -70,6 +71,32 @@ class JdbcAccountRepository(
                 s.executeQuery().use { r ->
                     if (r.next()) r.toAccount() else null
                 }
+            }
+        }
+
+    fun setPrimary(ownerId: UserId, accountId: AccountId): Account? =
+        connections.open().use { c ->
+            c.autoCommit = false
+            try {
+                c.prepareStatement("UPDATE accounts SET is_primary = FALSE, updated_at = CURRENT_TIMESTAMP WHERE owner_id = ? AND is_primary = TRUE").use { s ->
+                    s.setObject(1, ownerId.value)
+                    s.executeUpdate()
+                }
+                c.prepareStatement("UPDATE accounts SET is_primary = TRUE, updated_at = CURRENT_TIMESTAMP WHERE owner_id = ? AND id = ? AND status = 'ACTIVE'").use { s ->
+                    s.setObject(1, ownerId.value)
+                    s.setObject(2, accountId.value)
+                    if (s.executeUpdate() == 0) {
+                        c.rollback()
+                        return@use null
+                    }
+                }
+                c.commit()
+                findByOwnerAndId(ownerId, accountId)
+            } catch (e: Exception) {
+                c.rollback()
+                throw e
+            } finally {
+                c.autoCommit = true
             }
         }
 
@@ -109,5 +136,6 @@ class JdbcAccountRepository(
             createdAt = getTimestamp("created_at").toInstant(),
             updatedAt = getTimestamp("updated_at").toInstant(),
             status = AccountStatus.valueOf(getString("status")),
+            isPrimary = getBoolean("is_primary"),
         )
 }
