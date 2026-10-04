@@ -66,7 +66,7 @@ class JdbcTransactionRepository(
                 FROM transactions t
                 JOIN accounts a ON a.id = t.account_id
                 WHERE a.owner_id = ?
-                  AND (? IS NULL OR t.account_id = ?)
+                  AND (CAST(? AS UUID) IS NULL OR t.account_id = CAST(? AS UUID))
                 ORDER BY t.occurred_on DESC, t.created_at DESC, t.id DESC
                 """.trimIndent()
             ).use { s ->

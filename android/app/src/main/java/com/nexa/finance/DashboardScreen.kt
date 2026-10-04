@@ -32,6 +32,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
     var selectedCardId by remember { mutableStateOf<String?>(null) }
     var transactions by remember { mutableStateOf(emptyList<Tx>()) }
     var recurrences by remember { mutableStateOf(emptyList<Recurrence>()) }
+    var recurrenceCandidates by remember { mutableStateOf(emptyList<RecurrenceCandidate>()) }
     var budgets by remember { mutableStateOf(emptyList<Budget>()) }
     var goals by remember { mutableStateOf(emptyList<Goal>()) }
     var message by remember { mutableStateOf("Carregando...") }
@@ -51,6 +52,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
             runCatching { api.categories() }.onSuccess { runOnMain { categories = it } }.onFailure { failures++ }
             runCatching { api.transactions() }.onSuccess { runOnMain { transactions = it } }.onFailure { failures++ }
             runCatching { api.recurrences() }.onSuccess { runOnMain { recurrences = it } }.onFailure { failures++ }
+            runCatching { api.recurrenceCandidates() }.onSuccess { runOnMain { recurrenceCandidates = it } }.onFailure { failures++ }
             runCatching { api.budgets() }.onSuccess { runOnMain { budgets = it } }.onFailure { failures++ }
             runCatching { api.goals() }.onSuccess { runOnMain { goals = it } }.onFailure { failures++ }
             runOnMain { message = if (failures == 0) "" else "Alguns dados não puderam ser carregados." }
@@ -136,18 +138,16 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                 }
             }
             item {
-                DashboardPanel("Gastos recorrentes", Modifier.testTag("dashboard_recurring")) {
-                    if (activeRecurrences.isEmpty()) Text("Nenhuma recorrência ativa.")
-                    else activeRecurrences.take(5).forEach {
-                        Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Column(Modifier.weight(1f)) {
-                                Text(it.description)
-                                Text(it.frequency.lowercase(Locale.ROOT) + " · a partir de " + it.startOn, style = MaterialTheme.typography.bodySmall)
-                            }
-                            Text(formatMoney(it.amountMinor))
-                        }
-                    }
-                }
+                RecurrencePanel(
+                    api = api,
+                    recurrences = recurrences,
+                    candidates = recurrenceCandidates,
+                    accounts = accounts,
+                    categories = categories,
+                    onRecurrencesChanged = { recurrences = it },
+                    onCandidatesChanged = { recurrenceCandidates = it },
+                    onMessage = { message = it },
+                )
             }
             item {
                 BudgetPanel(

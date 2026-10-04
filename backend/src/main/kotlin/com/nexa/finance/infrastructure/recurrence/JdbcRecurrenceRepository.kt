@@ -64,6 +64,37 @@ class JdbcRecurrenceRepository(
             }
         }
 
+    fun update(recurrence: Recurrence): Recurrence? =
+        connections.open().use { c ->
+            c.prepareStatement(
+                """
+                UPDATE recurrences
+                SET account_id = ?, amount_minor = ?, currency = ?, transaction_type = ?,
+                    frequency = ?, interval_value = ?, start_on = ?, end_on = ?,
+                    max_occurrences = ?, description = ?, category_id = ?, status = ?, updated_at = ?
+                WHERE user_id = ? AND id = ?
+                RETURNING *
+                """.trimIndent()
+            ).use { s ->
+                s.setObject(1, recurrence.accountId.value)
+                s.setLong(2, recurrence.amount.amountInMinor)
+                s.setString(3, recurrence.amount.currency.name)
+                s.setString(4, recurrence.transactionType.name)
+                s.setString(5, recurrence.frequency.name)
+                s.setInt(6, recurrence.interval)
+                s.setObject(7, recurrence.startOn)
+                if (recurrence.endOn == null) s.setNull(8, java.sql.Types.DATE) else s.setObject(8, recurrence.endOn)
+                if (recurrence.maxOccurrences == null) s.setNull(9, java.sql.Types.INTEGER) else s.setInt(9, recurrence.maxOccurrences)
+                s.setString(10, recurrence.description)
+                if (recurrence.categoryId == null) s.setNull(11, java.sql.Types.OTHER) else s.setObject(11, recurrence.categoryId.value)
+                s.setString(12, recurrence.status.name)
+                s.setTimestamp(13, Timestamp.from(recurrence.updatedAt))
+                s.setObject(14, recurrence.userId.value)
+                s.setObject(15, recurrence.id)
+                s.executeQuery().use { r -> if (r.next()) r.toRecurrence() else null }
+            }
+        }
+
     fun updateStatus(ownerId: UserId, id: RecurrenceId, status: RecurrenceStatus): Recurrence? =
         connections.open().use { c ->
             c.prepareStatement("UPDATE recurrences SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND id = ? RETURNING *").use { s ->

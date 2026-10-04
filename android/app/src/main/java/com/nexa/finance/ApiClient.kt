@@ -273,19 +273,114 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
 
     fun recurrences(): List<Recurrence> {
         val array = requestArray("GET", "/api/v1/recurrences")
+        return (0 until array.length()).map { i -> recurrenceFromJson(array.getJSONObject(i)) }
+    }
+
+    fun createRecurrence(
+        accountId: String,
+        amountMinor: Long,
+        transactionType: String,
+        frequency: String,
+        interval: Int,
+        startOn: String,
+        endOn: String? = null,
+        maxOccurrences: Int? = null,
+        description: String? = null,
+        categoryId: String? = null,
+    ): Recurrence = recurrenceFromJson(request("POST", "/api/v1/recurrences", JSONObject().apply {
+        put("accountId", accountId)
+        put("amountMinor", amountMinor)
+        put("currency", "BRL")
+        put("transactionType", transactionType)
+        put("frequency", frequency)
+        put("interval", interval)
+        put("startOn", startOn)
+        put("endOn", endOn ?: JSONObject.NULL)
+        put("maxOccurrences", maxOccurrences ?: JSONObject.NULL)
+        put("description", description ?: JSONObject.NULL)
+        put("categoryId", categoryId ?: JSONObject.NULL)
+    }))
+
+    fun updateRecurrence(
+        id: String,
+        accountId: String,
+        amountMinor: Long,
+        transactionType: String,
+        frequency: String,
+        interval: Int,
+        startOn: String,
+        endOn: String? = null,
+        maxOccurrences: Int? = null,
+        description: String? = null,
+        categoryId: String? = null,
+    ): Recurrence = recurrenceFromJson(request("PUT", "/api/v1/recurrences/$id", JSONObject().apply {
+        put("accountId", accountId)
+        put("amountMinor", amountMinor)
+        put("currency", "BRL")
+        put("transactionType", transactionType)
+        put("frequency", frequency)
+        put("interval", interval)
+        put("startOn", startOn)
+        put("endOn", endOn ?: JSONObject.NULL)
+        put("maxOccurrences", maxOccurrences ?: JSONObject.NULL)
+        put("description", description ?: JSONObject.NULL)
+        put("categoryId", categoryId ?: JSONObject.NULL)
+    }))
+
+    fun pauseRecurrence(id: String): Recurrence =
+        recurrenceFromJson(request("POST", "/api/v1/recurrences/$id/pause"))
+
+    fun resumeRecurrence(id: String): Recurrence =
+        recurrenceFromJson(request("POST", "/api/v1/recurrences/$id/resume"))
+
+    fun cancelRecurrence(id: String): Recurrence =
+        recurrenceFromJson(request("DELETE", "/api/v1/recurrences/$id"))
+
+    fun recurrenceCandidates(): List<RecurrenceCandidate> {
+        val array = requestArray("GET", "/api/v1/recurrences/candidates")
         return (0 until array.length()).map { i ->
             val o = array.getJSONObject(i)
-            Recurrence(
-                o.getString("id"),
-                o.getLong("amountMinor"),
-                o.getString("transactionType"),
-                o.getString("frequency"),
-                o.getInt("interval"),
-                o.getString("startOn"),
-                o.optString("description").ifBlank { "Recorrência" },
-                o.getString("status"),
+            RecurrenceCandidate(
+                accountId = o.getString("accountId"),
+                amountMinor = o.getLong("amountMinor"),
+                currency = o.getString("currency"),
+                transactionType = o.getString("transactionType"),
+                frequency = o.getString("frequency"),
+                description = o.getString("description"),
+                categoryId = o.optString("categoryId").ifBlank { null },
+                occurrenceCount = o.getInt("occurrenceCount"),
+                confidencePercent = o.getInt("confidencePercent"),
+                nextOccurrenceOn = o.getString("nextOccurrenceOn"),
             )
         }
+    }
+
+    private fun recurrenceFromJson(o: JSONObject): Recurrence {
+        val occurrences = o.optJSONArray("nextOccurrences")
+        val nextOccurrences = if (occurrences == null) emptyList() else {
+            (0 until occurrences.length()).map { i ->
+                val item = occurrences.getJSONObject(i)
+                item.getInt("number").toString() + "|" + item.getString("scheduledOn")
+            }
+        }
+        return Recurrence(
+            id = o.getString("id"),
+            accountId = o.getString("accountId"),
+            amountMinor = o.getLong("amountMinor"),
+            transactionType = o.getString("transactionType"),
+            frequency = o.getString("frequency"),
+            interval = o.getInt("interval"),
+            startOn = o.getString("startOn"),
+            endOn = o.optString("endOn").ifBlank { null },
+            maxOccurrences = o.optInt("maxOccurrences", 0).takeIf { o.has("maxOccurrences") && !o.isNull("maxOccurrences") && it > 0 },
+            description = o.optString("description").ifBlank { "Recorrência" },
+            categoryId = o.optString("categoryId").ifBlank { null },
+            status = o.getString("status"),
+            nextOccurrenceNumber = o.optInt("nextOccurrenceNumber", 0).takeIf { it > 0 },
+            nextOccurrenceOn = o.optString("nextOccurrenceOn").ifBlank { null },
+            nextOccurrences = nextOccurrences,
+            alertLevel = o.optString("alertLevel", "NONE"),
+        )
     }
 
     fun createTransaction(
@@ -472,11 +567,32 @@ data class Goal(
 
 data class Recurrence(
     val id: String,
+    val accountId: String,
     val amountMinor: Long,
     val transactionType: String,
     val frequency: String,
     val interval: Int,
     val startOn: String,
+    val endOn: String?,
+    val maxOccurrences: Int?,
     val description: String,
+    val categoryId: String?,
     val status: String,
+    val nextOccurrenceNumber: Int?,
+    val nextOccurrenceOn: String?,
+    val nextOccurrences: List<String>,
+    val alertLevel: String,
+)
+
+data class RecurrenceCandidate(
+    val accountId: String,
+    val amountMinor: Long,
+    val currency: String,
+    val transactionType: String,
+    val frequency: String,
+    val description: String,
+    val categoryId: String?,
+    val occurrenceCount: Int,
+    val confidencePercent: Int,
+    val nextOccurrenceOn: String,
 )

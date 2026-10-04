@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 - 2.6 Metas financeiras concluído e validado; próximo passo 2.7 Recorrências.
+**Checkpoint atual:** Parte 2 - 2.7 Recorrências concluído e validado; próximo passo 2.8 Busca, filtros e histórico.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -721,13 +721,13 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 ## 2.7 â€” RecorrÃªncias
 
-- [ ] Criar recorrÃªncia
-- [ ] Editar recorrÃªncia
-- [ ] Pausar recorrÃªncia
-- [ ] Encerrar recorrÃªncia
-- [ ] Detectar possÃ­veis recorrÃªncias
-- [ ] PrÃ³ximas cobranÃ§as
-- [ ] Alertas
+- [x] Criar recorrÃªncia
+- [x] Editar recorrÃªncia
+- [x] Pausar recorrÃªncia
+- [x] Encerrar recorrÃªncia
+- [x] Detectar possÃ­veis recorrÃªncias
+- [x] PrÃ³ximas cobranÃ§as
+- [x] Alertas
 
 ---
 
@@ -1870,5 +1870,42 @@ Conclusão 2.6:
 - todas as microtarefas planejadas de metas financeiras estão implementadas e validadas;
 - não há pendência técnica conhecida nesta vertical.
 
+# Checkpoint 2.7.1 - 2026-10-04
+
+Recorrências implementadas e validadas do domínio ao Android.
+
+Implementado:
+- criação e edição de recorrências;
+- frequências diária, semanal, mensal e anual com intervalo configurável;
+- data inicial, final e limite de ocorrências;
+- pausar, retomar e encerrar recorrência;
+- geração determinística de ocorrências sem criar lançamentos automaticamente;
+- resumo de próxima ocorrência, próximas cobranças e nível de alerta;
+- execução manual de ocorrência como transação real do ledger;
+- execução idempotente por recorrência + número da ocorrência;
+- bloqueio de execução em contas arquivadas ou cartões de crédito;
+- detecção de possíveis recorrências a partir de lançamentos POSTED;
+- isolamento por usuário, conta, categoria e moeda;
+- API autenticada de criação, edição, listagem, detalhe, ocorrências, ciclo de vida, execução e candidatos;
+- integração Android no dashboard com formulário, edição, pausa/retomada, encerramento e sugestões detectadas;
+- testes de domínio, insights, API e Android instrumentado.
+
+Validação:
+- PostgreSQL 18.6 com Flyway V1→V11: PASS;
+- RecurrenceInsightsTest: PASS;
+- RecurrenceApiTest: PASS (6/6);
+- suíte backend completa: PASS;
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- RecurrencePanelTest no emulator-5554: PASS (1/1);
+- git diff --check: PASS.
+
+Correção relevante:
+- corrigido filtro opcional de conta em JdbcTransactionRepository.findByOwner, tipando explicitamente UUID nulo para PostgreSQL.
+
+Conclusão 2.7:
+- todas as microtarefas planejadas de recorrências estão implementadas e validadas;
+- não há pendência técnica conhecida nesta vertical.
+
 Próximo passo:
-- iniciar 2.7 Recorrências.
+- iniciar 2.8 Busca, filtros e histórico.

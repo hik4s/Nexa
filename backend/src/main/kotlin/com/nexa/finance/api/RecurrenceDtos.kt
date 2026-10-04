@@ -18,6 +18,32 @@ data class CreateRecurrenceRequest(
 )
 
 @Serializable
+data class UpdateRecurrenceRequest(
+    val accountId: String,
+    val amountMinor: Long,
+    val currency: String,
+    val transactionType: String,
+    val frequency: String,
+    val interval: Int = 1,
+    val startOn: String,
+    val endOn: String? = null,
+    val maxOccurrences: Int? = null,
+    val description: String? = null,
+    val categoryId: String? = null,
+)
+
+@Serializable
+data class RecurrenceOccurrenceResponse(
+    val number: Int,
+    val scheduledOn: String,
+)
+
+@Serializable
+data class RecurrenceOccurrencesResponse(
+    val occurrences: List<RecurrenceOccurrenceResponse>,
+)
+
+@Serializable
 data class RecurrenceResponse(
     val id: String,
     val accountId: String,
@@ -32,10 +58,22 @@ data class RecurrenceResponse(
     val description: String?,
     val categoryId: String?,
     val status: String,
+    val nextOccurrenceNumber: Int? = null,
+    val nextOccurrenceOn: String? = null,
+    val nextOccurrences: List<RecurrenceOccurrenceResponse> = emptyList(),
+    val alertLevel: String = "NONE",
 )
 
 @Serializable
-data class RecurrenceOccurrenceResponse(val number: Int, val scheduledOn: String)
-
-@Serializable
-data class RecurrenceOccurrencesResponse(val occurrences: List<RecurrenceOccurrenceResponse>)
+data class RecurrenceCandidateResponse(
+    val accountId: String,
+    val amountMinor: Long,
+    val currency: String,
+    val transactionType: String,
+    val frequency: String,
+    val description: String,
+    val categoryId: String?,
+    val occurrenceCount: Int,
+    val confidencePercent: Int,
+    val nextOccurrenceOn: String,
+)

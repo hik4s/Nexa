@@ -10,9 +10,12 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import java.util.UUID
 import kotlin.test.*
 
+@Execution(ExecutionMode.SAME_THREAD)
 class RecurrenceApiTest {
     @Test
     fun recurrenceLifecycleOccurrencesAndIdempotentExecutionWorkAgainstPostgres() = testApplication {
@@ -56,7 +59,7 @@ class RecurrenceApiTest {
             assertEquals(400, client.post("/api/v1/recurrences/$id/occurrences/1/execute") { bearer(token) }.status.value)
             assertEquals(200, client.post("/api/v1/recurrences/$id/resume") { bearer(token) }.status.value)
             assertEquals(201, client.post("/api/v1/recurrences/$id/occurrences/1/execute") { bearer(token) }.status.value)
-            assertEquals(200, client.post("/api/v1/recurrences/$id/cancel") { bearer(token) }.status.value)
+            assertEquals(200, client.delete("/api/v1/recurrences/$id") { bearer(token) }.status.value)
             assertEquals(400, client.post("/api/v1/recurrences/$id/occurrences/2/execute") { bearer(token) }.status.value)
         } finally { cleanupUser(email) }
     }
@@ -96,6 +99,67 @@ class RecurrenceApiTest {
             }
             assertEquals(400, invalidCategory.status.value, invalidCategory.bodyAsText())
         } finally { cleanupUser(email) }
+    }
+
+    @Test
+    fun recurrenceCanBeEditedAndReturnsNextOccurrenceSummary() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("recurrence-edit")
+        application { module() }
+        try {
+            val token = registerAndLogin(client, email, "password-123", "Edit User")
+            val account = createAccount(client, token, "Checking", 100_000)
+            val created = client.post("/api/v1/recurrences") {
+                bearer(token)
+                jsonBody("""{"accountId":"$account","amountMinor":9000,"currency":"BRL","transactionType":"EXPENSE","frequency":"MONTHLY","startOn":"2026-11-04","description":"Internet"}""")
+            }
+            assertEquals(201, created.status.value, created.bodyAsText())
+            val id = json(created.bodyAsText())["id"]!!.jsonPrimitive.content
+            assertTrue(created.bodyAsText().contains("\"nextOccurrenceOn\""))
+
+            val updated = client.put("/api/v1/recurrences/$id") {
+                bearer(token)
+                jsonBody("""{"accountId":"$account","amountMinor":12000,"currency":"BRL","transactionType":"EXPENSE","frequency":"WEEKLY","interval":1,"startOn":"2026-11-04","description":"Internet fibra"}""")
+            }
+            assertEquals(200, updated.status.value, updated.bodyAsText())
+            assertTrue(updated.bodyAsText().contains("\"amountMinor\":12000"))
+            assertTrue(updated.bodyAsText().contains("\"frequency\":\"WEEKLY\""))
+            assertTrue(updated.bodyAsText().contains("Internet fibra"))
+            assertTrue(updated.bodyAsText().contains("\"nextOccurrences\""))
+        } finally {
+            cleanupUser(email)
+        }
+    }
+
+    @Test
+    fun detectsPossibleRecurringTransactions() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("recurrence-detect")
+        application { module() }
+        try {
+            val token = registerAndLogin(client, email, "password-123", "Detector User")
+            val account = createAccount(client, token, "Checking", 100_000)
+            listOf("2026-09-13", "2026-09-20", "2026-09-27").forEach { date ->
+                val tx = client.post("/api/v1/transactions") {
+                    bearer(token)
+                    jsonBody("""{"accountId":"$account","amountMinor":15990,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"$date","description":"Streaming","source":"MANUAL"}""")
+                }
+                assertEquals(201, tx.status.value, tx.bodyAsText())
+                assertEquals(
+                    "POSTED",
+                    json(tx.bodyAsText())["status"]!!.jsonPrimitive.content,
+                )
+            }
+
+            val candidates = client.get("/api/v1/recurrences/candidates") { bearer(token) }
+            assertEquals(200, candidates.status.value, candidates.bodyAsText())
+            val candidateBody = candidates.bodyAsText()
+            assertTrue(candidateBody.contains("Streaming"), candidateBody)
+            assertTrue(candidateBody.contains("\"frequency\":\"WEEKLY\""), candidateBody)
+            assertTrue(candidateBody.contains("\"confidencePercent\":"), candidateBody)
+        } finally {
+            cleanupUser(email)
+        }
     }
 
     private suspend fun registerAndLogin(client: HttpClient, email: String, password: String, name: String): String {
