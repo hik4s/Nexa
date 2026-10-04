@@ -1,4 +1,4 @@
-﻿# NEXA Finance â€” Plano Mestre do Projeto
+# NEXA Finance â€” Plano Mestre do Projeto
 
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
@@ -561,7 +561,7 @@ A API responde de maneira consistente e previsÃ­vel a requests vÃ¡lidos e in
 
 ### Microtarefas
 
-- [ ] CÃ¡lculo de saldo
+- [x] Cálculo de saldo
 - [ ] Registro de receita
 - [ ] Registro de despesa
 - [ ] TransferÃªncia entre contas
@@ -655,7 +655,7 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 ## 2.2 â€” Dashboard
 
-- [ ] Saldo
+- [x] Cálculo de saldo
 - [ ] Entradas
 - [ ] Despesas
 - [ ] Resultado do perÃ­odo
@@ -672,7 +672,7 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 - [ ] Listagem
 - [ ] Detalhes
-- [ ] Saldo
+- [x] Cálculo de saldo
 - [ ] HistÃ³rico
 - [ ] TransferÃªncias
 - [ ] Conta principal
