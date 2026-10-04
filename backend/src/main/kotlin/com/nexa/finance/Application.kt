@@ -3,6 +3,7 @@ package com.nexa.finance
 import io.ktor.serialization.kotlinx.json.json
 import com.nexa.finance.api.ApiError
 import com.nexa.finance.api.accountRoutes
+import com.nexa.finance.api.categoryRoutes
 import com.nexa.finance.api.cardRoutes
 import com.nexa.finance.api.invoiceRoutes
 import com.nexa.finance.api.installmentRoutes
@@ -28,6 +29,7 @@ import com.nexa.finance.infrastructure.installment.JdbcInstallmentRepository
 import com.nexa.finance.application.refund.RefundService
 import com.nexa.finance.application.recurrence.RecurrenceService
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
+import com.nexa.finance.infrastructure.category.JdbcCategoryRepository
 import com.nexa.finance.infrastructure.card.JdbcCardRepository
 import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
 import com.nexa.finance.infrastructure.user.JdbcUserAuthRepository
@@ -60,6 +62,7 @@ fun Application.module() {
     val recovery = RecoveryService(repository)
     val profile = ProfileService(repository)
     val accountRepository = JdbcAccountRepository()
+    val categories = JdbcCategoryRepository()
     val accounts = AccountService(accountRepository)
     val transactions = TransactionService(JdbcTransactionRepository(), accountRepository)
     val transfers = TransferService(JdbcTransferRepository(), accountRepository)
@@ -107,6 +110,7 @@ fun Application.module() {
         }
         authRoutes(authentication, recovery, profile)
         accountRoutes(accounts)
+        categoryRoutes(categories)
         transactionRoutes(transactions)
         transferRoutes(transfers)
         cardRoutes(cards)

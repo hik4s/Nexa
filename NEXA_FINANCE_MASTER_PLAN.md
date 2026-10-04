@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 e 1.5 concluidas; automacao de desenvolvimento instalada e verificada.
+**Checkpoint atual:** Parte 2 - 2.1 Registro ultrarrápido concluído e validado; próximo passo 2.2 Dashboard.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -1586,3 +1586,38 @@ Status:
 - **1.10 CONCLUÍDA.**
 - O bloqueio de runtime que existia em 1.10.2 foi fechado com teste instrumentado reproduzível.
 - Próxima dependência: avançar para a próxima etapa da Parte 2 conforme o plano.
+
+# Checkpoint 2.1 - 2026-10-04
+
+Registro ultrarrápido da Parte 2 implementado e validado de ponta a ponta.
+
+Implementado:
+- endpoint autenticado de categorias de sistema;
+- migration V7 com 10 categorias estáveis;
+- teste de API de categorias com PostgreSQL real;
+- entrada rápida com valor + descrição;
+- parser de valores em BRL, tipo, categoria e descrição;
+- seleção rápida de categoria;
+- conta padrão persistida localmente;
+- cartão padrão persistido localmente quando disponível;
+- confirmação em poucos toques;
+- atualização imediata do histórico usando a transação retornada pela API;
+- teste instrumentado real cobrindo cadastro, login, conta, entrada natural, categoria, POST e histórico.
+
+Validação:
+- PostgreSQL: PASS; migrations 1-7 aplicadas;
+- CategoryApiTest: PASS com PostgreSQL real;
+- backend clean test build: PASS;
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- Android connectedDebugAndroidTest: PASS - 2/2 testes, 0 falhas, 0 skips;
+- emulador Android 15 / API 35: PASS;
+- persistência real confirmada no PostgreSQL com amount_minor=1890 e categoria Alimentação;
+- git diff --check: PASS.
+
+Observação:
+- permanece apenas o warning de depreciação da API v1 createAndroidComposeRule; migração para Compose Test v2 fica como melhoria técnica futura e não bloqueia 2.1.
+
+Status:
+- 2.1 CONCLUÍDA.
+- Próxima dependência: 2.2 Dashboard.

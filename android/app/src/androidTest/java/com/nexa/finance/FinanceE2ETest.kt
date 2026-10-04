@@ -22,6 +22,56 @@ class FinanceE2ETest {
     val compose = createAndroidComposeRule<MainActivity>()
 
     @Test
+    fun quick_entry_parses_natural_language_and_registers_expense() {
+        val suffix = UUID.randomUUID().toString().take(8)
+        val name = "Kauan Quick E2E"
+        val email = "quick.$suffix@example.com"
+        val password = "NexaE2e1234"
+
+        compose.onNodeWithText("Criar uma conta").performClick()
+        compose.onNodeWithTag("auth_name").performTextInput(name)
+        compose.onNodeWithTag("auth_email").performTextInput(email)
+        compose.onNodeWithTag("auth_password").performTextInput(password)
+        compose.onNodeWithTag("auth_submit").performClick()
+
+        compose.waitUntil(15_000) {
+            compose.onAllNodes(hasText("Conta criada. Faça login.")).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("Já tenho uma conta").performClick()
+        compose.onNodeWithTag("auth_submit").performClick()
+
+        compose.waitUntil(15_000) {
+            compose.onAllNodes(hasText("NEXA Finance")).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        compose.onNodeWithTag("account_name").performTextInput("Conta Quick E2E")
+        compose.onNodeWithTag("account_submit").performClick()
+        compose.waitUntil(15_000) {
+            compose.onAllNodes(hasText("Conta Quick E2E")).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("dashboard_list").performScrollToIndex(1)
+        compose.onNodeWithTag("quick_input").performTextInput("18,90 almoço")
+        compose.onNodeWithText("Despesa · almoço").assertIsDisplayed()
+        compose.onNodeWithText("R$ 18,90").assertIsDisplayed()
+        compose.waitUntil(15_000) {
+            compose.onAllNodes(hasText("Categoria: Alimentação")).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("Categoria: Alimentação").assertIsDisplayed()
+        compose.onNodeWithTag("quick_submit").performClick()
+
+        compose.waitUntil(15_000) {
+            compose.onAllNodes(hasText("Lançamento registrado.")).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithTag("quick_status").assertIsDisplayed()
+        compose.onNodeWithTag("dashboard_list").performScrollToIndex(8)
+        compose.waitUntil(15_000) {
+            compose.onAllNodes(hasText("almoço")).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("almoço").assertIsDisplayed()
+        compose.onNodeWithText("-R$ 18,90").assertIsDisplayed()
+    }
+
+    @Test
     fun register_login_account_and_transaction_flow() {
         val suffix = UUID.randomUUID().toString().take(8)
         val name = "Kauan E2E"

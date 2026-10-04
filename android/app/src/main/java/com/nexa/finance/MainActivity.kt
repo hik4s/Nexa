@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nexa.finance.ui.theme.NexaTheme
+import com.nexa.finance.ui.QuickEntryCard
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -75,6 +76,8 @@ private fun AuthScreen(api: ApiClient, onLogin: () -> Unit) {
 @Composable
 private fun Dashboard(api: ApiClient, logout: () -> Unit) {
     var accounts by remember { mutableStateOf(emptyList<Account>()) }
+    var cards by remember { mutableStateOf(emptyList<Card>()) }
+    var categories by remember { mutableStateOf(emptyList<Category>()) }
     var transactions by remember { mutableStateOf(emptyList<Tx>()) }
     var message by remember { mutableStateOf("Carregando...") }
     var accountName by remember { mutableStateOf("") }
@@ -84,11 +87,20 @@ private fun Dashboard(api: ApiClient, logout: () -> Unit) {
 
     fun refresh() {
         Thread {
-            try {
-                val a = api.accounts()
-                val t = api.transactions()
-                runOnMain { accounts = a; transactions = t; message = "" }
-            } catch (e: Exception) { runOnMain { message = e.message ?: "Erro ao carregar" } }
+            var failures = 0
+            runCatching { api.accounts() }.onSuccess { value ->
+                runOnMain { accounts = value }
+            }.onFailure { failures++ }
+            runCatching { api.categories() }.onSuccess { value ->
+                runOnMain { categories = value }
+            }.onFailure { failures++ }
+            runCatching { api.cards() }.onSuccess { value ->
+                runOnMain { cards = value }
+            }.onFailure { failures++ }
+            runCatching { api.transactions() }.onSuccess { value ->
+                runOnMain { transactions = value }
+            }.onFailure { failures++ }
+            runOnMain { message = if (failures == 0) "" else "Alguns dados não puderam ser carregados." }
         }.start()
     }
 
@@ -102,6 +114,16 @@ private fun Dashboard(api: ApiClient, logout: () -> Unit) {
             item {
                 Text("Saldo total", style = MaterialTheme.typography.labelLarge)
                 Text(formatMoney(balance), style = MaterialTheme.typography.headlineMedium)
+            }
+            item {
+                QuickEntryCard(
+                    api = api,
+                    accounts = accounts,
+                    cards = cards,
+                    categories = categories,
+                    onTransactionAdded = { transactions = listOf(it) + transactions },
+                    onMessage = { message = it },
+                )
             }
             item { Text("Contas", style = MaterialTheme.typography.titleLarge) }
             items(accounts) { account ->

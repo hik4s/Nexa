@@ -50,7 +50,7 @@ $migrationQuery = "SELECT version || '|' || success FROM flyway_schema_history O
 $migration = docker exec $container psql -U $dbUser -d $dbName -Atc $migrationQuery
 if ($LASTEXITCODE -ne 0) { throw 'Could not query Flyway schema history.' }
 $actualMigrations = @($migration -split '\r?\n' | Where-Object { $_.Trim() -ne '' } | ForEach-Object { $_.Trim() })
-$expectedMigrations = @('1|true', '2|true', '3|true', '4|true', '5|true', '6|true')
+$expectedMigrations = @('1|true', '2|true', '3|true', '4|true', '5|true', '6|true', '7|true')
 if (($actualMigrations -join '|') -ne ($expectedMigrations -join '|')) { throw "Unexpected Flyway history: $migration" }
 
 $indexQuery = "SELECT count(*) FROM pg_indexes WHERE schemaname='public' AND indexname LIKE 'idx_%';"
