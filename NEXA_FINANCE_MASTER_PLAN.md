@@ -1983,4 +1983,33 @@ Conclusão 2.9:
 - integração com um LLM externo fica como implementação de provider, sem alteração do contrato ou da UI.
 
 Próximo passo:
-- iniciar 2.10 Notificações e insights proativos.
+- iniciar 2.11 Gate de aprovação da Parte 2.
+
+# Checkpoint 2.10.1 - 2026-10-04
+
+Notificações e insights proativos implementados e validados do backend ao Android.
+
+Implementado:
+- alertas de orçamento com deduplicação por usuário;
+- alertas de metas e prazo próximo;
+- avisos de recorrências próximas;
+- avisos de faturas vencidas/próximas do vencimento;
+- detecção de alteração significativa de gastos;
+- insight periódico baseado exclusivamente no contexto financeiro interno;
+- API autenticada para listar alertas e marcar como lidos;
+- persistência V13 com isolamento por usuário e chave de deduplicação;
+- painel Android com filtro de não lidos;
+- configuração local para habilitar notificações do sistema;
+- publicação de notificações nativas sem enviar dados financeiros a terceiros.
+
+Validação:
+- PostgreSQL 18.6 efêmero: PASS;
+- Flyway V1→V13: PASS;
+- teste de deduplicação do repositório: PASS;
+- backend BUILD SUCCESSFUL;
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- git diff --check: PASS.
+
+Observação:
+- permanecem apenas os gates transversais da Parte 2; a vertical 2.10 não possui pendência técnica conhecida.
