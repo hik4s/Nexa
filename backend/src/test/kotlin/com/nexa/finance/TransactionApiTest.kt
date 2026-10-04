@@ -44,9 +44,22 @@ class TransactionApiTest {
             assertEquals(201, create.status.value, create.bodyAsText())
             val transactionId = json(create.bodyAsText())["id"]!!.jsonPrimitive.content
             assertTrue(create.bodyAsText().contains(""""status":"POSTED""""))
+            val secondCreate = client.post("/api/v1/transactions") {
+                bearer(ownerToken)
+                jsonBody("""{"accountId":"$accountId","amountMinor":5000,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-04","description":"Padaria","source":"MANUAL"}""")
+            }
+            assertEquals(201, secondCreate.status.value, secondCreate.bodyAsText())
+            val secondTransactionId = json(secondCreate.bodyAsText())["id"]!!.jsonPrimitive.content
+
             val ownerList = client.get("/api/v1/transactions?accountId=$accountId") { bearer(ownerToken) }
             assertEquals(200, ownerList.status.value)
             assertTrue(ownerList.bodyAsText().contains(transactionId))
+            assertTrue(ownerList.bodyAsText().contains(secondTransactionId))
+
+            val paged = client.get("/api/v1/transactions?accountId=$accountId&limit=1&offset=1") { bearer(ownerToken) }
+            assertEquals(200, paged.status.value, paged.bodyAsText())
+            assertTrue(paged.bodyAsText().contains(transactionId), paged.bodyAsText())
+            assertFalse(paged.bodyAsText().contains(secondTransactionId), paged.bodyAsText())
             val otherList = client.get("/api/v1/transactions?accountId=$accountId") { bearer(otherToken) }
             assertEquals(200, otherList.status.value)
             assertFalse(otherList.bodyAsText().contains(transactionId))
@@ -54,7 +67,7 @@ class TransactionApiTest {
             assertEquals(400, client.post("/api/v1/transactions/$transactionId/cancel") { bearer(otherToken) }.status.value)
             val balance = client.get("/api/v1/accounts/$accountId") { bearer(ownerToken) }
             assertEquals(200, balance.status.value, balance.bodyAsText())
-            assertTrue(balance.bodyAsText().contains(""""balanceMinor":37500"""), balance.bodyAsText())
+            assertTrue(balance.bodyAsText().contains(""""balanceMinor":32500"""), balance.bodyAsText())
         } finally {
             cleanupUsers(ownerEmail, otherEmail)
         }
@@ -168,6 +181,12 @@ class TransactionApiTest {
             val secondPush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(pushBody) }
             assertEquals(200, secondPush.status.value, secondPush.bodyAsText())
             assertEquals(firstCursor, json(secondPush.bodyAsText())["cursor"]!!.jsonPrimitive.content.toLong())
+
+            val conflictingPayload = payload.replace("\"amountMinor\":2500", "\"amountMinor\":2600")
+            val conflictBody = """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":$conflictingPayload}]}"""
+            val conflictPush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(conflictBody) }
+            assertEquals(200, conflictPush.status.value, conflictPush.bodyAsText())
+            assertTrue(conflictPush.bodyAsText().contains("\"status\":\"CONFLICT\""), conflictPush.bodyAsText())
 
             val pull = client.get("/api/v1/sync/pull?cursor=0&limit=50") { bearer(token) }
             assertEquals(200, pull.status.value, pull.bodyAsText())

@@ -21,5 +21,6 @@ data class SyncOperationEntity(
         const val STATUS_PENDING = "PENDING"
         const val STATUS_PROCESSING = "PROCESSING"
         const val STATUS_FAILED = "FAILED"
+        const val STATUS_CONFLICT = "CONFLICT"
     }
 }

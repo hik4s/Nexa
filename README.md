@@ -4,9 +4,9 @@ Aplicativo Android de finanças pessoais com registro ultrarrápido, visão fina
 
 ## Status
 
-**Parte 2 — Produto concluída e validada. Próxima etapa: Parte 3 — 3.1 Backend de produção.**
+**Partes 1 e 2 concluídas e validadas. Parte 3 em fechamento: sincronização, hardening, exportação e operação já implementados; permanecem integrações externas, compliance formal e distribuição.**
 
-O Gate 2.11 foi fechado com backend, PostgreSQL, Android build/lint/unit tests e 9/9 testes instrumentados passando em ambiente local real. O repositório está em uma branch de desenvolvimento dedicada; CI remoto deve ser considerado separado da validação local.
+O projeto já possui backend + PostgreSQL, Android, CI, sincronização local-first/servidor, proteção de conflitos, rate limiting, backup/restore local, exportação de dados e baseline de carga. A última suíte instrumentada real havia passado 9/9; uma nova execução em 2026-10-04 ficou presa no emulador e foi encerrada para evitar processos órfãos.
 
 ## Stack fixada
 

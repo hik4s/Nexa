@@ -51,7 +51,12 @@ fun Route.transactionRoutes(service: TransactionService) {
                 val accountId = call.request.queryParameters["accountId"]?.let {
                     AccountId(parseUuid(it, "Account ID is invalid."))
                 }
-                call.respond(service.list(userId, accountId).map { it.toResponse() })
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 100
+                val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
+                if (limit !in 1..200 || offset < 0) {
+                    throw DomainValidationException("Invalid transaction pagination.")
+                }
+                call.respond(service.list(userId, accountId, limit, offset).map { it.toResponse() })
             }
 
             get("/{id}") {

@@ -110,6 +110,11 @@ class SyncQueueTest {
             items[index] = items[index].copy(status = status)
         }
 
+        override suspend fun updateLastError(id: String, lastError: String) {
+            val index = items.indexOfFirst { it.id == id }
+            items[index] = items[index].copy(lastError = lastError)
+        }
+
         override suspend fun recoverStaleProcessing(nowEpochMillis: Long, cutoffEpochMillis: Long) {
             items.replaceAll { operation ->
                 if (operation.status == SyncOperationEntity.STATUS_PROCESSING && operation.createdAtEpochMillis < cutoffEpochMillis) {

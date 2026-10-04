@@ -58,7 +58,7 @@ class JdbcTransactionRepository(
         }
     }
 
-    fun findByOwner(ownerId: UserId, accountId: AccountId? = null): List<Transaction> =
+    fun findByOwner(ownerId: UserId, accountId: AccountId? = null, limit: Int = 100, offset: Int = 0): List<Transaction> =
         connections.open().use { c ->
             c.prepareStatement(
                 """
@@ -68,11 +68,14 @@ class JdbcTransactionRepository(
                 WHERE a.owner_id = ?
                   AND (CAST(? AS UUID) IS NULL OR t.account_id = CAST(? AS UUID))
                 ORDER BY t.occurred_on DESC, t.created_at DESC, t.id DESC
+                LIMIT ? OFFSET ?
                 """.trimIndent()
             ).use { s ->
                 s.setObject(1, ownerId.value)
                 s.setObject(2, accountId?.value)
                 s.setObject(3, accountId?.value)
+                s.setInt(4, limit)
+                s.setInt(5, offset)
                 s.executeQuery().use { r ->
                     buildList {
                         while (r.next()) add(r.toTransaction())

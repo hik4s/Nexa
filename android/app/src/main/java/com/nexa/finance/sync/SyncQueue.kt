@@ -55,6 +55,11 @@ class SyncQueue(
         )
     }
 
+    suspend fun conflict(id: String, lastError: String) {
+        operationDao.updateStatus(id, SyncOperationEntity.STATUS_CONFLICT)
+        operationDao.updateLastError(id, lastError.take(500))
+    }
+
     companion object {
         private const val PROCESSING_RECOVERY_TIMEOUT_MILLIS = 5 * 60 * 1_000L
 

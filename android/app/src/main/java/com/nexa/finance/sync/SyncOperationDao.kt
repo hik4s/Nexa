@@ -25,6 +25,9 @@ interface SyncOperationDao {
     @Query("UPDATE sync_operations SET status = :status WHERE id = :id")
     suspend fun updateStatus(id: String, status: String)
 
+    @Query("UPDATE sync_operations SET lastError = :lastError WHERE id = :id")
+    suspend fun updateLastError(id: String, lastError: String)
+
     @Query(
         """
         UPDATE sync_operations

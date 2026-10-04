@@ -858,10 +858,10 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 - [x] HTTPS
 - [x] Rate limiting
 - [x] Versionamento de API
-- [ ] PolÃ­ticas de timeout
+- [x] PolÃ­ticas de timeout
 - [ ] Retries controlados
-- [ ] Tratamento de falhas
-- [ ] Backups
+- [x] Tratamento de falhas
+- [x] Backups
 - [ ] RecuperaÃ§Ã£o de desastre
 
 ### Checkpoint 3.1 — produção/rate limiting — 2026-10-04
@@ -874,13 +874,13 @@ Validação desta microetapa: ApplicationTest com rate limit e isolamento por cl
 
 ## 3.2 â€” SincronizaÃ§Ã£o
 
-- [ ] SincronizaÃ§Ã£o de dados
+- [x] SincronizaÃ§Ã£o de dados
 - [ ] Controle de versÃ£o
-- [ ] EstratÃ©gia offline
-- [ ] Retry
-- [ ] Estados de conflito
-- [ ] IdempotÃªncia
-- [ ] ConsistÃªncia entre dispositivos
+- [x] EstratÃ©gia offline
+- [x] Retry
+- [x] Estados de conflito
+- [x] IdempotÃªncia
+- [x] ConsistÃªncia entre dispositivos
 
 ### Microcheckpoint 3.2.1 — fundação local-first — 2026-10-04
 
@@ -910,7 +910,7 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 
 - [ ] Levantar requisitos regulatÃ³rios aplicÃ¡veis
 - [ ] Mapear fornecedores/participantes de integraÃ§Ã£o
-- [ ] Definir arquitetura de integraÃ§Ã£o
+- [x] Definir arquitetura de integraÃ§Ã£o
 - [ ] Implementar consentimento
 - [ ] Implementar conexÃ£o
 - [ ] Importar contas
@@ -926,13 +926,13 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 
 ## 3.4 â€” SeguranÃ§a avanÃ§ada
 
-- [ ] ProteÃ§Ã£o de credenciais
-- [ ] ProteÃ§Ã£o de tokens
-- [ ] Armazenamento seguro no dispositivo
+- [x] ProteÃ§Ã£o de credenciais
+- [x] ProteÃ§Ã£o de tokens
+- [x] Armazenamento seguro no dispositivo
 - [ ] Criptografia quando necessÃ¡ria
-- [ ] AutorizaÃ§Ã£o por recurso
-- [ ] ProteÃ§Ã£o de endpoints
-- [ ] DetecÃ§Ã£o de abuso
+- [x] AutorizaÃ§Ã£o por recurso
+- [x] ProteÃ§Ã£o de endpoints
+- [x] DetecÃ§Ã£o de abuso
 - [ ] Auditoria
 - [ ] PolÃ­tica de retenÃ§Ã£o de dados
 - [ ] RevisÃ£o de exposiÃ§Ã£o de dados da IA
@@ -941,13 +941,13 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 
 ## 3.5 â€” LGPD e compliance
 
-- [ ] Mapear dados pessoais
-- [ ] Mapear dados sensÃ­veis/financeiros tratados
+- [x] Mapear dados pessoais
+- [x] Mapear dados sensÃ­veis/financeiros tratados
 - [ ] Definir finalidade de tratamento
 - [ ] PolÃ­tica de privacidade
 - [ ] Termos de uso
 - [ ] GestÃ£o de consentimentos quando aplicÃ¡vel
-- [ ] ExportaÃ§Ã£o de dados
+- [x] ExportaÃ§Ã£o de dados
 - [ ] ExclusÃ£o de conta/dados conforme requisitos aplicÃ¡veis
 - [ ] RetenÃ§Ã£o e descarte
 
@@ -973,7 +973,7 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 - [ ] Uso de memÃ³ria
 - [ ] Uso de bateria
 - [ ] Uso de rede
-- [ ] PaginaÃ§Ã£o
+- [x] PaginaÃ§Ã£o
 - [ ] Cache
 - [ ] Consultas do banco
 - [ ] Ãndices
@@ -2068,3 +2068,17 @@ Validação:
 
 Observação:
 - permanecem apenas os gates transversais da Parte 2; a vertical 2.10 não possui pendência técnica conhecida.
+
+### Microcheckpoint 3.2.3 — conflitos, hardening, exportação e baseline operacional — 2026-10-04
+
+Implementado o fechamento técnico desta rodada: conflito explícito para transação com mesmo ID e payload divergente (CONFLICT), preservação da operação conflitante no Outbox, política configurável de timeout HTTP no Netty, paginação de transações, logging de chamadas /api/v1, scripts de backup/restore PostgreSQL, exportação autenticada dos dados do próprio usuário e harness de carga local.
+
+Validação desta rodada: backend clean test passou; ApplicationTest e TransactionApiTest passaram; Android testDebugUnitTest e assembleDebug passaram; backup PostgreSQL foi criado e inspecionado com pg_restore -l; baseline do /health passou com 20/20 requests, concorrência 5, P50 4 ms e P95/P99 93 ms. O endpoint de exportação foi exercitado dentro do Ktor + PostgreSQL real de testes e confirmou ausência de password_hash na resposta.
+
+Limitações deliberadas: o modelo geral de revisão/baseVersion para edição concorrente de todos os agregados ainda não existe; a proteção atual cobre a idempotência/conflito do protocolo de transações. A suíte instrumentada Android havia passado 9/9 anteriormente; uma nova execução de 2026-10-04 ficou sem progresso no emulador e foi encerrada, portanto não é marcada como nova execução verde.
+
+### Auditoria de fechamento — 2026-10-04
+
+Os itens que dependem de terceiros não são marcados como concluídos artificialmente: Open Finance real exige provedor/participante, credenciais e onboarding; produção precisa de backup externo/DR, alertas/crash reporting e RPO/RTO; LGPD precisa de política de privacidade, termos, finalidade/base legal, retenção e revisão jurídica; distribuição exige keystore de release, Play Console e materiais da loja.
+
+Documentos adicionados: docs/PRODUCTION_READINESS.md, docs/OPEN_FINANCE_ARCHITECTURE.md e docs/LGPD_DATA_MAP.md. O export técnico foi implementado em GET /api/v1/auth/me/export.

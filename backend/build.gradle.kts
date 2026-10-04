@@ -33,6 +33,7 @@ dependencies {
     implementation("io.ktor:ktor-server-rate-limit-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-forwarded-header-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-logging-jvm:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")

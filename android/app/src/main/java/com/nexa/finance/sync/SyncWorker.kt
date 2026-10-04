@@ -22,8 +22,11 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Coroutin
                 val push = api.pushSync(operations)
                 val acknowledged = push.acknowledgements.associateBy { it.operationId }
                 operations.forEach { operation ->
-                    if (acknowledged[operation.id]?.status == "ACKNOWLEDGED") queue.complete(operation.id)
-                    else queue.fail(operation.id, operation.attemptCount + 1, "Server did not acknowledge operation.")
+                    when (acknowledged[operation.id]?.status) {
+                        "ACKNOWLEDGED" -> queue.complete(operation.id)
+                        "CONFLICT" -> queue.conflict(operation.id, "Server detected a conflicting version of this transaction.")
+                        else -> queue.fail(operation.id, operation.attemptCount + 1, "Server did not acknowledge operation.")
+                    }
                 }
             }
 

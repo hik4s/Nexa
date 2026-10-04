@@ -126,6 +126,14 @@ class ApplicationTest {
             assertEquals(200, me.status.value)
             assertTrue(me.bodyAsText().contains("After"))
             assertTrue(me.bodyAsText().contains("America/Sao_Paulo"))
+
+            val export = client.get("/api/v1/auth/me/export") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, export.status.value)
+            assertTrue(export.headers[HttpHeaders.ContentDisposition]?.contains("nexa-data-export.json") == true)
+            assertTrue(export.bodyAsText().contains(email))
+            assertFalse(export.bodyAsText().contains("password_hash"))
         } finally {
             cleanupUsers(email)
         }
@@ -271,6 +279,7 @@ class ApplicationTest {
 
         assertEquals("0.0.0.0", settings.host)
         assertEquals(8080, settings.port)
+        assertEquals(15_000L, settings.requestTimeoutMillis)
     }
 
     @Test
@@ -279,11 +288,13 @@ class ApplicationTest {
             mapOf(
                 "SERVER_HOST" to "127.0.0.1",
                 "SERVER_PORT" to "9090",
+                "SERVER_REQUEST_TIMEOUT_MS" to "30000",
             )
         )
 
         assertEquals("127.0.0.1", settings.host)
         assertEquals(9090, settings.port)
+        assertEquals(30_000L, settings.requestTimeoutMillis)
     }
 
     @Test
@@ -292,6 +303,14 @@ class ApplicationTest {
             ServerSettings.fromEnvironment(mapOf("SERVER_PORT" to "70000"))
         }
         assertTrue(exception.message!!.contains("SERVER_PORT"))
+    }
+
+    @Test
+    fun serverSettingsRejectInvalidRequestTimeout() {
+        val exception = kotlin.test.assertFailsWith<IllegalArgumentException> {
+            ServerSettings.fromEnvironment(mapOf("SERVER_REQUEST_TIMEOUT_MS" to "999"))
+        }
+        assertTrue(exception.message!!.contains("SERVER_REQUEST_TIMEOUT_MS"))
     }
 
     @Test

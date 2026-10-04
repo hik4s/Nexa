@@ -58,8 +58,8 @@ class TransactionService(
         return transaction
     }
 
-    fun list(ownerId: UserId, accountId: AccountId?): List<Transaction> =
-        transactions.findByOwner(ownerId, accountId)
+    fun list(ownerId: UserId, accountId: AccountId?, limit: Int = 100, offset: Int = 0): List<Transaction> =
+        transactions.findByOwner(ownerId, accountId, limit, offset)
 
     fun get(ownerId: UserId, id: TransactionId): Transaction =
         transactions.findByOwnerAndId(ownerId, id)

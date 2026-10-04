@@ -7,6 +7,7 @@ import com.nexa.finance.api.authRoutes
 import com.nexa.finance.api.budgetRoutes
 import com.nexa.finance.api.categoryRoutes
 import com.nexa.finance.api.cardRoutes
+import com.nexa.finance.api.dataExportRoutes
 import com.nexa.finance.api.goalRoutes
 import com.nexa.finance.api.installmentRoutes
 import com.nexa.finance.api.invoiceRoutes
@@ -25,6 +26,7 @@ import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
 import com.nexa.finance.application.budget.BudgetService
 import com.nexa.finance.application.card.CardService
+import com.nexa.finance.application.export.DataExportService
 import com.nexa.finance.application.goal.GoalService
 import com.nexa.finance.application.installment.InstallmentService
 import com.nexa.finance.application.invoice.InvoiceService
@@ -42,6 +44,7 @@ import com.nexa.finance.infrastructure.card.JdbcCardRepository
 import com.nexa.finance.infrastructure.category.JdbcCategoryRepository
 import com.nexa.finance.infrastructure.database.DatabaseConnectionProvider
 import com.nexa.finance.infrastructure.goal.JdbcGoalRepository
+import com.nexa.finance.infrastructure.export.JdbcDataExportRepository
 import com.nexa.finance.infrastructure.installment.JdbcInstallmentRepository
 import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
 import com.nexa.finance.infrastructure.notification.JdbcNotificationRepository
@@ -59,14 +62,18 @@ import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.UserIdPrincipal
 import io.ktor.server.auth.bearer
+import io.ktor.server.engine.EngineConnectorBuilder
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.plugins.ratelimit.RateLimit
 import io.ktor.server.plugins.ratelimit.RateLimitName
 import io.ktor.server.plugins.ratelimit.rateLimit
 import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.request.path
+import kotlin.math.ceil
 import io.ktor.server.plugins.statuspages.exception
 import io.ktor.server.request.ContentTransformationException
 import io.ktor.server.plugins.origin
@@ -77,11 +84,21 @@ import io.ktor.server.routing.routing
 
 fun main() {
     val settings = ServerSettings.fromEnvironment()
-    embeddedServer(Netty, port = settings.port, host = settings.host, module = Application::module)
-        .start(wait = true)
+    embeddedServer(Netty, configure = {
+        connectors.add(EngineConnectorBuilder().apply {
+            host = settings.host
+            port = settings.port
+        })
+        val timeoutSeconds = ceil(settings.requestTimeoutMillis / 1_000.0).toInt()
+        requestReadTimeoutSeconds = timeoutSeconds
+        responseWriteTimeoutSeconds = timeoutSeconds
+    }) {
+        module()
+    }.start(wait = true)
 }
 
 fun Application.module() {
+    val settings = ServerSettings.fromEnvironment()
     val rateLimitSettings = RateLimitSettings.fromEnvironment()
     val database = DatabaseConnectionProvider()
 
@@ -98,6 +115,7 @@ fun Application.module() {
     val goalRepository = JdbcGoalRepository(database)
     val aiUsageRepository = JdbcAiUsageRepository(database)
     val notificationRepository = JdbcNotificationRepository(database)
+    val dataExport = DataExportService(JdbcDataExportRepository(database))
 
     val authentication = AuthenticationService(userRepository)
     val recovery = RecoveryService(userRepository)
@@ -127,6 +145,10 @@ fun Application.module() {
 
     monitor.subscribe(ApplicationStopped) {
         database.close()
+    }
+
+    install(CallLogging) {
+        filter { call -> call.request.path().startsWith("/api/v1") }
     }
 
     install(ContentNegotiation) {
@@ -180,6 +202,7 @@ fun Application.module() {
         }
         rateLimit(RateLimitName("api")) {
             authRoutes(authentication, recovery, profile)
+            dataExportRoutes(dataExport)
             accountRoutes(accounts)
         categoryRoutes(categoryRepository)
         transactionRoutes(transactions)

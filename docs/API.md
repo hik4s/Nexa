@@ -235,13 +235,13 @@ Implementado e validado:
 - validação de moeda da transação
 - validação de escopo da categoria referenciada
 
-Ainda não implementado neste checkpoint:
+Status do checkpoint: parcelamento, recorrência e rate limiting já possuem implementação HTTP. OpenAPI/Swagger servido pela aplicação permanece em aberto.
 
-- parcelamento HTTP
-- recorrência
-- OpenAPI/Swagger servido pela aplicação
-- rate limiting e hardening de produção
-
+Implementado e validado neste projeto:
+- endpoints de parcelamento/installments
+- endpoints de recorrência
+- rate limiting por cliente + resposta 429
+Em aberto: OpenAPI/Swagger servido pela aplicação e integrações externas de produção.
 ## Cartões
 
 Todos os endpoints abaixo são protegidos.
