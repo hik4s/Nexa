@@ -1681,3 +1681,25 @@ Validação:
 - Android assembleDebug: PASS;
 - scripts/verify.ps1 completo: PASS;
 - git diff --check: PASS.
+
+# Checkpoint 2.4 - 2026-10-04
+
+Cartões e faturas — camada Android integrada ao contrato existente.
+
+Implementado:
+- cadastro de cartão vinculado à conta de passivo;
+- limite total e limite disponível;
+- bandeira, últimos quatro dígitos, fechamento e vencimento;
+- histórico de transações por cartão;
+- geração de fatura para período corrente;
+- listagem de faturas, total, pago, restante e vencimento;
+- fechamento e pagamento de fatura;
+- suporte a conta do tipo CREDIT_CARD no fluxo de contas.
+
+Pendente deliberado:
+- parcelas de cartão ainda não estão materializadas/associadas ao fluxo de compra; o domínio de parcelas existe separadamente. Esse item será integrado antes de marcar 2.4 como concluído.
+
+Validação desta etapa:
+- Android testDebugUnitTest: PASS;
+- Android assembleDebug: PASS;
+- git diff --check: PASS.

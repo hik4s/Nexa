@@ -75,12 +75,80 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
             val o = array.getJSONObject(i)
             Card(
                 o.getString("id"),
+                o.getString("liabilityAccountId"),
                 o.getString("name"),
+                o.getString("brand"),
+                o.getString("lastFourDigits"),
+                o.getLong("creditLimitMinor"),
                 o.getLong("availableLimitMinor"),
+                o.getString("currency"),
+                o.getInt("closingDay"),
+                o.getInt("dueDay"),
                 o.getString("status"),
             )
         }
     }
+
+    fun createCard(
+        liabilityAccountId: String,
+        name: String,
+        brand: String,
+        lastFourDigits: String,
+        creditLimitMinor: Long,
+        closingDay: Int,
+        dueDay: Int,
+    ): Card {
+        val o = request("POST", "/api/v1/cards", JSONObject().apply {
+            put("liabilityAccountId", liabilityAccountId)
+            put("name", name)
+            put("brand", brand)
+            put("lastFourDigits", lastFourDigits)
+            put("creditLimitMinor", creditLimitMinor)
+            put("currency", "BRL")
+            put("closingDay", closingDay)
+            put("dueDay", dueDay)
+        })
+        return Card(
+            o.getString("id"), o.getString("liabilityAccountId"), o.getString("name"),
+            o.getString("brand"), o.getString("lastFourDigits"), o.getLong("creditLimitMinor"),
+            o.getLong("availableLimitMinor"), o.getString("currency"), o.getInt("closingDay"),
+            o.getInt("dueDay"), o.getString("status")
+        )
+    }
+
+    fun invoices(): List<Invoice> {
+        val array = requestArray("GET", "/api/v1/invoices")
+        return (0 until array.length()).map { i -> invoiceFromJson(array.getJSONObject(i)) }
+    }
+
+    fun closeInvoice(invoiceId: String): Invoice =
+        invoiceFromJson(request("POST", "/api/v1/invoices/$invoiceId/close"))
+
+    fun payInvoice(invoiceId: String, sourceAccountId: String, amountMinor: Long): Invoice {
+        return invoiceFromJson(request("POST", "/api/v1/invoices/$invoiceId/payments", JSONObject().apply {
+            put("sourceAccountId", sourceAccountId)
+            put("amountMinor", amountMinor)
+            put("currency", "BRL")
+            put("occurredOn", java.time.LocalDate.now().toString())
+            put("source", "MANUAL")
+        }))
+    }
+
+    fun createInvoice(cardId: String, periodStart: String, periodEnd: String, dueOn: String): Invoice =
+        invoiceFromJson(request("POST", "/api/v1/invoices", JSONObject().apply {
+            put("cardId", cardId)
+            put("periodStart", periodStart)
+            put("periodEnd", periodEnd)
+            put("dueOn", dueOn)
+        }))
+
+    private fun invoiceFromJson(o: JSONObject): Invoice = Invoice(
+        o.getString("id"), o.getString("cardId"), o.getString("periodStart"), o.getString("periodEnd"),
+        o.getString("dueOn"), o.getLong("totalAmountMinor"), o.getLong("paidAmountMinor"),
+        o.getLong("remainingAmountMinor"), o.getString("currency"), o.getString("status"),
+        o.optJSONArray("transactionIds")?.let { a -> (0 until a.length()).map(a::getString) } ?: emptyList(),
+        o.optJSONArray("paymentTransactionIds")?.let { a -> (0 until a.length()).map(a::getString) } ?: emptyList()
+    )
 
     fun transactions(): List<Tx> {
         val array = requestArray("GET", "/api/v1/transactions")
@@ -94,6 +162,8 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
                 o.getString("direction"),
                 o.getString("occurredOn"),
                 o.optString("categoryId").ifBlank { null },
+                o.optString("cardId").ifBlank { null },
+                o.optString("invoiceId").ifBlank { null },
             )
         }
     }
@@ -207,7 +277,34 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
 }
 
 data class Account(val id: String, val name: String, val balanceMinor: Long, val isPrimary: Boolean = false, val type: String = "CHECKING", val currency: String = "BRL")
-data class Card(val id: String, val name: String, val availableLimitMinor: Long, val status: String)
+data class Card(
+    val id: String,
+    val liabilityAccountId: String,
+    val name: String,
+    val brand: String,
+    val lastFourDigits: String,
+    val creditLimitMinor: Long,
+    val availableLimitMinor: Long,
+    val currency: String,
+    val closingDay: Int,
+    val dueDay: Int,
+    val status: String,
+)
+
+data class Invoice(
+    val id: String,
+    val cardId: String,
+    val periodStart: String,
+    val periodEnd: String,
+    val dueOn: String,
+    val totalAmountMinor: Long,
+    val paidAmountMinor: Long,
+    val remainingAmountMinor: Long,
+    val currency: String,
+    val status: String,
+    val transactionIds: List<String>,
+    val paymentTransactionIds: List<String>,
+)
 data class Category(val id: String, val name: String, val type: String, val iconKey: String?)
 data class Tx(
     val id: String,
@@ -217,6 +314,8 @@ data class Tx(
     val direction: String,
     val date: String,
     val categoryId: String?,
+    val cardId: String? = null,
+    val invoiceId: String? = null,
 )
 
 data class Recurrence(

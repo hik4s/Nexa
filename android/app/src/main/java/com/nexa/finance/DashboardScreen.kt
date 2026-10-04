@@ -20,7 +20,16 @@ import kotlin.math.abs
 fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
     var accounts by remember { mutableStateOf(emptyList<Account>()) }
     var cards by remember { mutableStateOf(emptyList<Card>()) }
+    var invoices by remember { mutableStateOf(emptyList<Invoice>()) }
     var categories by remember { mutableStateOf(emptyList<Category>()) }
+    var cardName by remember { mutableStateOf("") }
+    var cardBrand by remember { mutableStateOf("VISA") }
+    var cardLastFour by remember { mutableStateOf("") }
+    var cardLimit by remember { mutableStateOf("") }
+    var cardClosingDay by remember { mutableStateOf("10") }
+    var cardDueDay by remember { mutableStateOf("20") }
+    var cardLiabilityAccountId by remember { mutableStateOf("") }
+    var selectedCardId by remember { mutableStateOf<String?>(null) }
     var transactions by remember { mutableStateOf(emptyList<Tx>()) }
     var recurrences by remember { mutableStateOf(emptyList<Recurrence>()) }
     var message by remember { mutableStateOf("Carregando...") }
@@ -36,6 +45,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
             var failures = 0
             runCatching { api.accounts() }.onSuccess { runOnMain { accounts = it } }.onFailure { failures++ }
             runCatching { api.cards() }.onSuccess { runOnMain { cards = it } }.onFailure { failures++ }
+            runCatching { api.invoices() }.onSuccess { runOnMain { invoices = it } }.onFailure { failures++ }
             runCatching { api.categories() }.onSuccess { runOnMain { categories = it } }.onFailure { failures++ }
             runCatching { api.transactions() }.onSuccess { runOnMain { transactions = it } }.onFailure { failures++ }
             runCatching { api.recurrences() }.onSuccess { runOnMain { recurrences = it } }.onFailure { failures++ }
@@ -151,6 +161,132 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                             else -> "Continue registrando seus lançamentos para enriquecer seus insights."
                         }
                     )
+                }
+            }
+            item {
+                DashboardPanel("Cartões e faturas", Modifier.testTag("cards_invoices")) {
+                    if (cards.isEmpty()) {
+                        Text("Nenhum cartão cadastrado.")
+                    } else {
+                        cards.forEach { card ->
+                            val cardInvoices = invoices.filter { it.cardId == card.id }.sortedByDescending { it.periodEnd }
+                            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp).testTag("card_" + card.id)) {
+                                Column(Modifier.padding(12.dp)) {
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                        Column(Modifier.weight(1f)) {
+                                            Text(card.name, style = MaterialTheme.typography.titleMedium)
+                                            Text(card.brand + " •••• " + card.lastFourDigits)
+                                            Text("Limite disponível: " + formatMoney(card.availableLimitMinor))
+                                            Text("Limite total: " + formatMoney(card.creditLimitMinor), style = MaterialTheme.typography.bodySmall)
+                                            Text("Fecha dia " + card.closingDay + " • vence dia " + card.dueDay, style = MaterialTheme.typography.bodySmall)
+                                        }
+                                        Text(card.status)
+                                    }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        OutlinedButton(onClick = { selectedCardId = if (selectedCardId == card.id) null else card.id }) {
+                                            Text(if (selectedCardId == card.id) "Fechar" else "Detalhes")
+                                        }
+                                        TextButton(onClick = {
+                                            val currentMonth = YearMonth.now()
+                                            Thread {
+                                                runCatching {
+                                                    api.createInvoice(card.id, currentMonth.atDay(1).toString(), currentMonth.atEndOfMonth().toString(), currentMonth.atEndOfMonth().plusDays(7).toString())
+                                                }.onSuccess { created ->
+                                                    runOnMain { invoices = listOf(created) + invoices; message = "Fatura criada." }
+                                                }.onFailure { e -> runOnMain { message = e.message ?: "Não foi possível criar a fatura." } }
+                                            }.start()
+                                        }) { Text("Gerar fatura") }
+                                    }
+                                    if (selectedCardId == card.id) {
+                                        Text("Histórico", style = MaterialTheme.typography.labelLarge)
+                                        val cardTx = transactions.filter { it.cardId == card.id }.take(10)
+                                        if (cardTx.isEmpty()) Text("Nenhuma movimentação.")
+                                        else cardTx.forEach { tx ->
+                                            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                Text(tx.description, Modifier.weight(1f))
+                                                Text(formatMoney(tx.amountMinor))
+                                            }
+                                        }
+                                        Text("Faturas", style = MaterialTheme.typography.labelLarge)
+                                        if (cardInvoices.isEmpty()) Text("Nenhuma fatura gerada.")
+                                        else cardInvoices.take(4).forEach { invoice ->
+                                            Column(Modifier.fillMaxWidth().padding(vertical = 5.dp)) {
+                                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                    Text(invoice.periodStart + " → " + invoice.periodEnd)
+                                                    Text(invoice.status)
+                                                }
+                                                Text("Total: " + formatMoney(invoice.totalAmountMinor) + " • Restante: " + formatMoney(invoice.remainingAmountMinor))
+                                                Text("Vencimento: " + invoice.dueOn, style = MaterialTheme.typography.bodySmall)
+                                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                    if (invoice.status == "OPEN") {
+                                                        OutlinedButton(onClick = {
+                                                            Thread {
+                                                                runCatching { api.closeInvoice(invoice.id) }
+                                                                    .onSuccess { updated -> runOnMain { invoices = invoices.map { if (it.id == updated.id) updated else it }; message = "Fatura fechada." } }
+                                                                    .onFailure { e -> runOnMain { message = e.message ?: "Erro ao fechar fatura." } }
+                                                            }.start()
+                                                        }) { Text("Fechar") }
+                                                    }
+                                                    if ((invoice.status == "CLOSED" || invoice.status == "OVERDUE") && invoice.remainingAmountMinor > 0 && accounts.any { it.type != "CREDIT_CARD" }) {
+                                                        TextButton(onClick = {
+                                                            val source = accounts.firstOrNull { it.type == "CHECKING" || it.type == "SAVINGS" || it.type == "CASH" }
+                                                            if (source == null) {
+                                                                message = "Crie uma conta de origem para pagar a fatura."
+                                                            } else {
+                                                                Thread {
+                                                                    runCatching { api.payInvoice(invoice.id, source.id, invoice.remainingAmountMinor) }
+                                                                        .onSuccess { updated -> runOnMain { invoices = invoices.map { if (it.id == updated.id) updated else it }; message = "Fatura paga." } }
+                                                                        .onFailure { e -> runOnMain { message = e.message ?: "Erro ao pagar fatura." } }
+                                                                }.start()
+                                                            }
+                                                        }) { Text("Pagar") }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text("Novo cartão", style = MaterialTheme.typography.titleSmall)
+                    OutlinedTextField(cardName, { cardName = it }, Modifier.fillMaxWidth().testTag("card_name"), label = { Text("Nome") })
+                    OutlinedTextField(cardLastFour, { cardLastFour = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth().testTag("card_last_four"), label = { Text("Últimos 4 dígitos") })
+                    OutlinedTextField(cardLimit, { cardLimit = it }, Modifier.fillMaxWidth().testTag("card_limit"), label = { Text("Limite (R$)") })
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(selected = cardBrand == "VISA", onClick = { cardBrand = "VISA" }, label = { Text("Visa") })
+                        FilterChip(selected = cardBrand == "MASTERCARD", onClick = { cardBrand = "MASTERCARD" }, label = { Text("Mastercard") })
+                        FilterChip(selected = cardBrand == "ELO", onClick = { cardBrand = "ELO" }, label = { Text("Elo") })
+                    }
+                    Text("Conta de passivo do cartão", style = MaterialTheme.typography.labelMedium)
+                    accounts.filter { it.type == "CREDIT_CARD" }.forEach { account ->
+                        FilterChip(selected = cardLiabilityAccountId == account.id, onClick = { cardLiabilityAccountId = account.id }, label = { Text(account.name) })
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(cardClosingDay, { cardClosingDay = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = { Text("Fecha") })
+                        OutlinedTextField(cardDueDay, { cardDueDay = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = { Text("Vence") })
+                    }
+                    Button(
+                        enabled = cardName.isNotBlank() && cardLastFour.length == 4 &&
+                            cardLimit.replace(",", ".").toDoubleOrNull()?.let { it > 0 } == true &&
+                            cardLiabilityAccountId.isNotBlank(),
+                        modifier = Modifier.testTag("card_submit"),
+                        onClick = {
+                            val limitMinor = ((cardLimit.replace(",", ".").toDoubleOrNull() ?: 0.0) * 100).toLong()
+                            Thread {
+                                runCatching {
+                                    api.createCard(cardLiabilityAccountId, cardName, cardBrand, cardLastFour, limitMinor, cardClosingDay.toIntOrNull() ?: 10, cardDueDay.toIntOrNull() ?: 20)
+                                }.onSuccess { created ->
+                                    runOnMain {
+                                        cards = cards + created
+                                        cardName = ""; cardLastFour = ""; cardLimit = ""
+                                        message = "Cartão cadastrado."
+                                    }
+                                }.onFailure { e -> runOnMain { message = e.message ?: "Erro ao cadastrar cartão." } }
+                            }.start()
+                        }
+                    ) { Text("Cadastrar cartão") }
                 }
             }
             item {
@@ -289,6 +425,7 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                     FilterChip(selected = accountType == "CHECKING", onClick = { accountType = "CHECKING" }, label = { Text("Corrente") })
                     FilterChip(selected = accountType == "SAVINGS", onClick = { accountType = "SAVINGS" }, label = { Text("Poupança") })
                     FilterChip(selected = accountType == "CASH", onClick = { accountType = "CASH" }, label = { Text("Dinheiro") })
+                    FilterChip(selected = accountType == "CREDIT_CARD", onClick = { accountType = "CREDIT_CARD" }, label = { Text("Cartão") })
                 }
                 Button(
                     modifier = Modifier.testTag("account_submit"),
