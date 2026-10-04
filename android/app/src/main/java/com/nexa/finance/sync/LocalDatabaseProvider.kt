@@ -13,6 +13,7 @@ object LocalDatabaseProvider {
                 context.applicationContext,
                 NexaDatabase::class.java,
                 "nexa-local.db",
-            ).build().also { instance = it }
+            ).addMigrations(MIGRATION_1_2)
+                .build().also { instance = it }
         }
 }

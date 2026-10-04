@@ -16,6 +16,8 @@ object TransactionSyncEnqueuer {
         description: String,
         categoryId: String?,
         occurredOn: String = LocalDate.now().toString(),
+        currency: String = "BRL",
+        source: String = "MANUAL",
     ): String {
         val id = UUID.randomUUID().toString()
         val payload = JSONObject().apply {
@@ -26,6 +28,8 @@ object TransactionSyncEnqueuer {
             put("description", description)
             put("categoryId", categoryId ?: JSONObject.NULL)
             put("occurredOn", occurredOn)
+            put("currency", currency)
+            put("source", source)
         }
         val queue = SyncQueue(LocalDatabaseProvider.get(context).syncOperationDao())
         queue.enqueue(userId, "TRANSACTION", id, SyncWorker.OP_TRANSACTION_CREATE, payload.toString())

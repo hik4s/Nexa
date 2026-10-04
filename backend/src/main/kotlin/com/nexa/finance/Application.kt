@@ -14,6 +14,7 @@ import com.nexa.finance.api.notificationRoutes
 import com.nexa.finance.api.recurrenceRoutes
 import com.nexa.finance.api.refundRoutes
 import com.nexa.finance.api.transactionRoutes
+import com.nexa.finance.api.syncRoutes
 import com.nexa.finance.api.transferRoutes
 import com.nexa.finance.application.account.AccountService
 import com.nexa.finance.application.ai.AiContextBuilder
@@ -31,6 +32,7 @@ import com.nexa.finance.application.notification.NotificationService
 import com.nexa.finance.application.recurrence.RecurrenceService
 import com.nexa.finance.application.refund.RefundService
 import com.nexa.finance.application.transaction.TransactionService
+import com.nexa.finance.application.sync.SyncService
 import com.nexa.finance.application.transfer.TransferService
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
@@ -45,6 +47,7 @@ import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
 import com.nexa.finance.infrastructure.notification.JdbcNotificationRepository
 import com.nexa.finance.infrastructure.recurrence.JdbcRecurrenceRepository
 import com.nexa.finance.infrastructure.transaction.JdbcTransactionRepository
+import com.nexa.finance.infrastructure.sync.JdbcSyncChangeRepository
 import com.nexa.finance.infrastructure.transfer.JdbcTransferRepository
 import com.nexa.finance.infrastructure.user.JdbcUserAuthRepository
 import io.ktor.serialization.JsonConvertException
@@ -101,6 +104,8 @@ fun Application.module() {
     val profile = ProfileService(userRepository)
     val accounts = AccountService(accountRepository)
     val transactions = TransactionService(transactionRepository, accountRepository)
+    val syncChanges = JdbcSyncChangeRepository(database)
+    val sync = SyncService(transactions, transactionRepository, syncChanges)
     val transfers = TransferService(transferRepository, accountRepository)
     val cards = CardService(cardRepository, accountRepository, transactionRepository, installmentRepository)
     val invoices = InvoiceService(invoiceRepository, cardRepository, accountRepository)
@@ -178,6 +183,7 @@ fun Application.module() {
             accountRoutes(accounts)
         categoryRoutes(categoryRepository)
         transactionRoutes(transactions)
+        syncRoutes(sync)
         transferRoutes(transfers)
         cardRoutes(cards)
         invoiceRoutes(invoices)

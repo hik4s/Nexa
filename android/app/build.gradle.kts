@@ -64,6 +64,7 @@ dependencies {
     ksp("androidx.room:room-compiler:2.8.5")
     testImplementation("androidx.room:room-testing:2.8.5")
     androidTestImplementation("androidx.room:room-testing:2.8.5")
+    androidTestImplementation("androidx.work:work-testing:2.11.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 

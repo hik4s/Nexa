@@ -142,6 +142,47 @@ class TransactionApiTest {
         assertEquals("NEXA Finance API - OK", response.bodyAsText().trim())
     }
 
+    @Test
+    fun syncPushPullIsIdempotentAndCursorBasedAgainstPostgres() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("sync")
+        application { module() }
+        try {
+            val token = registerAndLogin(client, email, "sync-password", "Sync User")
+            val account = client.post("/api/v1/accounts") {
+                bearer(token)
+                jsonBody("""{"name":"Sync Account","type":"CHECKING","openingBalanceMinor":100000,"currency":"BRL"}""")
+            }
+            assertEquals(201, account.status.value, account.bodyAsText())
+            val accountId = json(account.bodyAsText())["id"]!!.jsonPrimitive.content
+            val entityId = UUID.randomUUID().toString()
+            val operationId = UUID.randomUUID().toString()
+            val payload = """{"id":"$entityId","accountId":"$accountId","amountMinor":2500,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-04","description":"Offline sync","source":"MANUAL"}"""
+            val pushBody = """{"operations":[{"operationId":"$operationId","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":$payload}]}"""
+
+            val firstPush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(pushBody) }
+            assertEquals(200, firstPush.status.value, firstPush.bodyAsText())
+            assertTrue(firstPush.bodyAsText().contains("ACKNOWLEDGED"))
+            val firstCursor = json(firstPush.bodyAsText())["cursor"]!!.jsonPrimitive.content.toLong()
+
+            val secondPush = client.post("/api/v1/sync/push") { bearer(token); jsonBody(pushBody) }
+            assertEquals(200, secondPush.status.value, secondPush.bodyAsText())
+            assertEquals(firstCursor, json(secondPush.bodyAsText())["cursor"]!!.jsonPrimitive.content.toLong())
+
+            val pull = client.get("/api/v1/sync/pull?cursor=0&limit=50") { bearer(token) }
+            assertEquals(200, pull.status.value, pull.bodyAsText())
+            assertTrue(pull.bodyAsText().contains(entityId))
+            assertTrue(pull.bodyAsText().contains("Offline sync"))
+            val cursor = json(pull.bodyAsText())["cursor"]!!.jsonPrimitive.content.toLong()
+
+            val empty = client.get("/api/v1/sync/pull?cursor=$cursor&limit=50") { bearer(token) }
+            assertEquals(200, empty.status.value)
+            assertEquals("[]", json(empty.bodyAsText())["changes"]!!.toString())
+        } finally {
+            cleanupUsers(email)
+        }
+    }
+
     private suspend fun registerAndLogin(client: HttpClient, email: String, password: String, displayName: String): String {
         val register = client.post("/api/v1/auth/register") {
             jsonBody("""{"email":"$email","displayName":"$displayName","password":"$password","timeZone":"UTC"}""")

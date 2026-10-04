@@ -890,6 +890,16 @@ O protocolo de sincronização servidor↔dispositivo ainda não foi ligado; por
 
 Validação: backend `clean test` passou; Android `testDebugUnitTest` + `assembleDebug` passaram; teste instrumentado da sessão segura passou 2/2; fluxo E2E autenticado afetado pela alteração passou 1/1 com Ktor + PostgreSQL + emulador API 35 ativos; `git diff --check` passou.
 
+### Microcheckpoint 3.2.2 - protocolo servidor↔dispositivo - 2026-10-04
+
+Implementado o primeiro protocolo real de sincronização para transações: endpoint autenticado `POST /api/v1/sync/push` com lotes de até 50 operações, endpoint `GET /api/v1/sync/pull?cursor=&limit=` com cursor monotônico, idempotência por UUID de transação, acknowledgements por operação e persistência de mudanças no servidor. A migration V14 cria a sequência/catálogo `sync_changes` e trigger de auditoria para INSERT/UPDATE/DELETE em transações.
+
+No Android, o Outbox passou a fazer push em lote, remover somente operações reconhecidas, executar pull paginado, persistir transações recebidas em `local_transactions` e avançar o checkpoint somente após aplicar as mudanças. A base Room evoluiu de V1 para V2 com migration explícita. O worker real foi validado contra Ktor + PostgreSQL, incluindo push, pull, checkpoint e esvaziamento do Outbox.
+
+Escopo deliberadamente limitado a transações. Conflitos entre dispositivos e sincronização dos demais agregados permanecem para a próxima microetapa.
+
+Validação: migration V14 aplicada e validada pelo Flyway; teste backend específico de push/pull/idempotência passou; Android `assembleDebug` passou; worker instrumentado real passou 1/1; fluxo visual de lançamento rápido + sincronização remota passou 1/1; `git diff --check` passou. A suíte backend completa e `testDebugUnitTest` tiveram execuções adicionais interrompidas por processos Gradle órfãos do ambiente, sem falha funcional correspondente; as verificações específicas determinísticas permaneceram verdes.
+
 ---
 
 ## 3.3 â€” Open Finance

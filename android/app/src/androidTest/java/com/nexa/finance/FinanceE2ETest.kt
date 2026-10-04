@@ -15,7 +15,12 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.work.ListenableWorker
+import androidx.work.testing.TestListenableWorkerBuilder
+import com.nexa.finance.ApiClient
+import com.nexa.finance.sync.LocalDatabaseProvider
 import com.nexa.finance.sync.SessionStore
+import kotlinx.coroutines.runBlocking
 import java.util.UUID
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -35,6 +40,42 @@ class FinanceE2ETest {
 
     private fun scrollToDashboard(tag: String) {
         compose.onNodeWithTag("dashboard_list").performScrollToNode(hasTestTag(tag))
+    }
+
+    @Test
+    fun syncWorkerPushesOutboxAndPullsCheckpointAgainstBackend() = runBlocking {
+        val suffix = UUID.randomUUID().toString().take(8)
+        val email = "worker.$suffix@example.com"
+        val password = "NexaE2e1234"
+        val api = ApiClient()
+        api.register(email, "Worker E2E", password)
+        val userId = api.login(email, password)
+        val context = compose.activity
+        SessionStore(context).save(userId, api.token!!)
+
+        val account = api.createAccount("Worker Sync Account")
+        val operationId = com.nexa.finance.sync.TransactionSyncEnqueuer.enqueue(
+            context = context,
+            userId = userId,
+            accountId = account.id,
+            amountMinor = 2590L,
+            type = "EXPENSE",
+            direction = "DEBIT",
+            description = "worker sync",
+            categoryId = null,
+        )
+
+        val worker = TestListenableWorkerBuilder<com.nexa.finance.sync.SyncWorker>(context).build()
+        val result = worker.doWork()
+        assertEquals(ListenableWorker.Result.success(), result)
+
+        val transactions = api.transactions()
+        assertEquals(true, transactions.any { it.description.contains("worker sync", ignoreCase = true) && it.amountMinor == 2590L })
+
+        val checkpoint = LocalDatabaseProvider.get(context).syncCheckpointDao().get(userId)
+        assertEquals(true, !checkpoint?.serverCursor.isNullOrBlank())
+        assertEquals(0, LocalDatabaseProvider.get(context).syncOperationDao().count(userId))
+        assertEquals(true, operationId.isNotBlank())
     }
 
     @Test
@@ -80,6 +121,17 @@ class FinanceE2ETest {
             compose.onAllNodes(hasText("Lançamento salvo localmente; sincronização agendada.")).fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithTag("quick_status").assertIsDisplayed()
+
+        val userId = SessionStore(compose.activity).userId()!!
+        compose.waitUntil(20_000) {
+            runBlocking {
+                LocalDatabaseProvider.get(compose.activity).syncOperationDao().count(userId) == 0
+            }
+        }
+        val token = SessionStore(compose.activity).token()!!
+        val syncedTransactions = ApiClient().withToken(token).transactions()
+        assertEquals(true, syncedTransactions.any { it.description.contains("almoço", ignoreCase = true) && it.amountMinor == 1890L })
+
         scrollToDashboard("dashboard_expenses")
         compose.onNodeWithTag("dashboard_expenses").assertIsDisplayed()
         scrollToDashboard("dashboard_result")

@@ -1,4 +1,4 @@
-package com.nexa.finance.sync
+﻿package com.nexa.finance.sync
 
 import android.content.Context
 import androidx.work.CoroutineWorker
@@ -6,7 +6,6 @@ import androidx.work.WorkerParameters
 import com.nexa.finance.ApiClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.io.IOException
 
 class SyncWorker(appContext: Context, workerParams: WorkerParameters) : CoroutineWorker(appContext, workerParams) {
@@ -16,45 +15,57 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Coroutin
         val token = sessionStore.token() ?: return@withContext Result.success()
         val database = LocalDatabaseProvider.get(applicationContext)
         val queue = SyncQueue(database.syncOperationDao())
-        val operations = queue.claimBatch(userId)
-        if (operations.isEmpty()) return@withContext Result.success()
-
-        var transientFailure = false
-        for (operation in operations) {
-            try {
-                execute(operation, ApiClient().withToken(token))
-                queue.complete(operation.id)
-            } catch (error: Exception) {
-                queue.fail(operation.id, operation.attemptCount + 1, error.message ?: error::class.simpleName.orEmpty())
-                if (isTransient(error)) transientFailure = true
+        val api = ApiClient().withToken(token)
+        try {
+            val operations = queue.claimBatch(userId)
+            if (operations.isNotEmpty()) {
+                val push = api.pushSync(operations)
+                val acknowledged = push.acknowledgements.associateBy { it.operationId }
+                operations.forEach { operation ->
+                    if (acknowledged[operation.id]?.status == "ACKNOWLEDGED") queue.complete(operation.id)
+                    else queue.fail(operation.id, operation.attemptCount + 1, "Server did not acknowledge operation.")
+                }
             }
-        }
-        if (transientFailure) Result.retry() else Result.success()
-    }
 
-    private fun execute(operation: SyncOperationEntity, api: ApiClient) {
-        when (operation.operation) {
-            OP_TRANSACTION_CREATE -> {
-                val payload = JSONObject(operation.payloadJson)
-                api.createTransaction(
-                    accountId = payload.getString("accountId"),
-                    amountMinor = payload.getLong("amountMinor"),
-                    type = payload.getString("type"),
-                    direction = payload.getString("direction"),
-                    description = payload.optString("description").ifBlank { "Lançamento" },
-                    categoryId = payload.optString("categoryId").ifBlank { null },
-                    id = operation.entityId,
-                    occurredOn = payload.getString("occurredOn"),
-                )
-            }
-            else -> throw IllegalArgumentException("Unsupported sync operation: " + operation.operation)
+            var cursor = database.syncCheckpointDao().get(userId)?.serverCursor?.toLongOrNull() ?: 0L
+            var page: SyncPullResult
+            do {
+                page = api.pullSync(cursor)
+                page.changes.forEach { change ->
+                    if (change.operation == "UPSERT" && change.transaction != null) {
+                        val tx = change.transaction
+                        database.localTransactionDao().upsert(
+                            LocalTransactionEntity(
+                                id = tx.id,
+                                accountId = tx.accountId,
+                                amountMinor = tx.amountMinor,
+                                currency = tx.currency,
+                                type = tx.type,
+                                direction = tx.direction,
+                                status = tx.status,
+                                occurredOn = tx.occurredOn,
+                                description = tx.description,
+                                categoryId = tx.categoryId,
+                                source = tx.source,
+                                installmentId = tx.installmentId,
+                                installmentNumber = tx.installmentNumber,
+                            ),
+                        )
+                    }
+                }
+                if (page.cursor > cursor) {
+                    cursor = page.cursor
+                    database.syncCheckpointDao().upsert(SyncCheckpointEntity(userId, cursor.toString(), System.currentTimeMillis()))
+                }
+            } while (page.changes.size >= 50)
+            Result.success()
+        } catch (error: Exception) {
+            if (isTransient(error)) Result.retry() else throw error
         }
     }
 
     private fun isTransient(error: Exception): Boolean =
         error is IOException || error is java.net.SocketTimeoutException || error is java.net.ConnectException
 
-    companion object {
-        const val OP_TRANSACTION_CREATE = "TRANSACTION_CREATE"
-    }
+    companion object { const val OP_TRANSACTION_CREATE = "TRANSACTION_CREATE" }
 }

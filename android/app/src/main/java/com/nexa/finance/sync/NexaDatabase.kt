@@ -7,11 +7,13 @@ import androidx.room.RoomDatabase
     entities = [
         SyncOperationEntity::class,
         SyncCheckpointEntity::class,
+        LocalTransactionEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class NexaDatabase : RoomDatabase() {
     abstract fun syncOperationDao(): SyncOperationDao
     abstract fun syncCheckpointDao(): SyncCheckpointDao
+    abstract fun localTransactionDao(): LocalTransactionDao
 }

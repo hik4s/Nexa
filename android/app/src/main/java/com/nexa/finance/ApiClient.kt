@@ -509,6 +509,59 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
         )
     }
 
+    fun pushSync(operations: List<com.nexa.finance.sync.SyncOperationEntity>): com.nexa.finance.sync.SyncPushResult {
+        val body = JSONObject().put("operations", org.json.JSONArray().apply {
+            operations.forEach { operation ->
+                put(JSONObject().apply {
+                    put("operationId", operation.id)
+                    put("entityType", operation.entityType)
+                    put("entityId", operation.entityId)
+                    put("operation", "UPSERT")
+                    put("payload", JSONObject(operation.payloadJson).apply { put("id", operation.entityId) })
+                })
+            }
+        })
+        val response = request("POST", "/api/v1/sync/push", body)
+        val acks = response.getJSONArray("acknowledgements")
+        return com.nexa.finance.sync.SyncPushResult(
+            (0 until acks.length()).map { i ->
+                val item = acks.getJSONObject(i)
+                com.nexa.finance.sync.SyncPushAck(item.getString("operationId"), item.getString("entityId"), item.getString("status"))
+            },
+            response.getLong("cursor"),
+        )
+    }
+
+    fun pullSync(cursor: Long, limit: Int = 50): com.nexa.finance.sync.SyncPullResult {
+        val response = request("GET", "/api/v1/sync/pull?cursor=$cursor&limit=$limit")
+        val changes = response.getJSONArray("changes")
+        return com.nexa.finance.sync.SyncPullResult(
+            response.getLong("cursor"),
+            (0 until changes.length()).map { i ->
+                val item = changes.getJSONObject(i)
+                val txJson = item.optJSONObject("transaction")
+                val tx = txJson?.let { o ->
+                    com.nexa.finance.sync.SyncTransaction(
+                        id = o.getString("id"),
+                        accountId = o.getString("accountId"),
+                        amountMinor = o.getLong("amountMinor"),
+                        currency = o.getString("currency"),
+                        type = o.getString("type"),
+                        direction = o.getString("direction"),
+                        status = o.getString("status"),
+                        occurredOn = o.getString("occurredOn"),
+                        description = o.optString("description").ifBlank { null },
+                        categoryId = o.optString("categoryId").ifBlank { null },
+                        source = o.getString("source"),
+                        installmentId = o.optString("installmentId").ifBlank { null },
+                        installmentNumber = o.optInt("installmentNumber", 0).takeIf { it > 0 },
+                    )
+                }
+                com.nexa.finance.sync.SyncPullChange(item.getLong("cursor"), item.getString("entityId"), item.getString("operation"), tx)
+            },
+        )
+    }
+
     private fun request(method: String, path: String, body: JSONObject? = null): JSONObject =
         JSONObject(raw(method, path, body))
 
