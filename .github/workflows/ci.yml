@@ -55,13 +55,13 @@ jobs:
         working-directory: backend
         run: chmod +x ./gradlew
 
-      - name: Test
-        working-directory: backend
-        run: ./gradlew clean test
-
       - name: Run database migrations
         working-directory: backend
         run: ./gradlew migrateDatabase
+
+      - name: Test
+        working-directory: backend
+        run: ./gradlew clean test
 
       - name: Build
         working-directory: backend
