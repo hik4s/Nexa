@@ -1088,11 +1088,25 @@ Validação real concluída junto ao teste de DatabaseConnectionProviderIntegrat
 
 Regra preservada:
 - nenhuma dependência externa fictícia foi adicionada apenas para satisfazer o checklist; novos testes serão criados quando Open Finance ou um provider LLM externo existirem de fato.
+### Checkpoint 3.9.1 — configuração de release e versionamento
+
+Validação concluída em CI GitHub Actions #86:
+
+- Build type `release` separado do `debug`.
+- URL da API de release aponta para o backend de produção; debug permanece parametrizável para o ambiente de emulador.
+- `versionCode` e `versionName` são configuráveis por propriedades Gradle, com defaults 1 / 0.1.0.
+- `assembleRelease` validado com sucesso.
+- `bundleRelease` foi adicionado à CI como artefato unsigned para preparação da distribuição.
+
+Pendências deliberadas:
+- assinatura/keystore ainda não configurados;
+- build de produção assinado ainda não concluído;
+- Play Console e materiais de loja continuam externos ao código.
 ## 3.9 â€” DistribuiÃ§Ã£o
 
-- [ ] ConfiguraÃ§Ã£o de release
+- [x] ConfiguraÃ§Ã£o de release
 - [ ] Assinatura do aplicativo
-- [ ] Versionamento
+- [x] Versionamento
 - [ ] Build de produÃ§Ã£o
 - [ ] Testes prÃ©-lanÃ§amento
 - [ ] PreparaÃ§Ã£o da Play Console

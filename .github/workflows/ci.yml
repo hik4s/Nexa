@@ -115,3 +115,16 @@ jobs:
       - name: Build release APK (unsigned)
         working-directory: android
         run: ./gradlew :app:assembleRelease -PnexaVersionCode=1 -PnexaVersionName=0.1.0
+
+      - name: Build release AAB (unsigned)
+        working-directory: android
+        run: ./gradlew :app:bundleRelease -PnexaVersionCode=1 -PnexaVersionName=0.1.0
+
+      - name: Upload unsigned release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexa-android-release-unsigned
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
