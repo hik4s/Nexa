@@ -192,6 +192,16 @@ Validação desta microetapa: teste backend direcionado de conflito passou; Andr
 
 ---
 
+### Microcheckpoint 3.2.4 - resolução explícita de conflitos - 2026-10-05
+
+Implementada a resolução explícita de conflitos de transação no Android. O Dashboard agora apresenta o estado local e o snapshot autoritativo do servidor e oferece duas decisões explícitas: manter servidor ou reenviar o lançamento local.
+
+Manter servidor substitui o cache local pelo snapshot autoritativo e remove a operação conflitante da outbox. Reenviar meu lançamento atualiza baseVersion para a versão do servidor, restaura a operação para PENDING, zera tentativas, agenda o WorkManager e mantém o conflito persistido até ACK; se houver novo conflito, o snapshot é atualizado.
+
+Validação desta microetapa: testes JVM do resolver adicionados; CI Android/backend será usado como gate de integração. A validação instrumentada específica de UI/Room continua condicionada ao ambiente local Android.
+
+---
+
 ## 3.3 Paleta principal
 
 ### Obsidian
