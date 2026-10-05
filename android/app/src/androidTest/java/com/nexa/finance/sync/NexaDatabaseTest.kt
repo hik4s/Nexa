@@ -56,4 +56,29 @@ class NexaDatabaseTest {
         assertNotNull(checkpoint)
         assertEquals("cursor-1", checkpoint?.serverCursor)
     }
+
+    @Test
+    fun persistsAndClearsSyncConflict() = runBlocking {
+        val conflict = SyncConflictEntity(
+            operationId = "operation-conflict-1",
+            userId = "user-1",
+            entityType = "TRANSACTION",
+            entityId = "tx-1",
+            localPayloadJson = """{"id":"tx-1","amountMinor":2600}""",
+            serverTransactionJson = """{"id":"tx-1","amountMinor":2500,"version":2}""",
+            serverVersion = 2L,
+            createdAtEpochMillis = 2_000L,
+        )
+
+        database.syncConflictDao().upsert(conflict)
+
+        val pending = database.syncConflictDao().pending("user-1")
+
+        assertEquals(listOf(conflict), pending)
+        assertEquals(1, database.syncConflictDao().count("user-1"))
+
+        database.syncConflictDao().delete(conflict.operationId)
+
+        assertEquals(0, database.syncConflictDao().count("user-1"))
+    }
 }

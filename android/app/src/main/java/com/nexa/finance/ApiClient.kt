@@ -531,6 +531,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
                     entityId = item.getString("entityId"),
                     status = item.getString("status"),
                     version = item.optLong("version", 0L).takeIf { item.has("version") && !item.isNull("version") },
+                    serverTransaction = item.optJSONObject("serverTransaction")?.let(::syncTransactionFromJson),
                 )
             },
             response.getLong("cursor"),
@@ -567,6 +568,24 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
             },
         )
     }
+
+    private fun syncTransactionFromJson(o: JSONObject): com.nexa.finance.sync.SyncTransaction =
+        com.nexa.finance.sync.SyncTransaction(
+            id = o.getString("id"),
+            accountId = o.getString("accountId"),
+            amountMinor = o.getLong("amountMinor"),
+            currency = o.getString("currency"),
+            type = o.getString("type"),
+            direction = o.getString("direction"),
+            status = o.getString("status"),
+            occurredOn = o.getString("occurredOn"),
+            description = o.optString("description").ifBlank { null },
+            categoryId = o.optString("categoryId").ifBlank { null },
+            source = o.getString("source"),
+            installmentId = o.optString("installmentId").ifBlank { null },
+            installmentNumber = o.optInt("installmentNumber", 0).takeIf { it > 0 },
+            version = o.optLong("version", 1L),
+        )
 
     private fun request(method: String, path: String, body: JSONObject? = null): JSONObject =
         JSONObject(raw(method, path, body))

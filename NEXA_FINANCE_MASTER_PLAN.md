@@ -184,6 +184,14 @@ A interface deverÃ¡ privilegiar:
 - contraste elevado
 - feedback visual sem poluiÃ§Ã£o
 
+### Microcheckpoint 3.2.3 - conflitos de sincronização - 2026-10-05
+
+Implementado o tratamento seguro de conflitos para transações sincronizadas. Quando uma operação offline chega com baseVersion obsoleta, o backend responde CONFLICT sem sobrescrever o estado do servidor e inclui a versão + snapshot autoritativo da transação. O Android mantém o payload local e o snapshot do servidor em uma tabela sync_conflicts, evitando descarte silencioso até existir uma ação explícita de resolução. A base Room evoluiu de V3 para V4 com migration e schema exportado.
+
+Validação desta microetapa: teste backend direcionado de conflito passou; Android unit tests, lint e assembleDebug passaram; teste instrumentado NexaDatabaseTest passou 2/2 no AVD Nexa_API35. A UX de resolução explícita permanece como a próxima microetapa.
+
+---
+
 ## 3.3 Paleta principal
 
 ### Obsidian
