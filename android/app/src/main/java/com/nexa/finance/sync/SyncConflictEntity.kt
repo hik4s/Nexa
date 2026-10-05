@@ -1,6 +1,7 @@
 package com.nexa.finance.sync
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -11,6 +12,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(
     tableName = "sync_conflicts",
+    indices = [Index(value = ["userId", "createdAtEpochMillis"])],
 )
 data class SyncConflictEntity(
     @PrimaryKey val operationId: String,
