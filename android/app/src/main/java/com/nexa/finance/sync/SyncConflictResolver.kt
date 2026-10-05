@@ -23,7 +23,9 @@ class SyncConflictResolver(
     suspend fun pending(userId: String): List<SyncConflictSummary> =
         conflictDao.pending(userId).map(::summarize)
 
-    suspend fun keepServer(conflict: SyncConflictEntity) {
+    suspend fun keepServer(operationId: String) {
+        val conflict = conflictDao.get(operationId)
+            ?: error("Conflito não encontrado.")
         val server = conflict.serverTransactionJson
             ?.let { parseTransaction(JSONObject(it)) }
             ?: error("O conflito não contém um snapshot do servidor.")
@@ -33,7 +35,9 @@ class SyncConflictResolver(
         conflictDao.delete(conflict.operationId)
     }
 
-    suspend fun resubmitMine(conflict: SyncConflictEntity) {
+    suspend fun resubmitMine(operationId: String) {
+        val conflict = conflictDao.get(operationId)
+            ?: error("Conflito não encontrado.")
         val serverVersion = conflict.serverVersion
             ?: error("O conflito não possui a versão atual do servidor.")
 
