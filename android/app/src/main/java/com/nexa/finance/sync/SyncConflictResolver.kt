@@ -19,6 +19,7 @@ class SyncConflictResolver(
     private val operationDao: SyncOperationDao,
     private val transactionDao: LocalTransactionDao,
     private val clock: () -> Long = { System.currentTimeMillis() },
+    private val scheduleSync: () -> Unit = { SyncScheduler.schedule(context) },
 ) {
     suspend fun pending(userId: String): List<SyncConflictSummary> =
         conflictDao.pending(userId).map(::summarize)
@@ -52,7 +53,7 @@ class SyncConflictResolver(
             nowEpochMillis = clock(),
         )
         check(updated == 1) { "A operação em conflito não está mais disponível para reenvio." }
-        SyncScheduler.schedule(context)
+        scheduleSync()
     }
 
     private fun summarize(conflict: SyncConflictEntity): SyncConflictSummary {
