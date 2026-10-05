@@ -75,8 +75,9 @@ class SyncConflictResolverTest {
         val transactions = FakeTransactionDao()
         conflicts.upsert(
             conflict(
+                localJson = LOCAL_PAYLOAD,
                 serverVersion = 7L,
-                serverJson = """{"id":"$TRANSACTION_ID","accountId":"$ACCOUNT_ID","amountMinor":2600,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","status":"POSTED","occurredOn":"2026-10-05","description":"Servidor","source":"MANUAL","version":7}""",
+                serverJson = SERVER_PAYLOAD,
             ),
         )
 
@@ -103,9 +104,9 @@ class SyncConflictResolverTest {
         val transactions = FakeTransactionDao()
         conflicts.upsert(
             conflict(
-                localJson = """{"amountMinor":2700,"description":"Meu lançamento"}""",
+                localJson = LOCAL_PAYLOAD,
                 serverVersion = 3L,
-                serverJson = """{"id":"$TRANSACTION_ID","accountId":"$ACCOUNT_ID","amountMinor":2600,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","status":"POSTED","occurredOn":"2026-10-05","description":"Servidor","source":"MANUAL","version":3}""",
+                serverJson = SERVER_PAYLOAD,
             ),
         )
 
@@ -130,6 +131,7 @@ class SyncConflictResolverTest {
         transactionDao = transactions,
         clock = { 5_000L },
         scheduleSync = scheduleSync,
+        payloadCodec = FakePayloadCodec,
     )
 
     private fun conflict(
