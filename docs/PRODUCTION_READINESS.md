@@ -8,6 +8,8 @@ Data de referencia: 2026-10-04
 - Parte 2 — produto completo: registro rapido, dashboard, contas, cartoes/faturas, orcamentos, metas, recorrencias, historico, IA e notificacoes.
 - Backend publicado em producao com HTTPS, migrations e rate limiting.
 - CI remoto para backend e Android.
+- Release build Android validado em CI como artefato não assinado.
+- BuildConfig de release aponta para o backend de produção; debug continua apontando para o backend de emulador.
 - Android local-first com Room, Outbox, checkpoint e WorkManager.
 - Sincronizacao real servidor/dispositivo para transacoes.
 - Idempotencia de transacoes por UUID.

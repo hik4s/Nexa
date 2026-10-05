@@ -7,6 +7,11 @@ plugins {
 
 android {
     namespace = "com.nexa.finance"
+    val apiUrl = providers.gradleProperty("nexaApiUrl").orNull ?: "http://10.0.2.2:8080"
+    val escapedApiUrl = apiUrl.replace("\\", "\\\\").replace(""", "\\"")
+    val versionCodeValue = providers.gradleProperty("nexaVersionCode").orNull?.toIntOrNull() ?: 1
+    val versionNameValue = providers.gradleProperty("nexaVersionName").orNull ?: "0.1.0"
+
     compileSdk {
         version = release(37) {
             minorApiLevel = 0
@@ -17,14 +22,32 @@ android {
         applicationId = "com.nexa.finance"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
-        buildConfigField("String", "NEXA_API_URL", "\"http://10.0.2.2:8080\"")
+        versionCode = versionCodeValue
+        versionName = versionNameValue
+        buildConfigField("String", "NEXA_API_URL", "\"$escapedApiUrl\"")
     }
 
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField("String", "NEXA_API_URL", "\"$escapedApiUrl\"")
+        }
+        release {
+            isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            val releaseApiUrl = providers.gradleProperty("nexaReleaseApiUrl").orNull
+                ?: "https://nexa-api-production-6cc5.up.railway.app"
+            val escapedReleaseApiUrl = releaseApiUrl.replace("\\", "\\\\").replace(""", "\\"")
+            buildConfigField("String", "NEXA_API_URL", "\"$escapedReleaseApiUrl\"")
+        }
     }
 
     packaging {
