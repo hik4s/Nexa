@@ -198,7 +198,7 @@ Implementada a resolução explícita de conflitos de transação no Android. O 
 
 Manter servidor substitui o cache local pelo snapshot autoritativo e remove a operação conflitante da outbox. Reenviar meu lançamento atualiza baseVersion para a versão do servidor, restaura a operação para PENDING, zera tentativas, agenda o WorkManager e mantém o conflito persistido até ACK; se houver novo conflito, o snapshot é atualizado.
 
-Validação desta microetapa: testes JVM do resolver adicionados; CI Android/backend será usado como gate de integração. A validação instrumentada específica de UI/Room continua condicionada ao ambiente local Android.
+Validação desta microetapa: testes JVM do resolver passaram; teste instrumentado específico de resolução de conflitos com Room passou no emulador Android API 35; CI completo passou com backend (migrations/test/build) e Android (unit tests, instrumented test, lint, debug APK, release APK e release AAB). A validação não depende mais do ambiente local Android.
 
 ---
 
