@@ -120,7 +120,7 @@ jobs:
           working-directory: ./android
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
-          script: ./gradlew :app:connectedDebugAndroidTest --no-daemon
+          script: ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nexa.finance.sync.SyncConflictResolverInstrumentedTest --no-daemon
 
       - name: Lint Android
         working-directory: android
