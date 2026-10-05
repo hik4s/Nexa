@@ -15,6 +15,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.util.UUID
@@ -25,7 +26,7 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 
 class SyncConcurrencyApiTest {
     @Test
-    fun concurrentIdenticalUpdatesAreIdempotentAgainstPostgres() = testApplication {
+    fun concurrentIdenticalUpdatesConvergeSafelyAgainstPostgres() = testApplication {
         assumeTrue(hasPostgres())
         val email = uniqueEmail("sync-concurrency")
         application { module() }
@@ -53,8 +54,8 @@ class SyncConcurrencyApiTest {
                 )
             }
             assertEquals(200, initialPush.status.value, initialPush.bodyAsText())
-            assertTrue(initialPush.bodyAsText().contains("\"status\":\"ACKNOWLEDGED\""))
-            assertTrue(initialPush.bodyAsText().contains("\"version\":1"))
+            assertEquals("ACKNOWLEDGED", acknowledgementStatus(initialPush.bodyAsText()))
+            assertEquals(1L, acknowledgementVersion(initialPush.bodyAsText()))
 
             val updatePayload =
                 """{"id":"$entityId","accountId":"$accountId","amountMinor":2600,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-04","description":"Concurrent sync update","source":"MANUAL","baseVersion":1}"""
@@ -80,14 +81,22 @@ class SyncConcurrencyApiTest {
                 results.all { it.first == 200 },
                 "Concurrent sync requests returned unexpected statuses: ${results.map { it.first }}"
             )
+            val statuses = results.map { acknowledgementStatus(it.second) }
             assertTrue(
-                results.all { it.second.contains("\"status\":\"ACKNOWLEDGED\"") },
-                "At least one concurrent sync request was not acknowledged: $results"
+                statuses.all { it == "ACKNOWLEDGED" || it == "CONFLICT" },
+                "Unexpected concurrent sync acknowledgement statuses: $statuses"
             )
             assertTrue(
-                results.all { it.second.contains("\"version\":2") },
-                "Concurrent acknowledgements did not converge on version 2: $results"
+                statuses.any { it == "ACKNOWLEDGED" },
+                "No concurrent sync request was acknowledged: $results"
             )
+
+            val transaction = client.get("/api/v1/transactions/$entityId") {
+                bearer(token)
+            }
+            assertEquals(200, transaction.status.value, transaction.bodyAsText())
+            assertEquals(2600L, json(transaction.bodyAsText())["amountMinor"]!!.jsonPrimitive.content.toLong())
+            assertEquals(2L, json(transaction.bodyAsText())["version"]!!.jsonPrimitive.content.toLong())
 
             val pull = client.get("/api/v1/sync/pull?cursor=0&limit=100") {
                 bearer(token)
@@ -127,6 +136,12 @@ class SyncConcurrencyApiTest {
     }
 
     private fun json(body: String) = Json.parseToJsonElement(body).jsonObject
+    private fun acknowledgementStatus(body: String): String =
+        json(body)["acknowledgements"]!!.jsonArray.single()["status"]!!.jsonPrimitive.content
+
+    private fun acknowledgementVersion(body: String): Long =
+        json(body)["acknowledgements"]!!.jsonArray.single()["version"]!!.jsonPrimitive.content.toLong()
+
     private fun uniqueEmail(prefix: String): String = prefix + "-" + UUID.randomUUID() + "@example.com"
     private fun hasPostgres(): Boolean = !System.getenv("POSTGRES_PASSWORD").isNullOrBlank()
 

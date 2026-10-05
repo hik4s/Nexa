@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.nexa.finance"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.nexa.finance"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
         buildConfigField("String", "NEXA_API_URL", "\"http://10.0.2.2:8080\"")

@@ -84,20 +84,24 @@ class SyncService(
                 }
 
                 else -> {
-                    val updated = transactions.update(
-                        ownerId = ownerId,
-                        id = entityId,
-                        baseVersion = payload.baseVersion,
-                        accountId = AccountId(UUID.fromString(payload.accountId)),
-                        amount = Money(payload.amountMinor, enumValue<CurrencyCode>(payload.currency)),
-                        type = enumValue<TransactionType>(payload.type),
-                        direction = enumValue<TransactionDirection>(payload.direction),
-                        occurredOn = parseDate(payload.occurredOn),
-                        description = payload.description,
-                        categoryId = payload.categoryId?.let { CategoryId(UUID.fromString(it)) },
-                        source = enumValue<TransactionSource>(payload.source),
-                    )
-                    acknowledgement(operation, updated.version)
+                    try {
+                        val updated = transactions.update(
+                            ownerId = ownerId,
+                            id = entityId,
+                            baseVersion = payload.baseVersion,
+                            accountId = AccountId(UUID.fromString(payload.accountId)),
+                            amount = Money(payload.amountMinor, enumValue<CurrencyCode>(payload.currency)),
+                            type = enumValue<TransactionType>(payload.type),
+                            direction = enumValue<TransactionDirection>(payload.direction),
+                            occurredOn = parseDate(payload.occurredOn),
+                            description = payload.description,
+                            categoryId = payload.categoryId?.let { CategoryId(UUID.fromString(it)) },
+                            source = enumValue<TransactionSource>(payload.source),
+                        )
+                        acknowledgement(operation, updated.version)
+                    } catch (_: ConflictException) {
+                        conflict(operation)
+                    }
                 }
             }
         }
