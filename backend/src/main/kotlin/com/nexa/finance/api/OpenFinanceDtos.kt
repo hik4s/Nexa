@@ -20,3 +20,17 @@ data class OpenFinanceConsentResponse(
     val expiresAt: String?,
     val revokedAt: String?,
 )
+
+
+@Serializable
+data class OpenFinanceConsentAuthorizationResponse(
+    val externalConsentId: String,
+    val authorizationUrl: String,
+)
+
+@Serializable
+data class OpenFinanceConsentSyncResponse(
+    val id: String,
+    val status: String,
+    val expiresAt: String?,
+)

@@ -1,5 +1,8 @@
 package com.nexa.finance
 
+import com.nexa.finance.application.openfinance.OpenFinanceProvider
+import com.nexa.finance.application.openfinance.OpenFinanceProviderRegistry
+import com.nexa.finance.domain.common.UserId
 import com.nexa.finance.infrastructure.database.DatabaseConnectionProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.request.delete
@@ -15,6 +18,7 @@ import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.time.Instant
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -234,6 +238,59 @@ class ApplicationTest {
         }
     }
 
+    @Test
+    fun openFinanceAuthorizationSyncAndRevokeUseInjectedProvider() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("open-finance-provider")
+        val provider = FakeOpenFinanceProvider()
+
+        application {
+            module(FakeOpenFinanceProviderRegistry(provider))
+        }
+
+        try {
+            val token = registerAndLogin(client, email, "provider-password", "Provider User")
+
+            val create = client.post("/api/v1/open-finance/consents") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                jsonBody("""{"providerId":"fake","scopes":["ACCOUNTS","BALANCES","TRANSACTIONS"]}""")
+            }
+            assertEquals(200, create.status.value, create.bodyAsText())
+            val consentId = json(create.bodyAsText())["id"]!!.jsonPrimitive.content
+
+            val authorization = client.post("/api/v1/open-finance/consents/$consentId/authorization") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, authorization.status.value, authorization.bodyAsText())
+            assertTrue(authorization.bodyAsText().contains(""""externalConsentId":"${provider.externalConsentId}""""))
+            assertTrue(authorization.bodyAsText().contains(""""authorizationUrl":"${provider.authorizationUrl}""""))
+
+            val awaiting = client.get("/api/v1/open-finance/consents") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, awaiting.status.value)
+            assertTrue(awaiting.bodyAsText().contains(""""status":"AWAITING_AUTHORIZATION""""))
+
+            provider.activate()
+
+            val sync = client.post("/api/v1/open-finance/consents/$consentId/sync") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, sync.status.value, sync.bodyAsText())
+            assertTrue(sync.bodyAsText().contains(""""status":"ACTIVE""""))
+            assertTrue(sync.bodyAsText().contains(""""expiresAt":""""))
+
+            val revoke = client.delete("/api/v1/open-finance/consents/$consentId") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+            }
+            assertEquals(200, revoke.status.value, revoke.bodyAsText())
+            assertTrue(revoke.bodyAsText().contains(""""status":"REVOKED""""))
+            assertTrue(provider.revoked)
+        } finally {
+            cleanupOpenFinanceConsents(email)
+            cleanupUsers(email)
+        }
+    }
     @Test
     fun goalApiCreatesContributesAndReturnsHistoryAgainstPostgres() = testApplication {
         assumeTrue(hasPostgres())
@@ -458,7 +515,63 @@ class ApplicationTest {
         }
     }
 
-    private fun cleanupOpenFinanceConsents(vararg emails: String) {
+    
+private class FakeOpenFinanceProviderRegistry(
+    private val provider: OpenFinanceProvider,
+) : OpenFinanceProviderRegistry {
+    override fun get(providerId: String): OpenFinanceProvider =
+        checkProvider(providerId)
+
+    private fun checkProvider(providerId: String): OpenFinanceProvider {
+        check(providerId == provider.providerId) { "Unexpected provider: " + providerId }
+        return provider
+    }
+}
+
+private class FakeOpenFinanceProvider : OpenFinanceProvider {
+    override val providerId: String = "fake"
+
+    val externalConsentId: String = "fake-consent-1"
+    val authorizationUrl: String = "https://sandbox.example/open-finance/authorize/fake-consent-1"
+    var status: OpenFinanceProvider.ExternalConsentStatus =
+        OpenFinanceProvider.ExternalConsentStatus.AWAITING_AUTHORIZATION
+    var expiresAt: Instant? = null
+    var revoked: Boolean = false
+
+    override fun requestConsent(
+        userId: UserId,
+        scopes: Set<String>,
+    ): OpenFinanceProvider.ProviderConsentSession =
+        OpenFinanceProvider.ProviderConsentSession(
+            externalConsentId = externalConsentId,
+            authorizationUrl = authorizationUrl,
+        )
+
+    override fun getConsentStatus(
+        externalConsentId: String,
+    ): OpenFinanceProvider.ProviderConsentState {
+        check(externalConsentId == this.externalConsentId)
+        return OpenFinanceProvider.ProviderConsentState(
+            status = status,
+            expiresAt = expiresAt,
+        )
+    }
+
+    override fun revokeConsent(
+        externalConsentId: String,
+    ) {
+        check(externalConsentId == this.externalConsentId)
+        status = OpenFinanceProvider.ExternalConsentStatus.REVOKED
+        revoked = true
+    }
+
+    fun activate() {
+        status = OpenFinanceProvider.ExternalConsentStatus.ACTIVE
+        expiresAt = Instant.now().plusSeconds(3_600)
+    }
+}
+
+private fun cleanupOpenFinanceConsents(vararg emails: String) {
         DatabaseConnectionProvider().open().use { connection ->
             connection.prepareStatement(
                 "DELETE FROM open_finance_consents WHERE user_id IN (SELECT id FROM users WHERE email = ANY (?))"

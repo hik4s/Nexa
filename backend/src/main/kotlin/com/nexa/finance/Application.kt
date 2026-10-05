@@ -102,7 +102,10 @@ fun main() {
     }.start(wait = true)
 }
 
-fun Application.module() {
+fun Application.module(
+    openFinanceProviders: com.nexa.finance.application.openfinance.OpenFinanceProviderRegistry =
+        ConfiguredOpenFinanceProviderRegistry(),
+) {
     val settings = ServerSettings.fromEnvironment()
     val rateLimitSettings = RateLimitSettings.fromEnvironment()
     val database = DatabaseConnectionProvider()
@@ -141,7 +144,7 @@ fun Application.module() {
     val ai = AiService(aiContext, RuleBasedAiProvider(), aiUsageRepository)
     val openFinanceConsents = OpenFinanceConsentService(
         repository = JdbcOpenFinanceConsentRepository(database),
-        providers = ConfiguredOpenFinanceProviderRegistry(),
+        providers = openFinanceProviders,
     )
     val notifications = NotificationService(
         repository = notificationRepository,
