@@ -53,8 +53,8 @@ class SyncConcurrencyApiTest {
                 )
             }
             assertEquals(200, initialPush.status.value, initialPush.bodyAsText())
-            assertTrue(initialPush.bodyAsText().contains(""status":"ACKNOWLEDGED""))
-            assertTrue(initialPush.bodyAsText().contains(""version":1"))
+            assertTrue(initialPush.bodyAsText().contains("\"status\":\"ACKNOWLEDGED\""))
+            assertTrue(initialPush.bodyAsText().contains("\"version\":1"))
 
             val updatePayload =
                 """{"id":"$entityId","accountId":"$accountId","amountMinor":2600,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-04","description":"Concurrent sync update","source":"MANUAL","baseVersion":1}"""
@@ -81,11 +81,11 @@ class SyncConcurrencyApiTest {
                 "Concurrent sync requests returned unexpected statuses: ${results.map { it.first }}"
             )
             assertTrue(
-                results.all { it.second.contains(""status":"ACKNOWLEDGED"") },
+                results.all { it.second.contains("\"status\":\"ACKNOWLEDGED\"") },
                 "At least one concurrent sync request was not acknowledged: $results"
             )
             assertTrue(
-                results.all { it.second.contains(""version":2") },
+                results.all { it.second.contains("\"version\":2") },
                 "Concurrent acknowledgements did not converge on version 2: $results"
             )
 
@@ -127,7 +127,7 @@ class SyncConcurrencyApiTest {
     }
 
     private fun json(body: String) = Json.parseToJsonElement(body).jsonObject
-    private fun uniqueEmail(prefix: String): String = "$prefix-${UUID.randomUUID()}@example.com"
+    private fun uniqueEmail(prefix: String): String = prefix + "-" + UUID.randomUUID() + "@example.com"
     private fun hasPostgres(): Boolean = !System.getenv("POSTGRES_PASSWORD").isNullOrBlank()
 
     private fun cleanupUsers(vararg emails: String) {
