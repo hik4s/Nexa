@@ -250,16 +250,6 @@ A maior parte da interface deverÃ¡ permanecer em **Obsidian + Ivory + tons neu
 Burgundy e Deep Green funcionam como cores de identidade e semÃ¢ntica. Champagne serÃ¡ raro.
 
 Evitar transformar toda a interface em uma composiÃ§Ã£o multicolorida.
-## 3.4 Regra de uso das cores
-
-A maior parte da interface deverÃ¡ permanecer em **Obsidian + Ivory + tons neutros**.
-
-Burgundy e Deep Green funcionam como cores de identidade e semÃ¢ntica. Champagne serÃ¡ raro.
-
-Evitar transformar toda a interface em uma composiÃ§Ã£o multicolorida.
-
-
-**Bloqueador identificado na auditoria de segurança:** o token de sessão é protegido por Android Keystore + AES-GCM em SessionStore, porém o Room (NexaDatabase) atualmente armazena transações/outbox/checkpoints sem criptografia de banco em repouso. Antes da assinatura/publicação em produção, deve ser definida e validada uma estratégia de criptografia do banco local, incluindo migração da base V3 e recuperação em reinstalação/upgrade.
 ## 3.5 Tipografia
 
 Prioridade:
@@ -946,6 +936,8 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 - [ ] PolÃ­tica de retenÃ§Ã£o de dados
 - [ ] RevisÃ£o de exposiÃ§Ã£o de dados da IA
 
+
+**Bloqueador identificado na auditoria de segurança:** o token de sessão é protegido por Android Keystore + AES-GCM em SessionStore, porém o Room (NexaDatabase) atualmente armazena transações/outbox/checkpoints sem criptografia de banco em repouso. Antes da assinatura/publicação em produção, deve ser definida e validada uma estratégia de criptografia do banco local, incluindo migração da base V3 e recuperação em reinstalação/upgrade.
 ---
 
 ## 3.5 â€” LGPD e compliance
