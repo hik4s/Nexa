@@ -19,6 +19,9 @@ interface SyncConflictDao {
     )
     suspend fun pending(userId: String): List<SyncConflictEntity>
 
+    @Query("SELECT * FROM sync_conflicts WHERE operationId = :operationId")
+    suspend fun get(operationId: String): SyncConflictEntity?
+
     @Query("SELECT COUNT(*) FROM sync_conflicts WHERE userId = :userId")
     suspend fun count(userId: String): Int
 
