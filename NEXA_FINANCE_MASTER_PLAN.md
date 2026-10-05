@@ -991,7 +991,7 @@ ValidaÃ§Ã£o de grande volume: scripts/benchmark-transactions.ps1 inseriu 50.
 
 RegressÃ£o: TransactionApiTest passou isoladamente com os fluxos de paginaÃ§Ã£o, ediÃ§Ã£o com versionamento e sincronizaÃ§Ã£o; a suÃ­te backend completa fechou com 181 testes verdes usando pool de teste 2/0. O Gradle agora aplica esses limites somente como padrÃ£o do task de testes, preservando override explÃ­cito por ambiente.
 
-Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com grande volume; concorrÃªncia e carga da API foram validadas no checkpoint 3.8.1. InicializaÃ§Ã£o, abertura de telas, memÃ³ria, bateria, rede e cache continuam pendentes; teste de banco, filas, integraÃ§Ã£o com IA, sincronizaÃ§Ã£o, falhas externas e recuperaÃ§Ã£o seguem no bloco 3.8.
+Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com grande volume; concorrÃªncia e carga da API foram validadas no checkpoint 3.8.1. InicializaÃ§Ã£o, abertura de telas, memÃ³ria, bateria, rede e cache continuam pendentes; filas, integraÃ§Ã£o com IA, sincronizaÃ§Ã£o, falhas externas e recuperaÃ§Ã£o seguem no bloco 3.8.
 
 ---
 
@@ -999,7 +999,7 @@ Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com
 
 - [x] Teste de concorrÃªncia
 - [x] Teste de carga da API
-- [ ] Teste de banco
+- [x] Teste de banco
 - [ ] Teste de filas quando existirem
 - [ ] Teste de integraÃ§Ã£o com IA
 - [ ] Teste de sincronizaÃ§Ã£o
@@ -1023,6 +1023,31 @@ Validação real executada em 2026-10-04 com o harness `scripts/load-test-transa
 - Cleanup confirmado: 0 usuários, 0 contas, 0 transações e 0 `sync_changes` residuais.
 
 Observação: o backend foi iniciado para o teste com `RATE_LIMIT_REQUESTS_PER_MINUTE=10000`, preservando a configuração padrão de produção (120/min por IP) fora deste cenário. Isso isola capacidade/concorrência de API da limitação de tráfego intencional.
+
+### Checkpoint 3.8.2 — carga concorrente do PostgreSQL
+
+Validação real executada em 2026-10-04 com o harness `scripts/benchmark-database.ps1`, usando PostgreSQL 18.6 via Docker e `pgbench`:
+
+- Dataset isolado: 5 contas sintéticas, 10.000 transações por conta, 50.000 transações.
+- Consulta: mesma estratégia global de histórico do `JdbcTransactionRepository`, com `CROSS JOIN LATERAL`, índice por conta/data e página de 100 registros.
+- Concorrência: 25 clientes, 5 threads.
+- Duração: 15 s.
+- Transações processadas: 60.521.
+- Falhas: 0 (0,000%).
+- TPS: 4.035,98.
+- Latência média: 5,927 ms.
+- Desvio padrão: 1,456 ms.
+- Tempo inicial de conexão: 24,520 ms.
+- Cleanup confirmado: dataset sintético removido ao final da execução.
+- Verificação estrutural após o benchmark: 16 migrations válidas, 32 índices e 36 foreign keys; nenhum usuário, conta, transação ou `sync_changes` residual do benchmark.
+
+```text
+Database verification: PASS
+Migrations: 1..16
+Indexes: 32
+Foreign keys: 36
+Benchmark residues: 0|0|0|0
+```
 
 ---
 
