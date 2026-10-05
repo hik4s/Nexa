@@ -356,6 +356,11 @@ fun DashboardScreen(api: ApiClient, logout: () -> Unit) {
                 )
             }
             item {
+                SyncConflictPanel(
+                    onMessage = { message = it },
+                )
+            }
+            item {
                 DashboardPanel("Transferir entre contas", Modifier.testTag("account_transfer")) {
                     if (accounts.size < 2) {
                         Text("Crie pelo menos duas contas para transferir valores.")
