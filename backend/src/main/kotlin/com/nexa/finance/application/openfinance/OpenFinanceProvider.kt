@@ -1,7 +1,6 @@
 package com.nexa.finance.application.openfinance
 
 import com.nexa.finance.domain.common.UserId
-import com.nexa.finance.domain.openfinance.OpenFinanceConsent
 import java.time.Instant
 
 interface OpenFinanceProvider {
