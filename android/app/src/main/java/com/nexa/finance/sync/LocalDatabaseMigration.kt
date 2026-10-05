@@ -30,3 +30,25 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("ALTER TABLE local_transactions ADD COLUMN version INTEGER NOT NULL DEFAULT 1")
     }
 }
+
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS sync_conflicts (
+                operationId TEXT NOT NULL PRIMARY KEY,
+                userId TEXT NOT NULL,
+                entityType TEXT NOT NULL,
+                entityId TEXT NOT NULL,
+                localPayloadJson TEXT NOT NULL,
+                serverTransactionJson TEXT,
+                serverVersion INTEGER,
+                createdAtEpochMillis INTEGER NOT NULL
+            )
+        """.trimIndent())
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_sync_conflicts_userId_createdAtEpochMillis " +
+                "ON sync_conflicts(userId, createdAtEpochMillis)"
+        )
+    }
+}
