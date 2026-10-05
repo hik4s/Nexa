@@ -11,6 +11,7 @@ Data de referencia: 2026-10-04
 - Release build Android validado em CI como artefatos APK e AAB não assinados.
 - BuildConfig de release aponta para o backend de produção; debug continua apontando para o backend de emulador.
 - Android local-first com Room, Outbox, checkpoint e WorkManager.
+- Banco local Room criptografado com SQLCipher; chave de 256 bits protegida por Android Keystore + AES-GCM, incluindo migração validada da base plaintext existente.
 - Sincronizacao real servidor/dispositivo para transacoes.
 - Idempotencia de transacoes por UUID.
 - Protecao contra conflito de mesmo ID com payload divergente.
