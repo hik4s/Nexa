@@ -1,6 +1,5 @@
 package com.nexa.finance.sync
 
-import android.content.Context
 import org.json.JSONObject
 
 data class SyncConflictSummary(
@@ -14,12 +13,11 @@ data class SyncConflictSummary(
 )
 
 class SyncConflictResolver(
-    private val context: Context,
     private val conflictDao: SyncConflictDao,
     private val operationDao: SyncOperationDao,
     private val transactionDao: LocalTransactionDao,
     private val clock: () -> Long = { System.currentTimeMillis() },
-    private val scheduleSync: () -> Unit = { SyncScheduler.schedule(context) },
+    private val scheduleSync: () -> Unit,
 ) {
     suspend fun pending(userId: String): List<SyncConflictSummary> =
         conflictDao.pending(userId).map(::summarize)
