@@ -56,3 +56,13 @@ The protocol intentionally avoids last-write-wins for financial transactions.
 ## Current scope
 
 This versioning model is implemented for the transaction aggregate. Other aggregates still need equivalent revision strategies before they are synchronized across devices.
+## Explicit conflict resolution
+
+When Android receives CONFLICT, it persists the local operation payload together with the authoritative server snapshot.
+
+The user must explicitly choose one of two outcomes:
+
+- **Keep server:** replace the local transaction with the server snapshot, delete the conflicted outbox operation and clear the conflict record.
+- **Use my transaction:** keep the local payload, set baseVersion to the current server version, reset the outbox operation to PENDING with zero attempts, schedule synchronization, and keep the conflict record until the server acknowledges the resubmission.
+
+A successful resubmission removes the conflict record. If the server rejects the rebased payload again, the worker replaces the stored snapshot with the newer authoritative state and the user is asked to decide again.
