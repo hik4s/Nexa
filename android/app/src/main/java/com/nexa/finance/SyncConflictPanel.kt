@@ -48,9 +48,9 @@ fun SyncConflictPanel(
                     scheduleSync = { com.nexa.finance.sync.SyncScheduler.schedule(context) },
                 ).pending(currentUserId)
             }.onSuccess { result ->
-                runOnMain { conflicts = result }
+                postToMain { conflicts = result }
             }.onFailure { error ->
-                runOnMain { onMessage(error.message ?: "Não foi possível carregar conflitos de sincronização.") }
+                postToMain { onMessage(error.message ?: "Não foi possível carregar conflitos de sincronização.") }
             }
         }.start()
     }
@@ -69,7 +69,7 @@ fun SyncConflictPanel(
                 )
                 if (keepServer) resolver.keepServer(operationId) else resolver.resubmitMine(operationId)
             }
-            runOnMain {
+            postToMain {
                 busyOperationId = null
                 result.onSuccess {
                     conflicts = conflicts.filterNot { it.operationId == operationId }
@@ -120,12 +120,12 @@ fun SyncConflictPanel(
                         )
                         Text(
                             "Seu lançamento: " +
-                                (conflict.localAmountMinor?.let(::formatMoney) ?: "valor indisponível") +
+                                (conflict.localAmountMinor?.let(::formatConflictMoney) ?: "valor indisponível") +
                                 " · " + conflict.localDescription,
                         )
                         Text(
                             "Servidor: " +
-                                (conflict.serverAmountMinor?.let(::formatMoney) ?: "snapshot indisponível") +
+                                (conflict.serverAmountMinor?.let(::formatConflictMoney) ?: "snapshot indisponível") +
                                 " · " + (conflict.serverDescription ?: "estado atual"),
                         )
                         conflict.serverVersion?.let {
@@ -173,3 +173,10 @@ fun SyncConflictPanel(
         }
     }
 }
+
+
+private fun formatConflictMoney(minor: Long): String =
+    String.format(java.util.Locale.forLanguageTag("pt-BR"), "R$ %.2f", minor / 100.0)
+
+private fun postToMain(action: () -> Unit) =
+    android.os.Handler(android.os.Looper.getMainLooper()).post(action)
