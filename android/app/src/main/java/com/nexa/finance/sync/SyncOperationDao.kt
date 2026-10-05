@@ -57,6 +57,24 @@ interface SyncOperationDao {
         lastError: String,
     )
 
+    @Query(
+        """
+        UPDATE sync_operations
+        SET payloadJson = :payloadJson,
+            status = 'PENDING',
+            attemptCount = 0,
+            nextAttemptAtEpochMillis = :nowEpochMillis,
+            lastError = NULL
+        WHERE id = :id
+          AND status = 'CONFLICT'
+        """,
+    )
+    suspend fun requeueConflict(
+        id: String,
+        payloadJson: String,
+        nowEpochMillis: Long,
+    ): Int
+
     @Query("DELETE FROM sync_operations WHERE id = :id")
     suspend fun delete(id: String)
 
