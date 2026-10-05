@@ -267,6 +267,14 @@ Concluído o discovery inicial para Open Finance. O escopo do NEXA permanece com
 
 O fornecedor definitivo continua em aberto até validação comercial, jurídica, de cobertura, sandbox, SLA, custos, retenção de dados, webhooks, certificação e requisitos de produção. Nenhuma credencial real ou contrato foi introduzido.
 
+### Microcheckpoint 3.3.3 — consentimento Open Finance — 2026-10-05
+
+Implementado o primeiro ciclo real de consentimento, sem acoplamento a provider. O backend agora persiste providerId, externalConsentId, escopos, estado, timestamps, expiração e revogação; expõe criação, listagem e revogação autenticadas por usuário; e define a interface de adapter do provider para autorização e sincronização futuras. Nenhum access token ou refresh token é armazenado no banco.
+
+Validação desta microetapa: testes de domínio e E2E PostgreSQL adicionados à PR; migration V17 deve ser validada pelo Flyway e o CI Android/backend deve permanecer verde.
+
+---
+
 ## 3.4 Regra de uso das cores
 
 A maior parte da interface deverÃ¡ permanecer em **Obsidian + Ivory + tons neutros**.
@@ -934,7 +942,7 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 - [x] Levantar requisitos regulatÃ³rios aplicÃ¡veis
 - [x] Mapear fornecedores/participantes de integraÃ§Ã£o
 - [x] Definir arquitetura de integraÃ§Ã£o
-- [ ] Implementar consentimento
+- [x] Implementar consentimento
 - [ ] Implementar conexÃ£o
 - [ ] Importar contas
 - [ ] Importar transaÃ§Ãµes
