@@ -183,6 +183,58 @@ class ApplicationTest {
     }
 
     @Test
+    fun openFinanceConsentApiCreatesListsAndRevokesWithUserIsolation() = testApplication {
+        assumeTrue(hasPostgres())
+        val ownerEmail = uniqueEmail("open-finance-owner")
+        val otherEmail = uniqueEmail("open-finance-other")
+
+        application { module() }
+
+        try {
+            val ownerToken = registerAndLogin(client, ownerEmail, "owner-password", "Open Finance Owner")
+            val otherToken = registerAndLogin(client, otherEmail, "other-password", "Open Finance Other")
+
+            val create = client.post("/api/v1/open-finance/consents") {
+                header(HttpHeaders.Authorization, "Bearer $ownerToken")
+                jsonBody(
+                    """{"providerId":"belvo","scopes":["ACCOUNTS","BALANCES","TRANSACTIONS"]}"""
+                )
+            }
+            assertEquals(200, create.status.value, create.bodyAsText())
+            assertTrue(create.bodyAsText().contains(""providerId":"belvo""))
+            assertTrue(create.bodyAsText().contains(""status":"REQUESTED""))
+            val consentId = json(create.bodyAsText())["id"]!!.jsonPrimitive.content
+
+            val ownerList = client.get("/api/v1/open-finance/consents") {
+                header(HttpHeaders.Authorization, "Bearer $ownerToken")
+            }
+            assertEquals(200, ownerList.status.value)
+            assertTrue(ownerList.bodyAsText().contains(consentId))
+
+            val otherList = client.get("/api/v1/open-finance/consents") {
+                header(HttpHeaders.Authorization, "Bearer $otherToken")
+            }
+            assertEquals(200, otherList.status.value)
+            assertFalse(otherList.bodyAsText().contains(consentId))
+
+            val revoke = client.delete("/api/v1/open-finance/consents/$consentId") {
+                header(HttpHeaders.Authorization, "Bearer $ownerToken")
+            }
+            assertEquals(200, revoke.status.value, revoke.bodyAsText())
+            assertTrue(revoke.bodyAsText().contains(""status":"REVOKED""))
+
+            val revokedList = client.get("/api/v1/open-finance/consents") {
+                header(HttpHeaders.Authorization, "Bearer $ownerToken")
+            }
+            assertEquals(200, revokedList.status.value)
+            assertTrue(revokedList.bodyAsText().contains(""status":"REVOKED""))
+        } finally {
+            cleanupOpenFinanceConsents(ownerEmail, otherEmail)
+            cleanupUsers(ownerEmail, otherEmail)
+        }
+    }
+
+    @Test
     fun goalApiCreatesContributesAndReturnsHistoryAgainstPostgres() = testApplication {
         assumeTrue(hasPostgres())
         val email = uniqueEmail("goal-api")
@@ -401,6 +453,17 @@ class ApplicationTest {
         DatabaseConnectionProvider().open().use { connection ->
             connection.prepareStatement("DELETE FROM goals WHERE user_id IN (SELECT id FROM users WHERE email = ?)").use { statement ->
                 statement.setString(1, email)
+                statement.executeUpdate()
+            }
+        }
+    }
+
+    private fun cleanupOpenFinanceConsents(vararg emails: String) {
+        DatabaseConnectionProvider().open().use { connection ->
+            connection.prepareStatement(
+                "DELETE FROM open_finance_consents WHERE user_id IN (SELECT id FROM users WHERE email = ANY (?))"
+            ).use { statement ->
+                statement.setArray(1, connection.createArrayOf("text", emails))
                 statement.executeUpdate()
             }
         }
