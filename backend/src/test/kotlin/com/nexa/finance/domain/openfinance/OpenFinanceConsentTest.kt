@@ -2,7 +2,7 @@ package com.nexa.finance.domain.openfinance
 
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.UserId
-import org.junit.Test
+import kotlin.test.Test
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
