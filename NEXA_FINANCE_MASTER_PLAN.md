@@ -1104,6 +1104,23 @@ Pendências deliberadas:
 - Play Console e materiais de loja continuam externos ao código.
 ## 3.9 â€” DistribuiÃ§Ã£o
 
+### Checkpoint 3.9.1 — configuração de release e versionamento
+
+Validação real concluída em CI GitHub Actions #87:
+
+- Build type `release` separado do `debug`.
+- URL da API de release aponta para o backend de produção; debug permanece parametrizável para o ambiente de emulador.
+- `versionCode` e `versionName` são configuráveis por propriedades Gradle, com defaults 1 / 0.1.0.
+- `assembleRelease` validado com sucesso.
+- `bundleRelease` validado com sucesso.
+- APK e AAB unsigned foram publicados como artefatos do workflow.
+
+Pendências deliberadas:
+- assinatura/keystore ainda não configurados;
+- build de produção assinado ainda não concluído;
+- Play Console e materiais de loja continuam externos ao código.
+
+
 - [x] ConfiguraÃ§Ã£o de release
 - [ ] Assinatura do aplicativo
 - [x] Versionamento
