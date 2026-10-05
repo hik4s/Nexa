@@ -24,7 +24,10 @@ class SyncWorker(appContext: Context, workerParams: WorkerParameters) : Coroutin
                 val acknowledged = push.acknowledgements.associateBy { it.operationId }
                 operations.forEach { operation ->
                     when (acknowledged[operation.id]?.status) {
-                        "ACKNOWLEDGED" -> queue.complete(operation.id)
+                        "ACKNOWLEDGED" -> {
+                            queue.complete(operation.id)
+                            database.syncConflictDao().delete(operation.id)
+                        }
                         "CONFLICT" -> {
                             queue.conflict(operation.id, "Server detected a conflicting version of this transaction.")
                             database.syncConflictDao().upsert(
