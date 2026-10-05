@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.nexa.finance.sync.LocalDatabaseProvider
 import com.nexa.finance.sync.SessionStore
 import com.nexa.finance.sync.SyncConflictResolver
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SyncConflictPanel(
@@ -41,12 +42,14 @@ fun SyncConflictPanel(
         Thread {
             runCatching {
                 val database = LocalDatabaseProvider.get(context)
-                SyncConflictResolver(
-                    conflictDao = database.syncConflictDao(),
-                    operationDao = database.syncOperationDao(),
-                    transactionDao = database.localTransactionDao(),
-                    scheduleSync = { com.nexa.finance.sync.SyncScheduler.schedule(context) },
-                ).pending(currentUserId)
+                runBlocking {
+                    SyncConflictResolver(
+                        conflictDao = database.syncConflictDao(),
+                        operationDao = database.syncOperationDao(),
+                        transactionDao = database.localTransactionDao(),
+                        scheduleSync = { com.nexa.finance.sync.SyncScheduler.schedule(context) },
+                    ).pending(currentUserId)
+                }
             }.onSuccess { result ->
                 postToMain { conflicts = result }
             }.onFailure { error ->
@@ -67,7 +70,9 @@ fun SyncConflictPanel(
                     transactionDao = database.localTransactionDao(),
                     scheduleSync = { com.nexa.finance.sync.SyncScheduler.schedule(context) },
                 )
-                if (keepServer) resolver.keepServer(operationId) else resolver.resubmitMine(operationId)
+                runBlocking {
+                    if (keepServer) resolver.keepServer(operationId) else resolver.resubmitMine(operationId)
+                }
             }
             postToMain {
                 busyOperationId = null
