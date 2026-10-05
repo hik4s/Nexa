@@ -56,8 +56,21 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run database migrations
+        id: migrate_database
+        continue-on-error: true
         working-directory: backend
-        run: ./gradlew migrateDatabase
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew migrateDatabase --stacktrace 2>&1 | tee /tmp/nexa-migrate.log
+
+      - name: Surface migration failure details
+        if: steps.migrate_database.outcome == 'failure'
+        run: |
+          echo '===== NEXA MIGRATION FAILURE ====='
+          tail -n 300 /tmp/nexa-migrate.log || true
+          echo '===== END NEXA MIGRATION FAILURE ====='
+          exit 1
 
       - name: Test
         working-directory: backend
