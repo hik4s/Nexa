@@ -129,6 +129,12 @@ class SyncQueueTest {
             }
         }
 
+        override suspend fun requeueConflict(
+            id: String,
+            payloadJson: String,
+            nowEpochMillis: Long,
+        ): Int = 0
+
         override suspend fun markFailed(
             id: String,
             attemptCount: Int,
