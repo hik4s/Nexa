@@ -1,5 +1,6 @@
 package com.nexa.finance.sync
 
+import android.content.Context
 import org.json.JSONObject
 
 data class SyncConflictSummary(
@@ -13,6 +14,7 @@ data class SyncConflictSummary(
 )
 
 class SyncConflictResolver(
+    private val context: Context,
     private val conflictDao: SyncConflictDao,
     private val operationDao: SyncOperationDao,
     private val transactionDao: LocalTransactionDao,
@@ -46,7 +48,7 @@ class SyncConflictResolver(
             nowEpochMillis = clock(),
         )
         check(updated == 1) { "A operação em conflito não está mais disponível para reenvio." }
-        SyncScheduler.scheduleFromApplicationContext()
+        SyncScheduler.schedule(context)
     }
 
     private fun summarize(conflict: SyncConflictEntity): SyncConflictSummary {
