@@ -36,6 +36,7 @@ fun SyncConflictPanel(
     val userId = remember { SessionStore(context).userId() }
     var conflicts by remember { mutableStateOf(emptyList<com.nexa.finance.sync.SyncConflictSummary>()) }
     var busyOperationId by remember { mutableStateOf<String?>(null) }
+    var resubmittedOperationIds by remember { mutableStateOf(emptySet<String>()) }
 
     fun refresh() {
         val currentUserId = userId ?: return
@@ -145,6 +146,7 @@ fun SyncConflictPanel(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             val busy = busyOperationId == conflict.operationId
+                            val resubmitted = conflict.operationId in resubmittedOperationIds
                             OutlinedButton(
                                 onClick = { resolve(conflict.operationId, keepServer = true) },
                                 enabled = !busy,
@@ -156,12 +158,18 @@ fun SyncConflictPanel(
                             }
                             Button(
                                 onClick = { resolve(conflict.operationId, keepServer = false) },
-                                enabled = !busy && conflict.serverVersion != null,
+                                enabled = !busy && !resubmitted && conflict.serverVersion != null,
                                 modifier = Modifier
                                     .weight(1f)
                                     .testTag("sync_conflict_resubmit"),
                             ) {
-                                Text(if (busy) "Processando..." else "Usar meu lançamento")
+                                Text(
+                                    when {
+                                        busy -> "Processando..."
+                                        resubmitted -> "Aguardando confirmação"
+                                        else -> "Usar meu lançamento"
+                                    }
+                                )
                             }
                         }
                     }
