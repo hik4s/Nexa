@@ -254,7 +254,7 @@ class SyncConflictResolverTest {
 
     private object FakePayloadCodec : SyncConflictPayloadCodec {
         override fun parseTransaction(payloadJson: String): SyncTransaction {
-            when (payloadJson) {
+            return when (payloadJson) {
                 SERVER_PAYLOAD_V2 -> SyncTransaction(
                     id = TRANSACTION_ID,
                     accountId = ACCOUNT_ID,
