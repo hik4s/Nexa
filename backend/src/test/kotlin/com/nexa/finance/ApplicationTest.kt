@@ -201,8 +201,8 @@ class ApplicationTest {
                 )
             }
             assertEquals(200, create.status.value, create.bodyAsText())
-            assertTrue(create.bodyAsText().contains(""providerId":"belvo""))
-            assertTrue(create.bodyAsText().contains(""status":"REQUESTED""))
+            assertTrue(create.bodyAsText().contains("\"providerId\":\"belvo\""))
+            assertTrue(create.bodyAsText().contains("\"status\":\"REQUESTED\""))
             val consentId = json(create.bodyAsText())["id"]!!.jsonPrimitive.content
 
             val ownerList = client.get("/api/v1/open-finance/consents") {
@@ -221,13 +221,13 @@ class ApplicationTest {
                 header(HttpHeaders.Authorization, "Bearer $ownerToken")
             }
             assertEquals(200, revoke.status.value, revoke.bodyAsText())
-            assertTrue(revoke.bodyAsText().contains(""status":"REVOKED""))
+            assertTrue(revoke.bodyAsText().contains("\"status\":\"REVOKED\""))
 
             val revokedList = client.get("/api/v1/open-finance/consents") {
                 header(HttpHeaders.Authorization, "Bearer $ownerToken")
             }
             assertEquals(200, revokedList.status.value)
-            assertTrue(revokedList.bodyAsText().contains(""status":"REVOKED""))
+            assertTrue(revokedList.bodyAsText().contains("\"status\":\"REVOKED\""))
         } finally {
             cleanupOpenFinanceConsents(ownerEmail, otherEmail)
             cleanupUsers(ownerEmail, otherEmail)
