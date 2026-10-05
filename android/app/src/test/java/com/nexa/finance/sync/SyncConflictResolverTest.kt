@@ -50,11 +50,13 @@ class SyncConflictResolverTest {
 
         resolver.keepServer(OPERATION_ID)
 
-        assertEquals(2600L, transactions.rows[TRANSACTION_ID]?.amountMinor)
-        assertEquals("Estado do servidor", transactions.rows[TRANSACTION_ID]?.description)
-        assertEquals(2L, transactions.rows[TRANSACTION_ID]?.version)
-        assertNull(operations.rows[OPERATION_ID])
-        assertNull(conflicts.rows[OPERATION_ID])
+        val local = transactions.rows[TRANSACTION_ID]
+        check(local != null) { "local transaction missing: ${transactions.rows}" }
+        check(local.amountMinor == 2600L) { "amount=${local.amountMinor}" }
+        check(local.description == "Estado do servidor") { "description=${local.description}" }
+        check(local.version == 2L) { "version=${local.version}" }
+        check(operations.rows[OPERATION_ID] == null) { "operation still present=${operations.rows[OPERATION_ID]}" }
+        check(conflicts.rows[OPERATION_ID] == null) { "conflict still present=${conflicts.rows[OPERATION_ID]}" }
     }
 
     @Test
