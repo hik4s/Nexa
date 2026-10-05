@@ -29,6 +29,7 @@ data class SyncAcknowledgement(
     val entityId: String,
     val status: String,
     val version: Long? = null,
+    val serverTransaction: TransactionResponse? = null,
 )
 
 @Serializable
