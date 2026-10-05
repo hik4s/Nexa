@@ -11,7 +11,13 @@ class DatabaseConnectionProvider(
     private var dataSource: HikariDataSource? = null
 
     fun open(): Connection = synchronized(this) {
-        dataSource().connection
+        try {
+            dataSource().connection
+        } catch (error: Exception) {
+            dataSource?.close()
+            dataSource = null
+            throw error
+        }
     }
 
     override fun close() {
