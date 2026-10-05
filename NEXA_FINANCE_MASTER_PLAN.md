@@ -267,6 +267,12 @@ Concluído o discovery inicial para Open Finance. O escopo do NEXA permanece com
 
 O fornecedor definitivo continua em aberto até validação comercial, jurídica, de cobertura, sandbox, SLA, custos, retenção de dados, webhooks, certificação e requisitos de produção. Nenhuma credencial real ou contrato foi introduzido.
 
+### Microcheckpoint 3.3.3 — fundação de consentimento Open Finance — 2026-10-05
+
+Implementada e validada a fundação de consentimento provider-neutral. O backend possui máquina de estados para REQUESTED, AWAITING_AUTHORIZATION, ACTIVE, EXPIRED, REVOKED e FAILED; escopos controlados; migration V17; repositório JDBC com isolamento por usuário; contrato de adapter/provider; application service de orquestração; e nenhum token bancário é persistido.
+
+Validação: backend test + build passou; migration V17 foi aplicada de V16 para V17 em PostgreSQL 18.6; teste de integração JDBC do consentimento passou; testes do domínio passaram. A conexão real com um provider e a jornada de autorização permanecem para a 3.3.4.
+
 ## 3.4 Regra de uso das cores
 
 A maior parte da interface deverÃ¡ permanecer em **Obsidian + Ivory + tons neutros**.
