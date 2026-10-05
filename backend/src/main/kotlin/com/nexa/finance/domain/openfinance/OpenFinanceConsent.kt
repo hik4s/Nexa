@@ -33,10 +33,16 @@ data class OpenFinanceConsent private constructor(
         externalConsentId: String,
         now: Instant,
     ): OpenFinanceConsent {
-        requireTransition(
-            allowed = setOf(OpenFinanceConsentStatus.REQUESTED, OpenFinanceConsentStatus.FAILED),
-            target = OpenFinanceConsentStatus.AWAITING_AUTHORIZATION,
-        )
+        if (status !in setOf(
+                OpenFinanceConsentStatus.REQUESTED,
+                OpenFinanceConsentStatus.FAILED,
+                OpenFinanceConsentStatus.AWAITING_AUTHORIZATION,
+            )
+        ) {
+            throw DomainValidationException(
+                "Cannot change Open Finance consent from " + status + " to " + OpenFinanceConsentStatus.AWAITING_AUTHORIZATION + ".",
+            )
+        }
         return copy(
             externalConsentId = normalizeExternalId(externalConsentId),
             status = OpenFinanceConsentStatus.AWAITING_AUTHORIZATION,
@@ -48,10 +54,15 @@ data class OpenFinanceConsent private constructor(
         expiresAt: Instant?,
         now: Instant,
     ): OpenFinanceConsent {
-        requireTransition(
-            allowed = setOf(OpenFinanceConsentStatus.AWAITING_AUTHORIZATION),
-            target = OpenFinanceConsentStatus.ACTIVE,
-        )
+        if (status !in setOf(
+                OpenFinanceConsentStatus.AWAITING_AUTHORIZATION,
+                OpenFinanceConsentStatus.ACTIVE,
+            )
+        ) {
+            throw DomainValidationException(
+                "Cannot change Open Finance consent from " + status + " to " + OpenFinanceConsentStatus.ACTIVE + ".",
+            )
+        }
         if (expiresAt != null && !expiresAt.isAfter(now)) {
             throw DomainValidationException("Open Finance consent expiration must be in the future.")
         }
@@ -64,6 +75,7 @@ data class OpenFinanceConsent private constructor(
     }
 
     fun expire(now: Instant): OpenFinanceConsent {
+        if (status == OpenFinanceConsentStatus.EXPIRED) return this
         if (status != OpenFinanceConsentStatus.ACTIVE) {
             throw DomainValidationException("Only active Open Finance consents can expire.")
         }
@@ -88,6 +100,7 @@ data class OpenFinanceConsent private constructor(
     }
 
     fun fail(now: Instant): OpenFinanceConsent {
+        if (status == OpenFinanceConsentStatus.FAILED) return this
         if (status !in setOf(OpenFinanceConsentStatus.REQUESTED, OpenFinanceConsentStatus.AWAITING_AUTHORIZATION)) {
             throw DomainValidationException("Only pending Open Finance consents can fail.")
         }
