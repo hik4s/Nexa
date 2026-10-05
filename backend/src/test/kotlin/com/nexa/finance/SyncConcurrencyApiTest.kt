@@ -137,10 +137,10 @@ class SyncConcurrencyApiTest {
 
     private fun json(body: String) = Json.parseToJsonElement(body).jsonObject
     private fun acknowledgementStatus(body: String): String =
-        json(body)["acknowledgements"]!!.jsonArray.single()["status"]!!.jsonPrimitive.content
+        json(body)["acknowledgements"]!!.jsonArray.single().jsonObject["status"]!!.jsonPrimitive.content
 
     private fun acknowledgementVersion(body: String): Long =
-        json(body)["acknowledgements"]!!.jsonArray.single()["version"]!!.jsonPrimitive.content.toLong()
+        json(body)["acknowledgements"]!!.jsonArray.single().jsonObject["version"]!!.jsonPrimitive.content.toLong()
 
     private fun uniqueEmail(prefix: String): String = prefix + "-" + UUID.randomUUID() + "@example.com"
     private fun hasPostgres(): Boolean = !System.getenv("POSTGRES_PASSWORD").isNullOrBlank()
