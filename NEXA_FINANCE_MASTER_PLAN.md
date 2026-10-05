@@ -1002,7 +1002,7 @@ Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com
 - [x] Teste de banco
 - [ ] Teste de filas quando existirem
 - [ ] Teste de integraÃ§Ã£o com IA
-- [ ] Teste de sincronizaÃ§Ã£o
+- [x] Teste de sincronizaÃ§Ã£o
 - [ ] Teste de falhas externas
 - [ ] Teste de recuperaÃ§Ã£o
 
@@ -1051,6 +1051,22 @@ Benchmark residues: 0|0|0|0
 
 ---
 
+### Checkpoint 3.8.3 — sincronização concorrente e convergência
+
+Validação real concluída em 2026-10-05 com o teste SyncConcurrencyApiTest e CI completo:
+
+- 16 operações de atualização concorrentes da mesma transação com baseVersion=1.
+- Todas as requisições retornaram HTTP 200.
+- O protocolo passou a normalizar corridas de versão como CONFLICT, sem deixar a concorrência escapar como erro HTTP.
+- Pelo menos uma operação foi ACKNOWLEDGED; as demais puderam convergir para CONFLICT de forma determinística.
+- Estado final confirmado: amountMinor=2600 e version=2.
+- Pull de sincronização confirmou a entidade no cursor.
+- O ajuste foi implementado em SyncService, tratando ConflictException do update atômico como acknowledgement de conflito.
+- CI GitHub Actions #81: backend migrations + tests + build PASS; Android unit tests + lint + debug APK PASS.
+- Railway: deployment e8a9d672-6689-4a86-9f34-59f02121a037 SUCCESS; nexa-api online; PostgreSQL online; healthcheck /health PASS.
+
+Observação de escopo:
+- o versionamento e o protocolo de sincronização continuam cobrindo o agregado TRANSACTION. Cartões, metas, orçamentos e demais agregados ainda precisarão de estratégias próprias de revisão antes de entrarem no sync entre dispositivos.
 ## 3.9 â€” DistribuiÃ§Ã£o
 
 - [ ] ConfiguraÃ§Ã£o de release
