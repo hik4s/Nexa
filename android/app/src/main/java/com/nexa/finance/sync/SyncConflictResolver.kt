@@ -106,9 +106,3 @@ class SyncConflictResolver(
             version = version,
         )
 }
-
-private object SyncScheduler {
-    fun scheduleFromApplicationContext() {
-        // Replaced at integration point by the Android-aware adapter below.
-    }
-}
