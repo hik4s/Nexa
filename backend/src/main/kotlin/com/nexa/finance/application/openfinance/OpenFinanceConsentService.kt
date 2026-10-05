@@ -18,10 +18,9 @@ class OpenFinanceConsentService(
         providerId: String,
         scopes: Set<String>,
     ): OpenFinanceConsent {
-        val provider = providers.get(providerId)
         val consent = OpenFinanceConsent.createRequested(
             userId = userId,
-            providerId = provider.providerId,
+            providerId = providerId,
             scopes = scopes,
             clock = clock,
         )

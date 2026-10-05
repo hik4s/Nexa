@@ -12,6 +12,7 @@ import com.nexa.finance.api.goalRoutes
 import com.nexa.finance.api.installmentRoutes
 import com.nexa.finance.api.invoiceRoutes
 import com.nexa.finance.api.notificationRoutes
+import com.nexa.finance.api.openFinanceConsentRoutes
 import com.nexa.finance.api.recurrenceRoutes
 import com.nexa.finance.api.refundRoutes
 import com.nexa.finance.api.transactionRoutes
@@ -31,6 +32,8 @@ import com.nexa.finance.application.goal.GoalService
 import com.nexa.finance.application.installment.InstallmentService
 import com.nexa.finance.application.invoice.InvoiceService
 import com.nexa.finance.application.notification.NotificationService
+import com.nexa.finance.application.openfinance.ConfiguredOpenFinanceProviderRegistry
+import com.nexa.finance.application.openfinance.OpenFinanceConsentService
 import com.nexa.finance.application.recurrence.RecurrenceService
 import com.nexa.finance.application.refund.RefundService
 import com.nexa.finance.application.transaction.TransactionService
@@ -49,6 +52,7 @@ import com.nexa.finance.infrastructure.export.JdbcDataExportRepository
 import com.nexa.finance.infrastructure.installment.JdbcInstallmentRepository
 import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
 import com.nexa.finance.infrastructure.notification.JdbcNotificationRepository
+import com.nexa.finance.infrastructure.openfinance.JdbcOpenFinanceConsentRepository
 import com.nexa.finance.infrastructure.recurrence.JdbcRecurrenceRepository
 import com.nexa.finance.infrastructure.transaction.JdbcTransactionRepository
 import com.nexa.finance.infrastructure.sync.JdbcSyncChangeRepository
@@ -135,6 +139,10 @@ fun Application.module() {
     val goals = GoalService(goalRepository)
     val aiContext = AiContextBuilder(transactionRepository, budgetRepository, goalRepository, categoryRepository)
     val ai = AiService(aiContext, RuleBasedAiProvider(), aiUsageRepository)
+    val openFinanceConsents = OpenFinanceConsentService(
+        repository = JdbcOpenFinanceConsentRepository(database),
+        providers = ConfiguredOpenFinanceProviderRegistry(),
+    )
     val notifications = NotificationService(
         repository = notificationRepository,
         budgets = budgets,
@@ -221,6 +229,7 @@ fun Application.module() {
         goalRoutes(goals)
         aiRoutes(ai)
             notificationRoutes(notifications)
+            openFinanceConsentRoutes(openFinanceConsents)
         }
     }
 }
