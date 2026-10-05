@@ -2,7 +2,7 @@ package com.nexa.finance.sync
 
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
