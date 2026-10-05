@@ -57,7 +57,7 @@ class OpenFinanceConsentService(
 
         val updated = when (providerStatus.status) {
             OpenFinanceProvider.ExternalConsentStatus.AWAITING_AUTHORIZATION ->
-                if (consent.status == com.nexa.finance.domain.openfinance.OpenFinanceConsentStatus.REQUESTED) {
+                if (consent.status == com.nexa.finance.domain.openfinance.OpenFinanceConsentStatus.AWAITING_AUTHORIZATION) {
                     consent
                 } else {
                     consent.markAwaitingAuthorization(externalId, now)
