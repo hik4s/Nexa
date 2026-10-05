@@ -108,6 +108,64 @@ class SyncConcurrencyApiTest {
         }
     }
 
+    @Test
+    fun staleUpdateReturnsAuthoritativeServerSnapshot() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("sync-conflict")
+        application { module() }
+
+        try {
+            val token = registerAndLogin(client, email, "sync-conflict-password", "Sync Conflict User")
+
+            val account = client.post("/api/v1/accounts") {
+                bearer(token)
+                jsonBody(
+                    """{"name":"Sync Conflict Account","type":"CHECKING","openingBalanceMinor":100000,"currency":"BRL"}"""
+                )
+            }
+            assertEquals(201, account.status.value, account.bodyAsText())
+            val accountId = json(account.bodyAsText())["id"]!!.jsonPrimitive.content
+            val entityId = UUID.randomUUID().toString()
+
+            val initial = client.post("/api/v1/sync/push") {
+                bearer(token)
+                jsonBody(
+                    """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":{"id":"$entityId","accountId":"$accountId","amountMinor":2500,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-05","description":"Conflict baseline","source":"MANUAL"}}]}"""
+                )
+            }
+            assertEquals(200, initial.status.value, initial.bodyAsText())
+
+            val update = client.post("/api/v1/sync/push") {
+                bearer(token)
+                jsonBody(
+                    """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":{"id":"$entityId","accountId":"$accountId","amountMinor":2600,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-05","description":"Server update","source":"MANUAL","baseVersion":1}}]}"""
+                )
+            }
+            assertEquals(200, update.status.value, update.bodyAsText())
+            assertEquals("ACKNOWLEDGED", acknowledgementStatus(update.bodyAsText()))
+            assertEquals(2L, acknowledgementVersion(update.bodyAsText()))
+
+            val conflict = client.post("/api/v1/sync/push") {
+                bearer(token)
+                jsonBody(
+                    """{"operations":[{"operationId":"${UUID.randomUUID()}","entityType":"TRANSACTION","entityId":"$entityId","operation":"UPSERT","payload":{"id":"$entityId","accountId":"$accountId","amountMinor":2700,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","occurredOn":"2026-10-05","description":"Stale local update","source":"MANUAL","baseVersion":1}}]}"""
+                )
+            }
+            assertEquals(200, conflict.status.value, conflict.bodyAsText())
+
+            val acknowledgement = json(conflict.bodyAsText())["acknowledgements"]!!.jsonArray.single().jsonObject
+            assertEquals("CONFLICT", acknowledgement["status"]!!.jsonPrimitive.content)
+            assertEquals(2L, acknowledgement["version"]!!.jsonPrimitive.content.toLong())
+
+            val serverTransaction = acknowledgement["serverTransaction"]!!.jsonObject
+            assertEquals(entityId, serverTransaction["id"]!!.jsonPrimitive.content)
+            assertEquals(2600L, serverTransaction["amountMinor"]!!.jsonPrimitive.content.toLong())
+            assertEquals(2L, serverTransaction["version"]!!.jsonPrimitive.content.toLong())
+        } finally {
+            cleanupUsers(email)
+        }
+    }
+
     private suspend fun registerAndLogin(
         client: HttpClient,
         email: String,
