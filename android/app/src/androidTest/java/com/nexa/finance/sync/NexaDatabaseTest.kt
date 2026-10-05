@@ -55,7 +55,7 @@ class NexaDatabaseTest {
         assertEquals(listOf(operation), pending)
         assertNotNull(checkpoint)
         assertEquals("cursor-1", checkpoint?.serverCursor)
-
+    }
 
     @Test
     fun persistsAndClearsSyncConflict() = runBlocking {
@@ -80,6 +80,5 @@ class NexaDatabaseTest {
         database.syncConflictDao().delete(conflict.operationId)
 
         assertEquals(0, database.syncConflictDao().count("user-1"))
-    }
     }
 }
