@@ -991,20 +991,38 @@ ValidaÃ§Ã£o de grande volume: scripts/benchmark-transactions.ps1 inseriu 50.
 
 RegressÃ£o: TransactionApiTest passou isoladamente com os fluxos de paginaÃ§Ã£o, ediÃ§Ã£o com versionamento e sincronizaÃ§Ã£o; a suÃ­te backend completa fechou com 181 testes verdes usando pool de teste 2/0. O Gradle agora aplica esses limites somente como padrÃ£o do task de testes, preservando override explÃ­cito por ambiente.
 
-Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com grande volume. InicializaÃ§Ã£o, abertura de telas, memÃ³ria, bateria, rede e cache continuam pendentes; concorrÃªncia/carga/filas/sincronizaÃ§Ã£o e recuperaÃ§Ã£o seguem no bloco 3.8.
+Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com grande volume; concorrÃªncia e carga da API foram validadas no checkpoint 3.8.1. InicializaÃ§Ã£o, abertura de telas, memÃ³ria, bateria, rede e cache continuam pendentes; teste de banco, filas, integraÃ§Ã£o com IA, sincronizaÃ§Ã£o, falhas externas e recuperaÃ§Ã£o seguem no bloco 3.8.
 
 ---
 
 ## 3.8 â€” Testes de carga e confiabilidade
 
-- [ ] Teste de concorrÃªncia
-- [ ] Teste de carga da API
+- [x] Teste de concorrÃªncia
+- [x] Teste de carga da API
 - [ ] Teste de banco
 - [ ] Teste de filas quando existirem
 - [ ] Teste de integraÃ§Ã£o com IA
 - [ ] Teste de sincronizaÃ§Ã£o
 - [ ] Teste de falhas externas
 - [ ] Teste de recuperaÃ§Ã£o
+
+### Checkpoint 3.8.1 — carga concorrente da API
+
+Validação real executada em 2026-10-04 com o harness `scripts/load-test-transactions.ps1`:
+
+- Seed: 5.000 transações sintéticas isoladas.
+- Carga: 500 requisições autenticadas para `GET /api/v1/transactions?limit=100&offset=0`.
+- Concorrência: 25 workers.
+- Sucesso: 500/500.
+- Falha: 0.
+- Duração da carga: 1.260 ms.
+- RPS observado: 396,71.
+- P50: 36 ms.
+- P95: 112 ms.
+- P99: 181 ms.
+- Cleanup confirmado: 0 usuários, 0 contas, 0 transações e 0 `sync_changes` residuais.
+
+Observação: o backend foi iniciado para o teste com `RATE_LIMIT_REQUESTS_PER_MINUTE=10000`, preservando a configuração padrão de produção (120/min por IP) fora deste cenário. Isso isola capacidade/concorrência de API da limitação de tráfego intencional.
 
 ---
 
