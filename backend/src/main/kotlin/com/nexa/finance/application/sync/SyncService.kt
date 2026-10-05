@@ -68,7 +68,7 @@ class SyncService(
 
                 payload.baseVersion == null -> {
                     if (current.matchesSyncPayload(payload)) acknowledgement(operation)
-                    else conflict(operation)
+                    else conflict(operation, current)
                 }
 
                 current.matchesSyncPayload(payload) && current.version == payload.baseVersion -> {
