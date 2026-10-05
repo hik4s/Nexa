@@ -1,6 +1,5 @@
 package com.nexa.finance.sync
 
-import org.json.JSONObject
 
 data class SyncConflictSummary(
     val operationId: String,
@@ -18,6 +17,7 @@ class SyncConflictResolver(
     private val transactionDao: LocalTransactionDao,
     private val clock: () -> Long = { System.currentTimeMillis() },
     private val scheduleSync: () -> Unit,
+    private val payloadCodec: SyncConflictPayloadCodec = JsonSyncConflictPayloadCodec,
 ) {
     suspend fun pending(userId: String): List<SyncConflictSummary> =
         conflictDao.pending(userId).map(::summarize)
@@ -26,7 +26,7 @@ class SyncConflictResolver(
         val conflict = conflictDao.get(operationId)
             ?: error("Conflito não encontrado.")
         val server = conflict.serverTransactionJson
-            ?.let { parseTransaction(JSONObject(it)) }
+            ?.let(payloadCodec::parseTransaction)
             ?: error("O conflito não contém um snapshot do servidor.")
 
         transactionDao.upsert(server.toLocalEntity())
@@ -40,14 +40,15 @@ class SyncConflictResolver(
         val serverVersion = conflict.serverVersion
             ?: error("O conflito não possui a versão atual do servidor.")
 
-        val payload = JSONObject(conflict.localPayloadJson).apply {
-            put("id", conflict.entityId)
-            put("baseVersion", serverVersion)
-        }
+        val payload = payloadCodec.rebasePayload(
+            payloadJson = conflict.localPayloadJson,
+            entityId = conflict.entityId,
+            serverVersion = serverVersion,
+        )
 
         val updated = operationDao.requeueConflict(
             id = conflict.operationId,
-            payloadJson = payload.toString(),
+            payloadJson = payload,
             nowEpochMillis = clock(),
         )
         check(updated == 1) { "A operação em conflito não está mais disponível para reenvio." }
@@ -55,37 +56,19 @@ class SyncConflictResolver(
     }
 
     private fun summarize(conflict: SyncConflictEntity): SyncConflictSummary {
-        val local = JSONObject(conflict.localPayloadJson)
-        val server = conflict.serverTransactionJson?.let { parseTransaction(JSONObject(it)) }
+        val (localDescription, localAmountMinor) = payloadCodec.summarizeLocal(conflict.localPayloadJson)
+        val server = conflict.serverTransactionJson?.let(payloadCodec::parseTransaction)
 
         return SyncConflictSummary(
             operationId = conflict.operationId,
             entityId = conflict.entityId,
-            localDescription = local.optString("description").ifBlank { "Lançamento" },
-            localAmountMinor = local.optLong("amountMinor", Long.MIN_VALUE).takeIf { it != Long.MIN_VALUE },
+            localDescription = localDescription,
+            localAmountMinor = localAmountMinor,
             serverDescription = server?.description,
             serverAmountMinor = server?.amountMinor,
             serverVersion = conflict.serverVersion,
         )
     }
-
-    private fun parseTransaction(o: JSONObject): SyncTransaction =
-        SyncTransaction(
-            id = o.getString("id"),
-            accountId = o.getString("accountId"),
-            amountMinor = o.getLong("amountMinor"),
-            currency = o.getString("currency"),
-            type = o.getString("type"),
-            direction = o.getString("direction"),
-            status = o.getString("status"),
-            occurredOn = o.getString("occurredOn"),
-            description = o.optString("description").ifBlank { null },
-            categoryId = o.optString("categoryId").ifBlank { null },
-            source = o.getString("source"),
-            installmentId = o.optString("installmentId").ifBlank { null },
-            installmentNumber = o.optInt("installmentNumber", 0).takeIf { it > 0 },
-            version = o.optLong("version", 1L),
-        )
 
     private fun SyncTransaction.toLocalEntity(): LocalTransactionEntity =
         LocalTransactionEntity(
