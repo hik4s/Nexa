@@ -20,3 +20,10 @@ data class OpenFinanceConsentResponse(
     val expiresAt: String?,
     val revokedAt: String?,
 )
+
+
+@kotlinx.serialization.Serializable
+data class OpenFinanceConsentAuthorizationResponse(
+    val externalConsentId: String,
+    val authorizationUrl: String,
+)
