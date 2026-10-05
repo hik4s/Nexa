@@ -1,7 +1,6 @@
 package com.nexa.finance.sync
 
 import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -43,7 +42,7 @@ class SyncConflictResolverTest {
             ),
         )
         val conflict = conflict(
-            serverJson = """{"id":"$TRANSACTION_ID","accountId":"$ACCOUNT_ID","amountMinor":2600,"currency":"BRL","type":"EXPENSE","direction":"DEBIT","status":"POSTED","occurredOn":"2026-10-05","description":"Estado do servidor","source":"MANUAL","version":2}""",
+            serverJson = SERVER_PAYLOAD,
         )
         conflicts.upsert(conflict)
 
@@ -89,13 +88,10 @@ class SyncConflictResolverTest {
         resolver.resubmitMine(OPERATION_ID)
 
         val operation = operations.rows[OPERATION_ID] ?: error("Operation not found")
-        val payload = JSONObject(operation.payloadJson)
         assertEquals(SyncOperationEntity.STATUS_PENDING, operation.status)
         assertEquals(0, operation.attemptCount)
         assertEquals(5_000L, operation.nextAttemptAtEpochMillis)
-        assertEquals(TRANSACTION_ID, payload.getString("id"))
-        assertEquals(7L, payload.getLong("baseVersion"))
-        assertEquals(2700L, payload.getLong("amountMinor"))
+        assertEquals(REBASED_PAYLOAD, operation.payloadJson)
         assertTrue(scheduled)
         assertTrue(conflicts.rows.containsKey(OPERATION_ID))
     }
@@ -252,10 +248,47 @@ class SyncConflictResolverTest {
             rows.values.filter { it.accountId == accountId }
     }
 
+    private object FakePayloadCodec : SyncConflictPayloadCodec {
+        override fun parseTransaction(payloadJson: String): SyncTransaction {
+            check(payloadJson == SERVER_PAYLOAD) { "Unexpected server payload: $payloadJson" }
+            return SyncTransaction(
+                id = TRANSACTION_ID,
+                accountId = ACCOUNT_ID,
+                amountMinor = 2600L,
+                currency = "BRL",
+                type = "EXPENSE",
+                direction = "DEBIT",
+                status = "POSTED",
+                occurredOn = "2026-10-05",
+                description = "Servidor",
+                categoryId = null,
+                source = "MANUAL",
+                installmentId = null,
+                installmentNumber = null,
+                version = 3L,
+            )
+        }
+
+        override fun summarizeLocal(payloadJson: String): Pair<String, Long?> {
+            check(payloadJson == LOCAL_PAYLOAD) { "Unexpected local payload: $payloadJson" }
+            return "Meu lançamento" to 2700L
+        }
+
+        override fun rebasePayload(payloadJson: String, entityId: String, serverVersion: Long): String {
+            check(payloadJson == LOCAL_PAYLOAD)
+            check(entityId == TRANSACTION_ID)
+            check(serverVersion == 7L)
+            return REBASED_PAYLOAD
+        }
+    }
+
     companion object {
         private const val USER_ID = "user-1"
         private const val ACCOUNT_ID = "account-1"
         private const val TRANSACTION_ID = "tx-1"
         private const val OPERATION_ID = "operation-1"
+        private const val LOCAL_PAYLOAD = "local-payload"
+        private const val SERVER_PAYLOAD = "server-payload"
+        private const val REBASED_PAYLOAD = "rebased-payload"
     }
 }
