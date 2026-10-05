@@ -1003,8 +1003,8 @@ Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com
 - [ ] Teste de filas quando existirem
 - [ ] Teste de integraÃ§Ã£o com IA
 - [x] Teste de sincronizaÃ§Ã£o
-- [ ] Teste de falhas externas
-- [ ] Teste de recuperaÃ§Ã£o
+- [x] Teste de falhas externas
+- [x] Teste de recuperaÃ§Ã£o
 
 ### Checkpoint 3.8.1 — carga concorrente da API
 
@@ -1067,6 +1067,27 @@ Validação real concluída em 2026-10-05 com o teste SyncConcurrencyApiTest e C
 
 Observação de escopo:
 - o versionamento e o protocolo de sincronização continuam cobrindo o agregado TRANSACTION. Cartões, metas, orçamentos e demais agregados ainda precisarão de estratégias próprias de revisão antes de entrarem no sync entre dispositivos.
+### Checkpoint 3.8.4 — falha de dependência externa
+
+Validação real concluída em 2026-10-05 para a dependência externa de persistência atualmente existente (PostgreSQL):
+
+- O teste força a indisponibilidade do destino PostgreSQL usando uma porta local inválida.
+- A tentativa de abertura falha sem manter um pool Hikari inválido como estado reutilizável.
+- O cenário cobre a falha real que o backend possui hoje: indisponibilidade/erro de conexão com o banco.
+- Não há integração HTTP externa ativa no MVP atual; a IA usa RuleBasedAiProvider local e Open Finance permanece como integração futura.
+
+### Checkpoint 3.8.5 — recuperação após falha externa
+
+Validação real concluída junto ao teste de DatabaseConnectionProviderIntegrationTest:
+
+- O mesmo DatabaseConnectionProvider é mantido vivo durante a falha.
+- Após a restauração do endpoint PostgreSQL, uma nova chamada open() cria um pool saudável.
+- A conexão recuperada passa isValid(2).
+- CI GitHub Actions #83: backend migrations + tests + build PASS; Android unit tests + lint + debug APK PASS.
+- Railway após o deploy do fix: nexa-api online, PostgreSQL online, zero falhas recentes e zero issues críticos.
+
+Regra preservada:
+- nenhuma dependência externa fictícia foi adicionada apenas para satisfazer o checklist; novos testes serão criados quando Open Finance ou um provider LLM externo existirem de fato.
 ## 3.9 â€” DistribuiÃ§Ã£o
 
 - [ ] ConfiguraÃ§Ã£o de release
