@@ -48,7 +48,7 @@ class SyncService(
             when {
                 current == null -> {
                     if (payload.baseVersion != null) {
-                        return@map conflict(operation)
+                        return@map conflict(operation, null)
                     }
 
                     transactions.create(
@@ -80,7 +80,7 @@ class SyncService(
                 }
 
                 current.version != payload.baseVersion -> {
-                    conflict(operation)
+                    conflict(operation, current)
                 }
 
                 else -> {
@@ -100,7 +100,7 @@ class SyncService(
                         )
                         acknowledgement(operation, updated.version)
                     } catch (_: ConflictException) {
-                        conflict(operation)
+                        conflict(operation, transactionRepository.findByOwnerAndId(ownerId, entityId))
                     }
                 }
             }
@@ -132,8 +132,18 @@ class SyncService(
         version: Long? = null,
     ) = SyncAcknowledgement(operation.operationId, operation.entityType, operation.entityId, "ACKNOWLEDGED", version)
 
-    private fun conflict(operation: SyncPushOperation) =
-        SyncAcknowledgement(operation.operationId, operation.entityType, operation.entityId, "CONFLICT", null)
+    private fun conflict(
+        operation: SyncPushOperation,
+        serverTransaction: com.nexa.finance.domain.transaction.Transaction?,
+    ) =
+        SyncAcknowledgement(
+            operationId = operation.operationId,
+            entityType = operation.entityType,
+            entityId = operation.entityId,
+            status = "CONFLICT",
+            version = serverTransaction?.version,
+            serverTransaction = serverTransaction?.toResponse(),
+        )
 
     private fun com.nexa.finance.domain.transaction.Transaction.toResponse() =
         TransactionResponse(
