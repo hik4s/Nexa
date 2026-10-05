@@ -5,6 +5,7 @@ import com.nexa.finance.domain.common.UserId
 import java.time.Clock
 import java.time.Instant
 import java.util.UUID
+import kotlin.ConsistentCopyVisibility
 
 typealias OpenFinanceConsentId = UUID
 
@@ -17,6 +18,7 @@ enum class OpenFinanceConsentStatus {
     FAILED,
 }
 
+@ConsistentCopyVisibility
 data class OpenFinanceConsent private constructor(
     val id: OpenFinanceConsentId,
     val userId: UserId,
