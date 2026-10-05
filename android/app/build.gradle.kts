@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.nexa.finance"
     val apiUrl = providers.gradleProperty("nexaApiUrl").orNull ?: "http://10.0.2.2:8080"
-    val escapedApiUrl = apiUrl.replace("\\", "\\\\").replace(""", "\\"")
+    val escapedApiUrl = apiUrl.replace("\\", "\\\\").replace("\"", "\\\"")
     val versionCodeValue = providers.gradleProperty("nexaVersionCode").orNull?.toIntOrNull() ?: 1
     val versionNameValue = providers.gradleProperty("nexaVersionName").orNull ?: "0.1.0"
 
@@ -45,7 +45,7 @@ android {
             )
             val releaseApiUrl = providers.gradleProperty("nexaReleaseApiUrl").orNull
                 ?: "https://nexa-api-production-6cc5.up.railway.app"
-            val escapedReleaseApiUrl = releaseApiUrl.replace("\\", "\\\\").replace(""", "\\"")
+            val escapedReleaseApiUrl = releaseApiUrl.replace("\\", "\\\\").replace("\"", "\\\"")
             buildConfigField("String", "NEXA_API_URL", "\"$escapedReleaseApiUrl\"")
         }
     }
