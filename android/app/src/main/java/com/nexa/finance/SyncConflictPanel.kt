@@ -42,10 +42,10 @@ fun SyncConflictPanel(
             runCatching {
                 val database = LocalDatabaseProvider.get(context)
                 SyncConflictResolver(
-                    context = context,
                     conflictDao = database.syncConflictDao(),
                     operationDao = database.syncOperationDao(),
                     transactionDao = database.localTransactionDao(),
+                    scheduleSync = { com.nexa.finance.sync.SyncScheduler.schedule(context) },
                 ).pending(currentUserId)
             }.onSuccess { result ->
                 runOnMain { conflicts = result }
@@ -62,10 +62,10 @@ fun SyncConflictPanel(
             val result = runCatching {
                 val database = LocalDatabaseProvider.get(context)
                 val resolver = SyncConflictResolver(
-                    context = context,
                     conflictDao = database.syncConflictDao(),
                     operationDao = database.syncOperationDao(),
                     transactionDao = database.localTransactionDao(),
+                    scheduleSync = { com.nexa.finance.sync.SyncScheduler.schedule(context) },
                 )
                 if (keepServer) resolver.keepServer(operationId) else resolver.resubmitMine(operationId)
             }
