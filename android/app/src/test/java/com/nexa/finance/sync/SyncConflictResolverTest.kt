@@ -42,7 +42,7 @@ class SyncConflictResolverTest {
             ),
         )
         val conflict = conflict(
-            serverJson = SERVER_PAYLOAD,
+            serverJson = SERVER_PAYLOAD_V2,
         )
         conflicts.upsert(conflict)
 
@@ -252,23 +252,41 @@ class SyncConflictResolverTest {
 
     private object FakePayloadCodec : SyncConflictPayloadCodec {
         override fun parseTransaction(payloadJson: String): SyncTransaction {
-            check(payloadJson == SERVER_PAYLOAD) { "Unexpected server payload: $payloadJson" }
-            return SyncTransaction(
-                id = TRANSACTION_ID,
-                accountId = ACCOUNT_ID,
-                amountMinor = 2600L,
-                currency = "BRL",
-                type = "EXPENSE",
-                direction = "DEBIT",
-                status = "POSTED",
-                occurredOn = "2026-10-05",
-                description = "Servidor",
-                categoryId = null,
-                source = "MANUAL",
-                installmentId = null,
-                installmentNumber = null,
-                version = 3L,
-            )
+            when (payloadJson) {
+                SERVER_PAYLOAD_V2 -> SyncTransaction(
+                    id = TRANSACTION_ID,
+                    accountId = ACCOUNT_ID,
+                    amountMinor = 2600L,
+                    currency = "BRL",
+                    type = "EXPENSE",
+                    direction = "DEBIT",
+                    status = "POSTED",
+                    occurredOn = "2026-10-05",
+                    description = "Estado do servidor",
+                    categoryId = null,
+                    source = "MANUAL",
+                    installmentId = null,
+                    installmentNumber = null,
+                    version = 2L,
+                )
+                SERVER_PAYLOAD -> SyncTransaction(
+                    id = TRANSACTION_ID,
+                    accountId = ACCOUNT_ID,
+                    amountMinor = 2600L,
+                    currency = "BRL",
+                    type = "EXPENSE",
+                    direction = "DEBIT",
+                    status = "POSTED",
+                    occurredOn = "2026-10-05",
+                    description = "Servidor",
+                    categoryId = null,
+                    source = "MANUAL",
+                    installmentId = null,
+                    installmentNumber = null,
+                    version = 3L,
+                )
+                else -> error("Unexpected server payload: $payloadJson")
+            }
         }
 
         override fun summarizeLocal(payloadJson: String): Pair<String, Long?> {
@@ -290,7 +308,8 @@ class SyncConflictResolverTest {
         private const val TRANSACTION_ID = "tx-1"
         private const val OPERATION_ID = "operation-1"
         private const val LOCAL_PAYLOAD = "local-payload"
-        private const val SERVER_PAYLOAD = "server-payload"
+        private const val SERVER_PAYLOAD = "server-payload-v3"
+        private const val SERVER_PAYLOAD_V2 = "server-payload-v2"
         private const val REBASED_PAYLOAD = "rebased-payload"
     }
 }
