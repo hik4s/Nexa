@@ -198,7 +198,7 @@ class SyncConflictResolverTest {
             rows[id] = rows.getValue(id).copy(status = status)
         }
 
-        override suspend fun updateLastError(id: String, lastError: String?) {
+        override suspend fun updateLastError(id: String, lastError: String) {
             rows[id] = rows.getValue(id).copy(lastError = lastError)
         }
 
