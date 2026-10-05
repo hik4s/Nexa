@@ -273,6 +273,14 @@ Implementada e validada a fundação de consentimento provider-neutral. O backen
 
 Validação: backend test + build passou; migration V17 foi aplicada de V16 para V17 em PostgreSQL 18.6; teste de integração JDBC do consentimento passou; testes do domínio passaram. A conexão real com um provider e a jornada de autorização permanecem para a 3.3.4.
 
+### Microcheckpoint 3.3.3 — consentimento Open Finance — 2026-10-05
+
+Implementado o primeiro ciclo real de consentimento, sem acoplamento a provider. O backend agora persiste providerId, externalConsentId, escopos, estado, timestamps, expiração e revogação; expõe criação, listagem e revogação autenticadas por usuário; e define a interface de adapter do provider para autorização e sincronização futuras. Nenhum access token ou refresh token é armazenado no banco.
+
+Validação desta microetapa: testes de domínio e E2E PostgreSQL adicionados; migration V17 validada pelo Flyway; CI backend/Android obrigatório antes do merge.
+
+---
+
 ## 3.4 Regra de uso das cores
 
 A maior parte da interface deverÃ¡ permanecer em **Obsidian + Ivory + tons neutros**.
@@ -940,7 +948,7 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 - [x] Levantar requisitos regulatÃ³rios aplicÃ¡veis
 - [x] Mapear fornecedores/participantes de integraÃ§Ã£o
 - [x] Definir arquitetura de integraÃ§Ã£o
-- [ ] Implementar consentimento
+- [x] Implementar consentimento
 - [ ] Implementar conexÃ£o
 - [ ] Importar contas
 - [ ] Importar transaÃ§Ãµes
