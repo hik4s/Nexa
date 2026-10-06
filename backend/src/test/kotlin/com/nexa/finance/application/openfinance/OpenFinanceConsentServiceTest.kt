@@ -1,0 +1,105 @@
+package com.nexa.finance.application.openfinance
+
+import com.nexa.finance.domain.common.UserId
+import com.nexa.finance.domain.openfinance.OpenFinanceConsent
+import com.nexa.finance.domain.openfinance.OpenFinanceConsentStatus
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
+import java.util.UUID
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+
+class OpenFinanceConsentServiceTest {
+    private val now = Instant.parse("2026-10-05T22:00:00Z")
+    private val clock = Clock.fixed(now, ZoneOffset.UTC)
+    private val userId = UserId(UUID.fromString("11111111-1111-1111-1111-111111111111"))
+
+    @Test
+    fun requestRejectsUnconfiguredProviderBeforePersistence() {
+        val repository = FakeConsentRepository()
+        val service = OpenFinanceConsentService(
+            repository = repository,
+            providers = ConfiguredOpenFinanceProviderRegistry(
+                providers = emptyMap(),
+            ),
+            clock = clock,
+        )
+
+        assertFailsWith<RuntimeException> {
+            service.request(
+                userId = userId,
+                providerId = "belvo",
+                scopes = setOf("ACCOUNTS"),
+            )
+        }
+        assertEquals(0, repository.values.size)
+    }
+
+    @Test
+    fun requestPersistsNormalizedConsentForConfiguredProvider() {
+        val repository = FakeConsentRepository()
+        val provider = FakeProvider("BELVO")
+        val service = OpenFinanceConsentService(
+            repository = repository,
+            providers = ConfiguredOpenFinanceProviderRegistry(
+                providers = mapOf("belvo" to provider),
+            ),
+            clock = clock,
+        )
+
+        val consent = service.request(
+            userId = userId,
+            providerId = " BELVO ",
+            scopes = setOf("accounts", "transactions"),
+        )
+
+        assertEquals("belvo", consent.providerId)
+        assertEquals(OpenFinanceConsentStatus.REQUESTED, consent.status)
+        assertEquals(consent, repository.findByOwnerAndId(userId, consent.id))
+    }
+
+    private class FakeConsentRepository : OpenFinanceConsentRepository {
+        val values = linkedMapOf<UUID, OpenFinanceConsent>()
+
+        override fun create(consent: OpenFinanceConsent) {
+            values[consent.id] = consent
+        }
+
+        override fun findByOwner(ownerId: UserId): List<OpenFinanceConsent> =
+            values.values.filter { it.userId == ownerId }
+
+        override fun findByOwnerAndId(ownerId: UserId, id: UUID): OpenFinanceConsent? =
+            values[id]?.takeIf { it.userId == ownerId }
+
+        override fun update(consent: OpenFinanceConsent): OpenFinanceConsent? {
+            if (!values.containsKey(consent.id)) return null
+            values[consent.id] = consent
+            return consent
+        }
+
+        override fun listUsable(ownerId: UserId, at: Instant): List<OpenFinanceConsent> =
+            values.values.filter { it.userId == ownerId && it.isUsable(at) }
+    }
+
+    private class FakeProvider(
+        override val providerId: String,
+    ) : OpenFinanceProvider {
+        override fun requestConsent(
+            userId: UserId,
+            scopes: Set<String>,
+        ) = OpenFinanceProvider.ProviderConsentSession(
+            externalConsentId = "external-1",
+            authorizationUrl = "https://provider.example/authorize",
+        )
+
+        override fun getConsentStatus(externalConsentId: String) =
+            OpenFinanceProvider.ProviderConsentState(
+                status = OpenFinanceProvider.ExternalConsentStatus.AWAITING_AUTHORIZATION,
+                expiresAt = null,
+            )
+
+        override fun revokeConsent(externalConsentId: String) = Unit
+    }
+}
