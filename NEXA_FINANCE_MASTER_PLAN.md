@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 concluída e validada no Gate 2.11; próximo passo: Parte 3 - 3.1 Backend de produção.
+**Checkpoint atual:** Parte 2 concluída e validada; Parte 3 em progresso. Sincronização 3.2 concluída, discovery/consentimento Open Finance parcialmente concluídos; pendências críticas atuais: retries/DR de produção, conexão/importação Open Finance, segurança/compliance, observabilidade e performance.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -278,6 +278,21 @@ Validação: backend test + build passou; migration V17 foi aplicada de V16 para
 Implementado o primeiro ciclo real de consentimento, sem acoplamento a provider. O backend agora persiste providerId, externalConsentId, escopos, estado, timestamps, expiração e revogação; expõe criação, listagem e revogação autenticadas por usuário; e define a interface de adapter do provider para autorização e sincronização futuras. Nenhum access token ou refresh token é armazenado no banco.
 
 Validação desta microetapa: testes de domínio e E2E PostgreSQL adicionados; migration V17 validada pelo Flyway; CI backend/Android obrigatório antes do merge.
+
+---
+
+### Auditoria completa do Master Plan — 2026-10-05
+
+Inventário realizado contra o estado do repositório `feat/card-invoice-ledger`: 308 checks explícitos, 272 já concluídos e 36 mantidos em aberto após revisão de evidência.
+
+Correções de precisão realizadas:
+- Backups de produção voltou a aberto: os scripts de backup/restore são locais e ainda não constituem a política de backup/restore do PostgreSQL de produção.
+- Revogação de consentimento passou para concluído: existe rota autenticada, transição de domínio, chamada ao provider e E2E PostgreSQL com isolamento por usuário.
+- Teste de filas passou para concluído: `SyncQueueTest` cobre lifecycle, recuperação de PROCESSING, backoff exponencial e validação de limites.
+- Teste de integração com IA passou para concluído no escopo atual: `AiContextBuilderIntegrationTest`, `RuleBasedAiProviderTest` e `AiPanelTest` cobrem a IA interna `rules-v1`; integração com um LLM externo continua deliberadamente fora do escopo.
+- Testes de falhas externas e recuperação foram reabertos: existem mecanismos de retry/recovery e scripts de restore, mas ainda não há um exercício automatizado e completo que comprove essas propriedades como requisito de produção.
+
+Os demais checks em aberto requerem implementação interna adicional ou dependências externas reais descritas nas seções 3.1, 3.3, 3.4, 3.5, 3.6 e 3.7.
 
 ---
 
@@ -898,7 +913,7 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 - [x] PolÃ­ticas de timeout
 - [ ] Retries controlados
 - [x] Tratamento de falhas
-- [x] Backups
+- [ ] Backups
 - [ ] RecuperaÃ§Ã£o de desastre
 
 ### Checkpoint 3.1 — produção/rate limiting — 2026-10-04
@@ -917,7 +932,7 @@ Validação desta microetapa: ApplicationTest com rate limit e isolamento por cl
 - [x] Retry
 - [x] Estados de conflito
 - [x] IdempotÃªncia
-- [x] ConsistÃªncia entre dispositivos
+- [x] ConsistÃªncia entre dispositivos (protocolo de transações; validação de concorrência/conflicto)
 
 ### Microcheckpoint 3.2.1 — fundação local-first — 2026-10-04
 
@@ -956,7 +971,7 @@ A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financei
 - [ ] Categorizar transaÃ§Ãµes
 - [ ] Criar conciliaÃ§Ã£o
 - [ ] Tratar duplicidades
-- [ ] Tratar revogaÃ§Ã£o de consentimento
+- [x] Tratar revogaÃ§Ã£o de consentimento
 - [ ] Monitorar sincronizaÃ§Ã£o
 
 ---
@@ -1043,11 +1058,11 @@ Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com
 - [x] Teste de concorrÃªncia
 - [x] Teste de carga da API
 - [x] Teste de banco
-- [ ] Teste de filas quando existirem
-- [ ] Teste de integraÃ§Ã£o com IA
+- [x] Teste de filas quando existirem
+- [x] Teste de integraÃ§Ã£o com IA
 - [x] Teste de sincronizaÃ§Ã£o
-- [x] Teste de falhas externas
-- [x] Teste de recuperaÃ§Ã£o
+- [ ] Teste de falhas externas
+- [ ] Teste de recuperaÃ§Ã£o
 
 ### Checkpoint 3.8.1 — carga concorrente da API
 
