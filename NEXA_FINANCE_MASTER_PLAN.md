@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 concluída e validada; Parte 3 em progresso. Sincronização 3.2 concluída, discovery/consentimento Open Finance parcialmente concluídos; pendências críticas atuais: retries/DR de produção, conexão/importação Open Finance, segurança/compliance, observabilidade e performance.
+**Checkpoint atual:** Parte 2 concluída e validada; Parte 3 em progresso. Sincronização 3.2 concluída, discovery/consentimento Open Finance em andamento, observabilidade de base concluída; pendências críticas atuais: retries/DR de produção, conexão/importação Open Finance, segurança/compliance, observabilidade operacional avançada e performance.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -283,7 +283,7 @@ Validação desta microetapa: testes de domínio e E2E PostgreSQL adicionados; m
 
 ### Auditoria completa do Master Plan — 2026-10-05
 
-Inventário atualizado contra o estado do repositório `feat/card-invoice-ledger`: 308 checks explícitos, 274 já concluídos e 34 mantidos em aberto após revisão de evidência.
+Inventário atualizado contra o estado do repositório `feat/card-invoice-ledger`: 308 checks explícitos, 276 já concluídos e 32 mantidos em aberto após revisão de evidência.
 
 Correções de precisão realizadas:
 - Backups de produção voltou a aberto: os scripts de backup/restore são locais e ainda não constituem a política de backup/restore do PostgreSQL de produção.
@@ -335,6 +335,11 @@ O sistema tipogrÃ¡fico deverÃ¡ ser centralizado em tokens do Design System.
 ### Auditoria incremental — observabilidade — 2026-10-06
 
 Os checks de **Logs estruturados** e **Métricas** da seção 3.6 foram fechados após a integração da PR #15. O CI oficial validou backend migrations/test/build e Android unit tests, instrumented tests, lint, debug APK, release APK e release AAB. O desenho permanece com métricas desabilitadas por padrão e endpoint protegido por token; readiness de PostgreSQL e correlação por X-Request-Id também foram validados. Permanecem crash reporting externo, tracing, alertas, monitoramento operacional de banco/integrações e dashboards.
+
+
+### Auditoria incremental — observabilidade integrada — 2026-10-06
+
+Os checks Logs estruturados e Métricas foram promovidos para concluídos após merge da PR #15. O CI #148 validou backend migrations/test/build e Android unit tests, instrumented tests, lint, debug APK, release APK e release AAB. O endpoint /metrics permanece desabilitado por padrão e protegido por token quando habilitado; /ready valida PostgreSQL; X-Request-Id é propagado por CallId. Permanecem os itens operacionais avançados: crash reporting, tracing, alertas, monitoramento específico do banco/integrações e dashboards.
 
 ## 3.7 SensaÃ§Ã£o desejada
 
