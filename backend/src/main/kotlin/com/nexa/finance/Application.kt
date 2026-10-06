@@ -125,10 +125,11 @@ fun Application.module(
     val goalRepository = JdbcGoalRepository(database)
     val aiUsageRepository = JdbcAiUsageRepository(database)
     val notificationRepository = JdbcNotificationRepository(database)
-    val dataExport = DataExportService(JdbcDataExportRepository(database))
+    val audit = AuditEventRecorder(JdbcAuditEventRepository(database))
+    val dataExport = DataExportService(JdbcDataExportRepository(database), audit)
 
-    val authentication = AuthenticationService(userRepository)
-    val recovery = RecoveryService(userRepository)
+    val authentication = AuthenticationService(userRepository, audit = audit)
+    val recovery = RecoveryService(userRepository, audit = audit)
     val profile = ProfileService(userRepository)
     val accounts = AccountService(accountRepository)
     val transactions = TransactionService(transactionRepository, accountRepository)
@@ -144,7 +145,6 @@ fun Application.module(
     val goals = GoalService(goalRepository)
     val aiContext = AiContextBuilder(transactionRepository, budgetRepository, goalRepository, categoryRepository)
     val ai = AiService(aiContext, RuleBasedAiProvider(), aiUsageRepository)
-    val audit = AuditEventRecorder(JdbcAuditEventRepository(database))
     val openFinanceConsents = OpenFinanceConsentService(
         repository = JdbcOpenFinanceConsentRepository(database),
         providers = openFinanceProviders,
