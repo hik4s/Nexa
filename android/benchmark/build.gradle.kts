@@ -13,6 +13,8 @@ android {
     }
 
     targetProjectPath = ":app"
+    testBuildType = "benchmark"
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
