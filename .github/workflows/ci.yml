@@ -132,7 +132,7 @@ jobs:
           working-directory: ./android
           emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
-          script: ./gradlew :benchmark:connectedCheck --no-daemon
+          script: ./gradlew :benchmark:connectedBenchmarkAndroidTest --no-daemon
 
       - name: Lint Android
         working-directory: android
