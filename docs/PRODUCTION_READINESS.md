@@ -12,6 +12,7 @@ Data de referencia: 2026-10-04
 - BuildConfig de release aponta para o backend de produção; debug continua apontando para o backend de emulador.
 - Android local-first com Room, Outbox, checkpoint e WorkManager.
 - Banco local Room criptografado com SQLCipher; chave de 256 bits protegida por Android Keystore + AES-GCM, incluindo migração validada da base plaintext existente.
+- Audit trail técnico para eventos críticos de autenticação, exportação de dados e ciclo de consentimento Open Finance; retenção e cobertura total ainda dependem da etapa de compliance/auditoria.
 - Sincronizacao real servidor/dispositivo para transacoes.
 - Idempotencia de transacoes por UUID.
 - Protecao contra conflito de mesmo ID com payload divergente.

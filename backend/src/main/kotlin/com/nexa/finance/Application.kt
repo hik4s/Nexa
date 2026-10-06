@@ -22,6 +22,7 @@ import com.nexa.finance.application.account.AccountService
 import com.nexa.finance.application.ai.AiContextBuilder
 import com.nexa.finance.application.ai.AiService
 import com.nexa.finance.application.ai.RuleBasedAiProvider
+import com.nexa.finance.application.audit.AuditEventRecorder
 import com.nexa.finance.application.auth.AuthenticationService
 import com.nexa.finance.application.auth.ProfileService
 import com.nexa.finance.application.auth.RecoveryService
@@ -42,6 +43,7 @@ import com.nexa.finance.application.transfer.TransferService
 import com.nexa.finance.domain.common.ConflictException
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.infrastructure.account.JdbcAccountRepository
+import com.nexa.finance.infrastructure.audit.JdbcAuditEventRepository
 import com.nexa.finance.infrastructure.ai.JdbcAiUsageRepository
 import com.nexa.finance.infrastructure.budget.JdbcBudgetRepository
 import com.nexa.finance.infrastructure.card.JdbcCardRepository
@@ -123,10 +125,11 @@ fun Application.module(
     val goalRepository = JdbcGoalRepository(database)
     val aiUsageRepository = JdbcAiUsageRepository(database)
     val notificationRepository = JdbcNotificationRepository(database)
-    val dataExport = DataExportService(JdbcDataExportRepository(database))
+    val audit = AuditEventRecorder(JdbcAuditEventRepository(database))
+    val dataExport = DataExportService(JdbcDataExportRepository(database), audit)
 
-    val authentication = AuthenticationService(userRepository)
-    val recovery = RecoveryService(userRepository)
+    val authentication = AuthenticationService(userRepository, audit = audit)
+    val recovery = RecoveryService(userRepository, audit = audit)
     val profile = ProfileService(userRepository)
     val accounts = AccountService(accountRepository)
     val transactions = TransactionService(transactionRepository, accountRepository)
@@ -145,6 +148,7 @@ fun Application.module(
     val openFinanceConsents = OpenFinanceConsentService(
         repository = JdbcOpenFinanceConsentRepository(database),
         providers = openFinanceProviders,
+        audit = audit,
     )
     val notifications = NotificationService(
         repository = notificationRepository,

@@ -1,5 +1,6 @@
 package com.nexa.finance.application.auth
 
+import com.nexa.finance.application.audit.AuditEventRecorder
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.UserId
 import com.nexa.finance.domain.user.PasswordCredential
@@ -15,6 +16,7 @@ class RecoveryService(
     private val repository: JdbcUserAuthRepository,
     private val clock: Clock = Clock.systemUTC(),
     private val tokenLifetime: Duration = Duration.ofMinutes(30),
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun requestRecovery(email: String): RecoveryRequest {
         val normalizedEmail = email.trim().lowercase(Locale.ROOT)
@@ -33,13 +35,26 @@ class RecoveryService(
             expiresAt = now.plus(tokenLifetime),
         )
         repository.saveRecoveryToken(token)
+        audit?.record(
+            actorUserId = identity.userId,
+            eventType = "AUTH_RECOVERY_REQUESTED",
+            targetType = "USER",
+            targetId = identity.userId.value,
+        )
         return RecoveryRequest(identity.userId, generated.raw, token.expiresAt)
     }
 
     fun resetPassword(token: String, newPassword: CharArray, now: Instant = Instant.now(clock)): UserId {
         if (token.isBlank()) throw DomainValidationException("Invalid recovery token.")
         val credential = PasswordCredential.create(newPassword)
-        return repository.resetPassword(SessionToken.hash(token), credential, now)
+        val userId = repository.resetPassword(SessionToken.hash(token), credential, now)
+        audit?.record(
+            actorUserId = userId,
+            eventType = "AUTH_PASSWORD_RESET",
+            targetType = "USER",
+            targetId = userId.value,
+        )
+        return userId
     }
 }
 
