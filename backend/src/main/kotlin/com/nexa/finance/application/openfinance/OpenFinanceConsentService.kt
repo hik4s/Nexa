@@ -5,14 +5,20 @@ import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.UserId
 import com.nexa.finance.domain.openfinance.OpenFinanceConsent
 import com.nexa.finance.domain.openfinance.OpenFinanceConsentId
+import com.nexa.finance.infrastructure.resilience.RetryPolicy
+import java.io.IOException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 import java.time.Clock
 import java.time.Instant
+import java.util.concurrent.TimeoutException
 
 class OpenFinanceConsentService(
     private val repository: OpenFinanceConsentRepository,
     private val providers: OpenFinanceProviderRegistry,
     private val clock: Clock = Clock.systemUTC(),
     private val audit: AuditEventRecorder? = null,
+    private val retryPolicy: RetryPolicy = RetryPolicy(com.nexa.finance.RetrySettings.fromEnvironment()),
 ) {
     fun request(
         userId: UserId,
@@ -43,6 +49,9 @@ class OpenFinanceConsentService(
     ): OpenFinanceProvider.ProviderConsentSession {
         val consent = get(userId, consentId)
         val provider = providers.get(consent.providerId)
+
+        // Do not retry consent creation automatically: providers may create a new external
+        // consent on each call unless they explicitly guarantee idempotency.
         val session = provider.requestConsent(userId, consent.scopes)
         val updated = consent.markAwaitingAuthorization(
             externalConsentId = session.externalConsentId,
@@ -67,7 +76,11 @@ class OpenFinanceConsentService(
         val externalId = consent.externalConsentId
             ?: throw DomainValidationException("Open Finance consent has no external provider ID.")
         val provider = providers.get(consent.providerId)
-        val providerStatus = provider.getConsentStatus(externalId)
+        val providerStatus = retryPolicy.execute(
+            retryable = ::isRetryableProviderFailure,
+        ) {
+            provider.getConsentStatus(externalId)
+        }
         val now = Instant.now(clock)
 
         val updated = when (providerStatus.status) {
@@ -103,7 +116,13 @@ class OpenFinanceConsentService(
         consentId: OpenFinanceConsentId,
     ): OpenFinanceConsent {
         val consent = get(userId, consentId)
-        consent.externalConsentId?.let { providers.get(consent.providerId).revokeConsent(it) }
+        consent.externalConsentId?.let { externalId ->
+            retryPolicy.execute(
+                retryable = ::isRetryableProviderFailure,
+            ) {
+                providers.get(consent.providerId).revokeConsent(externalId)
+            }
+        }
         val updated = consent.revoke(Instant.now(clock))
         val persisted = repository.update(updated)
             ?: throw DomainValidationException("Open Finance consent was not found.")
@@ -121,4 +140,10 @@ class OpenFinanceConsentService(
     private fun get(userId: UserId, consentId: OpenFinanceConsentId): OpenFinanceConsent =
         repository.findByOwnerAndId(userId, consentId)
             ?: throw DomainValidationException("Open Finance consent was not found.")
+
+    private fun isRetryableProviderFailure(error: Throwable): Boolean =
+        error is IOException ||
+            error is ConnectException ||
+            error is SocketTimeoutException ||
+            error is TimeoutException
 }
