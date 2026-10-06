@@ -1,5 +1,7 @@
 package com.nexa.finance.application.refund
 
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
 import com.nexa.finance.domain.cancellation.Cancellation
 import com.nexa.finance.domain.card.CardLedger
 import com.nexa.finance.domain.common.DomainValidationException
@@ -18,6 +20,7 @@ import java.util.UUID
 class RefundService(
     private val transactions: JdbcTransactionRepository,
     private val cards: JdbcCardRepository,
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun refund(
         ownerId: UserId,
@@ -86,6 +89,7 @@ class RefundService(
         }
 
         transactions.create(ownerId, refund)
+        audit?.record(ownerId, AuditEventTypes.REFUND_CREATED, "TRANSACTION", refund.id)
         return refund
     }
 
@@ -132,6 +136,7 @@ class RefundService(
             )
         }
         transactions.create(ownerId, cancellation)
+        audit?.record(ownerId, AuditEventTypes.CANCELLATION_CREATED, "TRANSACTION", cancellation.id)
         return cancellation
     }
 }
