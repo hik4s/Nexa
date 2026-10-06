@@ -283,7 +283,7 @@ Validação desta microetapa: testes de domínio e E2E PostgreSQL adicionados; m
 
 ### Auditoria completa do Master Plan — 2026-10-05
 
-Inventário realizado contra o estado do repositório `feat/card-invoice-ledger`: 308 checks explícitos, 272 já concluídos e 36 mantidos em aberto após revisão de evidência.
+Inventário atualizado contra o estado do repositório `feat/card-invoice-ledger`: 308 checks explícitos, 274 já concluídos e 34 mantidos em aberto após revisão de evidência.
 
 Correções de precisão realizadas:
 - Backups de produção voltou a aberto: os scripts de backup/restore são locais e ainda não constituem a política de backup/restore do PostgreSQL de produção.
@@ -330,6 +330,11 @@ O sistema tipogrÃ¡fico deverÃ¡ ser centralizado em tokens do Design System.
 - cards usados somente quando agregarem organizaÃ§Ã£o
 - botÃµes simples e sÃ³lidos
 - Ã­cones lineares e consistentes
+
+
+### Auditoria incremental — observabilidade — 2026-10-06
+
+Os checks de **Logs estruturados** e **Métricas** da seção 3.6 foram fechados após a integração da PR #15. O CI oficial validou backend migrations/test/build e Android unit tests, instrumented tests, lint, debug APK, release APK e release AAB. O desenho permanece com métricas desabilitadas por padrão e endpoint protegido por token; readiness de PostgreSQL e correlação por X-Request-Id também foram validados. Permanecem crash reporting externo, tracing, alertas, monitoramento operacional de banco/integrações e dashboards.
 
 ## 3.7 SensaÃ§Ã£o desejada
 
@@ -1021,8 +1026,8 @@ Validação adicionada: teste JDBC do repositório e testes JVM do recorder. A c
 
 ## 3.6 â€” Observabilidade
 
-- [ ] Logs estruturados
-- [ ] MÃ©tricas
+- [x] Logs estruturados
+- [x] MÃ©tricas
 - [ ] Crash reporting
 - [ ] Tracing quando necessÃ¡rio
 - [ ] Alertas
