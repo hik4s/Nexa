@@ -78,7 +78,6 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callId
 import io.ktor.server.plugins.callid.callIdMdc
-import io.ktor.server.plugins.callid.replyToHeader
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
@@ -181,7 +180,7 @@ fun Application.module(
             UUID.randomUUID().toString()
         }
         verify { callId -> callId.length in 16..128 && callId.all { it.isLetterOrDigit() || it == '-' || it == '_' } }
-        replyToHeader(HttpHeaders.XRequestId)
+        reply { call, id -> call.response.header(HttpHeaders.XRequestId, id) }
     }
 
     install(CallLogging) {
