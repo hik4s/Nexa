@@ -32,7 +32,7 @@ class CardService(
         val account = accounts.findByOwnerAndId(ownerId, liabilityAccountId) ?: throw DomainValidationException("Liability account was not found.")
         val card = Card.create(ownerId, account, name, brand, lastFourDigits, creditLimit, closingDay, dueDay)
         cards.create(card)
-        audit?.record(ownerId, AuditEventTypes.CARD_CREATED, "CARD", card.id)
+        audit?.record(ownerId, AuditEventTypes.CARD_CREATED, "CARD", card.id.value)
         return card
     }
 
@@ -56,7 +56,7 @@ class CardService(
             CardStatus.CANCELLED -> current.cancel()
         }
         val updated = cards.updateStatus(ownerId, id, next.status) ?: throw DomainValidationException("Card was not found.")
-        audit?.record(ownerId, AuditEventTypes.CARD_STATUS_CHANGED, "CARD", updated.id)
+        audit?.record(ownerId, AuditEventTypes.CARD_STATUS_CHANGED, "CARD", updated.id.value)
         return updated
     }
 
