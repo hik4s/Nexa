@@ -27,7 +27,7 @@ class InvoiceService(
         if (periodEnd.isBefore(periodStart)) throw DomainValidationException("Invoice period end cannot precede its start.")
         val card = cards.findByOwnerAndId(ownerId, cardId) ?: throw DomainValidationException("Card was not found.")
         val invoice = invoices.createForPeriod(ownerId, card, periodStart, periodEnd, dueOn)
-        audit?.record(ownerId, AuditEventTypes.INVOICE_CREATED, "INVOICE", invoice.id)
+        audit?.record(ownerId, AuditEventTypes.INVOICE_CREATED, "INVOICE", invoice.id.value)
         return invoice
     }
 
@@ -45,7 +45,7 @@ class InvoiceService(
             else -> throw DomainValidationException("Unsupported invoice status transition.")
         }
         val updated = invoices.updateStatus(ownerId, id, next.status) ?: throw DomainValidationException("Invoice was not found.")
-        audit?.record(ownerId, AuditEventTypes.INVOICE_STATUS_CHANGED, "INVOICE", updated.id)
+        audit?.record(ownerId, AuditEventTypes.INVOICE_STATUS_CHANGED, "INVOICE", updated.id.value)
         return updated
     }
 
@@ -55,7 +55,7 @@ class InvoiceService(
         val sourceAccount = accounts.findByOwnerAndId(ownerId, sourceAccountId) ?: throw DomainValidationException("Payment source account was not found.")
         val payment = CardPayment.create(ownerId, sourceAccount, card, invoice, amount, occurredOn, source)
         val updated = invoices.persistPayment(ownerId, payment.post())
-        audit?.record(ownerId, AuditEventTypes.INVOICE_PAID, "INVOICE", updated.id)
+        audit?.record(ownerId, AuditEventTypes.INVOICE_PAID, "INVOICE", updated.id.value)
         return updated
     }
 }
