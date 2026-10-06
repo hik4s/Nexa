@@ -123,8 +123,16 @@ jobs:
           script: ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nexa.finance.sync.SyncConflictResolverInstrumentedTest --no-daemon
 
       - name: Android cold-start Macrobenchmark
-        working-directory: android
-        run: ./gradlew :benchmark:connectedCheck --no-daemon
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          working-directory: ./android
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          disable-animations: true
+          script: ./gradlew :benchmark:connectedCheck --no-daemon
 
       - name: Lint Android
         working-directory: android
