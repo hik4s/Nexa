@@ -48,6 +48,11 @@ android {
             val escapedReleaseApiUrl = releaseApiUrl.replace("\\", "\\\\").replace("\"", "\\\"")
             buildConfigField("String", "NEXA_API_URL", "\"$escapedReleaseApiUrl\"")
         }
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+        }
     }
 
     packaging {
@@ -85,6 +90,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.10.2")
     implementation("androidx.work:work-runtime-ktx:2.11.0")
+    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
 
     implementation("androidx.room:room-runtime:2.8.5")
     implementation("androidx.room:room-ktx:2.8.5")
