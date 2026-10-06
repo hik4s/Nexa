@@ -20,6 +20,12 @@ import com.nexa.finance.sync.SyncScheduler
 import com.nexa.finance.sync.SyncWorker
 import com.nexa.finance.ui.QuickEntryCard
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private val api = ApiClient()
@@ -47,18 +53,28 @@ private fun AuthScreen(api: ApiClient, sessionStore: SessionStore, onLogin: () -
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     fun run(action: () -> String?) {
         busy = true
-        Thread {
+        scope.launch {
             try {
-                val userId = action()
-                if (!register && userId != null) sessionStore.save(userId, api.token ?: error("Sessão inválida."))
-                runOnMain { message = if (register) "Conta criada. Faça login." else "Login realizado."; busy = false; if (!register) onLogin() }
-            } catch (e: Exception) {
-                runOnMain { message = e.message ?: "Falha na operação"; busy = false }
+                val userId = withContext(Dispatchers.IO) { action() }
+                if (!register && userId != null) {
+                    withContext(Dispatchers.IO) {
+                        sessionStore.save(userId, api.token ?: error("Sessão inválida."))
+                    }
+                }
+                message = if (register) "Conta criada. Faça login." else "Login realizado."
+                busy = false
+                if (!register) onLogin()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                message = error.message ?: "Falha na operação"
+                busy = false
             }
-        }.start()
+        }
     }
 
     Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center) {
@@ -93,24 +109,35 @@ private fun Dashboard(api: ApiClient, sessionStore: SessionStore, logout: () -> 
     var description by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var expense by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
 
-    fun refresh() {
-        Thread {
-            var failures = 0
-            runCatching { api.accounts() }.onSuccess { value ->
-                runOnMain { accounts = value }
-            }.onFailure { failures++ }
-            runCatching { api.categories() }.onSuccess { value ->
-                runOnMain { categories = value }
-            }.onFailure { failures++ }
-            runCatching { api.cards() }.onSuccess { value ->
-                runOnMain { cards = value }
-            }.onFailure { failures++ }
-            runCatching { api.transactions() }.onSuccess { value ->
-                runOnMain { transactions = value }
-            }.onFailure { failures++ }
-            runOnMain { message = if (failures == 0) "" else "Alguns dados não puderam ser carregados." }
-        }.start()
+    suspend fun <T> loadSafely(loader: () -> T): Result<T> =
+        try {
+            Result.success(withContext(Dispatchers.IO) { loader() })
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            Result.failure(error)
+        }
+
+    suspend fun refresh() = coroutineScope {
+        val accountsDeferred = async { loadSafely { api.accounts() } }
+        val categoriesDeferred = async { loadSafely { api.categories() } }
+        val cardsDeferred = async { loadSafely { api.cards() } }
+        val transactionsDeferred = async { loadSafely { api.transactions() } }
+
+        val accountsResult = accountsDeferred.await()
+        val categoriesResult = categoriesDeferred.await()
+        val cardsResult = cardsDeferred.await()
+        val transactionsResult = transactionsDeferred.await()
+
+        accountsResult.getOrNull()?.let { accounts = it }
+        categoriesResult.getOrNull()?.let { categories = it }
+        cardsResult.getOrNull()?.let { cards = it }
+        transactionsResult.getOrNull()?.let { transactions = it }
+
+        val failures = listOf(accountsResult, categoriesResult, cardsResult, transactionsResult).count { it.isFailure }
+        message = if (failures == 0) "" else "Alguns dados não puderam ser carregados."
     }
 
     LaunchedEffect(Unit) { refresh() }
@@ -146,7 +173,18 @@ private fun Dashboard(api: ApiClient, sessionStore: SessionStore, logout: () -> 
             item {
                 OutlinedTextField(accountName, { accountName = it }, Modifier.fillMaxWidth().testTag("account_name"), label = { Text("Nova conta") })
                 Button(modifier = Modifier.testTag("account_submit"), enabled = accountName.isNotBlank(), onClick = {
-                    Thread { try { val created = api.createAccount(accountName); runOnMain { accounts = accounts + created; accountName = "" } } catch (e: Exception) { runOnMain { message = e.message ?: "Erro" } } }.start()
+                    val nameToCreate = accountName
+                    scope.launch {
+                        try {
+                            val created = withContext(Dispatchers.IO) { api.createAccount(nameToCreate) }
+                            accounts = accounts + created
+                            accountName = ""
+                        } catch (error: CancellationException) {
+                            throw error
+                        } catch (error: Exception) {
+                            message = error.message ?: "Erro"
+                        }
+                    }
                 }) { Text("Adicionar conta") }
             }
             item { HorizontalDivider(); Text("Lançamento manual", style = MaterialTheme.typography.titleLarge) }
@@ -163,11 +201,32 @@ private fun Dashboard(api: ApiClient, sessionStore: SessionStore, logout: () -> 
                     Button(modifier = Modifier.testTag("tx_submit"), enabled = accounts.isNotEmpty() && amount.replace(",", ".").toDoubleOrNull()?.let { it > 0 } == true, onClick = {
                         val cents = ((amount.replace(",", ".").toDoubleOrNull() ?: 0.0) * 100).toLong()
                         val account = accounts.first()
-                        Thread { try {
-                            api.createTransaction(account.id, cents, if (expense) "EXPENSE" else "INCOME", if (expense) "DEBIT" else "CREDIT", description.ifBlank { if (expense) "Despesa" else "Receita" })
-                            runOnMain { amount = ""; description = ""; message = "Transação registrada." }
-                            try { val latest = api.transactions(); runOnMain { transactions = latest } } catch (_: Exception) { }
-                        } catch (e: Exception) { runOnMain { message = e.message ?: "Erro" } } }.start()
+                        val descriptionToCreate = description.ifBlank { if (expense) "Despesa" else "Receita" }
+                        scope.launch {
+                            try {
+                                withContext(Dispatchers.IO) {
+                                    api.createTransaction(
+                                        account.id,
+                                        cents,
+                                        if (expense) "EXPENSE" else "INCOME",
+                                        if (expense) "DEBIT" else "CREDIT",
+                                        descriptionToCreate,
+                                    )
+                                }
+                                amount = ""
+                                description = ""
+                                message = "Transação registrada."
+                                runCatching {
+                                    withContext(Dispatchers.IO) { api.transactions() }
+                                }.onSuccess { latest ->
+                                    transactions = latest
+                                }
+                            } catch (error: CancellationException) {
+                                throw error
+                            } catch (error: Exception) {
+                                message = error.message ?: "Erro"
+                            }
+                        }
                     }) { Text("Registrar") }
                     if (message.isNotBlank()) Text(message, modifier = Modifier.testTag("transaction_status"))
                 }
@@ -190,4 +249,3 @@ private fun Dashboard(api: ApiClient, sessionStore: SessionStore, logout: () -> 
 }
 
 private fun formatMoney(minor: Long): String = String.format(Locale.forLanguageTag("pt-BR"), "R$ %.2f", minor / 100.0)
-private fun runOnMain(action: () -> Unit) = android.os.Handler(android.os.Looper.getMainLooper()).post(action)
