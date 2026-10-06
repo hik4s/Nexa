@@ -100,7 +100,7 @@ class BudgetService(
         val updated = repository.update(transform(current))
             ?: throw DomainValidationException("Budget was not found.")
         audit?.record(userId, AuditEventTypes.BUDGET_STATUS_CHANGED, "BUDGET", updated.id)
-        return progressFor(updated))
+        return progressFor(updated)
     }
 
     private fun progressFor(budget: Budget): BudgetProgress {
