@@ -15,6 +15,7 @@ import java.time.LocalDate
 class TransferService(
     private val transfers: JdbcTransferRepository,
     private val accounts: JdbcAccountRepository,
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun create(
         ownerId: UserId,
@@ -30,6 +31,7 @@ class TransferService(
             ?: throw DomainValidationException("Destination account was not found.")
         val transfer = Transfer.create(ownerId, sourceAccount, destinationAccount, amount, occurredOn, source)
         transfers.create(ownerId, transfer)
+        audit?.record(ownerId, AuditEventTypes.TRANSFER_CREATED, "TRANSFER", transfer.id)
         return transfer
     }
 
@@ -42,14 +44,18 @@ class TransferService(
     fun post(ownerId: UserId, id: TransferId): Transfer {
         val current = get(ownerId, id)
         current.post()
-        return transfers.updateStatus(ownerId, id, TransferStatus.POSTED)
+        val updated = transfers.updateStatus(ownerId, id, TransferStatus.POSTED)
             ?: throw DomainValidationException("Transfer was not found.")
+        audit?.record(ownerId, AuditEventTypes.TRANSFER_POSTED, "TRANSFER", updated.id)
+        return updated
     }
 
     fun cancel(ownerId: UserId, id: TransferId): Transfer {
         val current = get(ownerId, id)
         current.cancel()
-        return transfers.updateStatus(ownerId, id, TransferStatus.CANCELLED)
+        val updated = transfers.updateStatus(ownerId, id, TransferStatus.CANCELLED)
             ?: throw DomainValidationException("Transfer was not found.")
+        audit?.record(ownerId, AuditEventTypes.TRANSFER_CANCELLED, "TRANSFER", updated.id)
+        return updated
     }
 }
