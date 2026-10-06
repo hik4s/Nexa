@@ -133,7 +133,7 @@ class TransactionService(
                     if (latest == null) throw DomainValidationException("Transaction was not found.")
                     throw ConflictException("Transaction has changed since this client last read it.")
                 }
-            }.also { updated ->
+            } .also { updated ->
                 audit?.record(ownerId, AuditEventTypes.TRANSACTION_POSTED, "TRANSACTION", updated.id)
             }
         }
