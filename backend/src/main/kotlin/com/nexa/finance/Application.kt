@@ -190,17 +190,14 @@ fun Application.module(
         format { call ->
             val requestId = call.callId ?: "missing"
             val method = call.request.httpMethod.value
-            val requestPath = call.request.path()
-                .replace("\\", "\\\\")
-                .replace(""", "\\"")
+            val path = call.request.path()
             val status = call.response.status()?.value ?: 0
-            "{\"event\":\"http_request\",\"requestId\":\"" + requestId +
-                "\",\"method\":\"" + method +
-                "\",\"path\":\"" + requestPath +
-                "\",\"status\":" + status + "}"
+            "event=http_request requestId=" + requestId +
+                " method=" + method +
+                " path=" + path +
+                " status=" + status
         }
     }
-
     val logger = LoggerFactory.getLogger("com.nexa.finance.http")
 
     install(MicrometerMetrics) {
