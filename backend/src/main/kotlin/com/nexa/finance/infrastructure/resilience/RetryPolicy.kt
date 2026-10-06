@@ -17,7 +17,7 @@ class RetryPolicy(
         while (true) {
             try {
                 return operation()
-            } catch (error: Throwable) {
+            } catch (error: Exception) {
                 val shouldRetry = attempt < settings.maxAttempts && retryable(error)
                 if (!shouldRetry) throw error
 
