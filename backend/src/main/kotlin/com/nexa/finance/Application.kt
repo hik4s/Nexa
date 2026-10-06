@@ -57,6 +57,7 @@ import com.nexa.finance.infrastructure.notification.JdbcNotificationRepository
 import com.nexa.finance.infrastructure.openfinance.JdbcOpenFinanceConsentRepository
 import com.nexa.finance.infrastructure.recurrence.JdbcRecurrenceRepository
 import com.nexa.finance.infrastructure.transaction.JdbcTransactionRepository
+import com.nexa.finance.infrastructure.resilience.RetryPolicy
 import com.nexa.finance.infrastructure.sync.JdbcSyncChangeRepository
 import com.nexa.finance.infrastructure.transfer.JdbcTransferRepository
 import com.nexa.finance.infrastructure.user.JdbcUserAuthRepository
@@ -156,10 +157,12 @@ fun Application.module(
     val goals = GoalService(goalRepository)
     val aiContext = AiContextBuilder(transactionRepository, budgetRepository, goalRepository, categoryRepository)
     val ai = AiService(aiContext, RuleBasedAiProvider(), aiUsageRepository)
+    val retryPolicy = RetryPolicy(RetrySettings.fromEnvironment())
     val openFinanceConsents = OpenFinanceConsentService(
         repository = JdbcOpenFinanceConsentRepository(database),
         providers = openFinanceProviders,
         audit = audit,
+        retryPolicy = retryPolicy,
     )
     val notifications = NotificationService(
         repository = notificationRepository,
