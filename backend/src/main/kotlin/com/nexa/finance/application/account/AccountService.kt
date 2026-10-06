@@ -25,7 +25,7 @@ class AccountService(
         }
         val account = Account.create(ownerId, name, type, openingBalance)
         repository.create(account)
-        audit?.record(ownerId, AuditEventTypes.ACCOUNT_CREATED, "ACCOUNT", account.id)
+        audit?.record(ownerId, AuditEventTypes.ACCOUNT_CREATED, "ACCOUNT", account.id.value)
         return account
     }
 
@@ -38,7 +38,7 @@ class AccountService(
     fun setPrimary(ownerId: UserId, accountId: AccountId): Account {
         val account = repository.setPrimary(ownerId, accountId)
             ?: throw DomainValidationException("Active account was not found.")
-        audit?.record(ownerId, AuditEventTypes.ACCOUNT_PRIMARY_CHANGED, "ACCOUNT", account.id)
+        audit?.record(ownerId, AuditEventTypes.ACCOUNT_PRIMARY_CHANGED, "ACCOUNT", account.id.value)
         return account
     }
 
