@@ -5,6 +5,7 @@ import com.nexa.finance.domain.openfinance.OpenFinanceConsent
 import com.nexa.finance.domain.openfinance.OpenFinanceConsentStatus
 import java.time.Clock
 import java.time.Instant
+import java.io.IOException
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.test.Test
@@ -35,6 +36,42 @@ class OpenFinanceConsentServiceTest {
             )
         }
         assertEquals(0, repository.values.size)
+    }
+
+    @Test
+    fun syncRetriesTransientProviderFailureAndEventuallySucceeds() {
+        val repository = FakeConsentRepository()
+        val provider = RetryingProvider()
+        val delays = mutableListOf<Long>()
+        val service = OpenFinanceConsentService(
+            repository = repository,
+            providers = ConfiguredOpenFinanceProviderRegistry(
+                providers = mapOf("fake" to provider),
+            ),
+            clock = clock,
+            retryPolicy = com.nexa.finance.infrastructure.resilience.RetryPolicy(
+                settings = com.nexa.finance.RetrySettings(
+                    maxAttempts = 4,
+                    initialBackoffMillis = 10,
+                    maxBackoffMillis = 100,
+                ),
+                sleeper = delays::add,
+            ),
+        )
+
+        val consent = service.request(
+            userId = userId,
+            providerId = "fake",
+            scopes = setOf("ACCOUNTS"),
+        )
+        service.beginAuthorization(userId, consent.id)
+
+        provider.transientFailuresRemaining = 2
+        val synced = service.sync(userId, consent.id)
+
+        assertEquals(OpenFinanceConsentStatus.AWAITING_AUTHORIZATION, synced.status)
+        assertEquals(3, provider.statusCalls)
+        assertEquals(listOf(10L, 20L), delays)
     }
 
     @Test
@@ -81,6 +118,35 @@ class OpenFinanceConsentServiceTest {
 
         override fun listUsable(ownerId: UserId, at: Instant): List<OpenFinanceConsent> =
             values.values.filter { it.userId == ownerId && it.isUsable(at) }
+    }
+
+    private class RetryingProvider : OpenFinanceProvider {
+        override val providerId: String = "fake"
+
+        var transientFailuresRemaining = 0
+        var statusCalls = 0
+
+        override fun requestConsent(
+            userId: UserId,
+            scopes: Set<String>,
+        ) = OpenFinanceProvider.ProviderConsentSession(
+            externalConsentId = "external-retry",
+            authorizationUrl = "https://provider.example/authorize",
+        )
+
+        override fun getConsentStatus(externalConsentId: String) : OpenFinanceProvider.ProviderConsentState {
+            statusCalls += 1
+            if (transientFailuresRemaining > 0) {
+                transientFailuresRemaining -= 1
+                throw IOException("temporary provider outage")
+            }
+            return OpenFinanceProvider.ProviderConsentState(
+                status = OpenFinanceProvider.ExternalConsentStatus.AWAITING_AUTHORIZATION,
+                expiresAt = null,
+            )
+        }
+
+        override fun revokeConsent(externalConsentId: String) = Unit
     }
 
     private class FakeProvider(
