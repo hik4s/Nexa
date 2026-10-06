@@ -310,7 +310,7 @@ Revalidação realizada contra o branch `feat/card-invoice-ledger`, cabeça `003
 | 3.7 Performance | 10 | 4 | 6 | paginação, índices, benchmarks de 50k registros e carga API/DB | ABERTO: performance do cliente, rede e cache. |
 | 3.8 Carga/confiabilidade | 8 | 6 | 2 | carga API/DB, SyncQueueTest, AI integration tests e sync tests | ABERTO: exercício completo de falhas externas e recuperação. |
 
-**Resultado da auditoria:** 308 checks = **274 concluídos + 34 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 34 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
+**Resultado da auditoria:** 308 checks = **277 concluídos + 31 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 34 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
 
 **CI atual:** run `37410740449` concluído com sucesso nos jobs de backend (migrations/test/build) e Android (unit, instrumented, lint, debug APK, release APK e release AAB).
 
@@ -946,9 +946,9 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 - [x] Rate limiting
 - [x] Versionamento de API
 - [x] PolÃ­ticas de timeout
-- [ ] Retries controlados
+- [x] Retries controlados
 - [x] Tratamento de falhas
-- [ ] Backups
+- [x] Backups
 - [ ] RecuperaÃ§Ã£o de desastre
 
 ### Checkpoint 3.1 — produção/rate limiting — 2026-10-04
@@ -1059,7 +1059,7 @@ Validação adicionada: teste JDBC do repositório e testes JVM do recorder. A c
 - [x] Logs estruturados
 - [x] MÃ©tricas
 - [ ] Crash reporting
-- [ ] Tracing quando necessÃ¡rio
+- [x] Tracing quando necessÃ¡rio
 - [ ] Alertas
 - [ ] Monitoramento de API
 - [ ] Monitoramento do banco
@@ -1140,3 +1140,11 @@ Validação real executada em 2026-10-04 com o harness `scripts/benchmark-databa
 - Desvio padrão: 1,456 ms.
 - Tempo inicial de conexão: 24,520 ms.
 - Cleanup confirmado: dataset sintético removido ao final da execução.
+
+### Auditoria incremental — resiliência, backups e tracing — 2026-10-06
+
+Os checks **Retries controlados** e **Backups** foram fechados após implementação, testes e validação em produção. O backend passou migrations, testes e build no CI; o retry usa backoff exponencial com limites explícitos de 3 tentativas, 250 ms inicial e teto de 2 s, aplicado apenas a operações externas repetíveis. O worker de backup PostgreSQL foi validado por sintaxe/build no CI e executou um cron real com sucesso, incluindo `pg_dump`, upload ao Bucket privado e verificação do objeto.
+
+O check **Tracing quando necessário** foi fechado: o tracing e a auto-instrumentação nativa da API estão ativos em production. Ainda não foram observados traces no período de validação por ausência de tráfego, portanto tracing operacional avançado e alertas continuam em escopo separado.
+
+Permanecem abertos retenção e recuperação de desastre: o Railway Bucket atual não fornece versionamento/lifecycle, e esses requisitos precisam de política própria e exercício de restauração.
