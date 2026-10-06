@@ -205,11 +205,6 @@ fun Application.module(
 
     install(MicrometerMetrics) {
         registry = observability.metricsRegistry
-        transformRoute { route ->
-            route.toString()
-                .replace("\\", "")
-                .ifBlank { "unknown" }
-        }
     }
 
     install(ContentNegotiation) {
