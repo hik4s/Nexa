@@ -149,7 +149,8 @@ class ApplicationTest {
         val ownerEmail = uniqueEmail("owner")
         val otherEmail = uniqueEmail("other")
 
-        application { module() }
+        val provider = FakeOpenFinanceProvider()
+        application { module(FakeOpenFinanceProviderRegistry(provider)) }
 
         try {
             val ownerToken = registerAndLogin(client, ownerEmail, "owner-password", "Owner")
@@ -201,7 +202,7 @@ class ApplicationTest {
             val create = client.post("/api/v1/open-finance/consents") {
                 header(HttpHeaders.Authorization, "Bearer $ownerToken")
                 jsonBody(
-                    """{"providerId":"belvo","scopes":["ACCOUNTS","BALANCES","TRANSACTIONS"]}"""
+                    """{"providerId":"fake","scopes":["ACCOUNTS","BALANCES","TRANSACTIONS"]}"""
                 )
             }
             assertEquals(200, create.status.value, create.bodyAsText())
@@ -235,6 +236,34 @@ class ApplicationTest {
         } finally {
             cleanupOpenFinanceConsents(ownerEmail, otherEmail)
             cleanupUsers(ownerEmail, otherEmail)
+        }
+    }
+
+    @Test
+    fun openFinanceConsentRejectsUnconfiguredProviderWithoutPersistence() = testApplication {
+        assumeTrue(hasPostgres())
+        val email = uniqueEmail("open-finance-unconfigured")
+
+        application { module() }
+
+        try {
+            val token = registerAndLogin(client, email, "provider-password", "Unconfigured Provider")
+
+            val response = client.post("/api/v1/open-finance/consents") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                jsonBody("""{"providerId":"not-configured","scopes":["ACCOUNTS"]}""")
+            }
+
+            assertEquals(400, response.status.value)
+            assertTrue(response.bodyAsText().contains("Open Finance provider"))
+            assertTrue(
+                client.get("/api/v1/open-finance/consents") {
+                    header(HttpHeaders.Authorization, "Bearer $token")
+                }.bodyAsText() == "[]"
+            )
+        } finally {
+            cleanupOpenFinanceConsents(email)
+            cleanupUsers(email)
         }
     }
 
