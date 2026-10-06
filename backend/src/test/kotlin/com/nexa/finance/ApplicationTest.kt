@@ -193,7 +193,8 @@ class ApplicationTest {
         val ownerEmail = uniqueEmail("open-finance-owner")
         val otherEmail = uniqueEmail("open-finance-other")
 
-        application { module() }
+        val provider = FakeOpenFinanceProvider()
+        application { module(FakeOpenFinanceProviderRegistry(provider)) }
 
         try {
             val ownerToken = registerAndLogin(client, ownerEmail, "owner-password", "Open Finance Owner")
@@ -206,7 +207,7 @@ class ApplicationTest {
                 )
             }
             assertEquals(200, create.status.value, create.bodyAsText())
-            assertTrue(create.bodyAsText().contains("\"providerId\":\"belvo\""))
+            assertTrue(create.bodyAsText().contains("\"providerId\":\"fake\""))
             assertTrue(create.bodyAsText().contains("\"status\":\"REQUESTED\""))
             val consentId = json(create.bodyAsText())["id"]!!.jsonPrimitive.content
 
