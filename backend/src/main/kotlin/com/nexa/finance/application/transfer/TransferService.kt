@@ -1,5 +1,8 @@
 package com.nexa.finance.application.transfer
 
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
+
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
