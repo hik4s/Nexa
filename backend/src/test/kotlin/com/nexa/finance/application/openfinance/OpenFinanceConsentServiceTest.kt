@@ -75,6 +75,74 @@ class OpenFinanceConsentServiceTest {
     }
 
     @Test
+    fun externalProviderFailureExhaustsRetriesWithoutCorruptingConsentState() {
+        val repository = FakeConsentRepository()
+        val provider = RetryingProvider().apply { transientFailuresRemaining = 10 }
+        val delays = mutableListOf<Long>()
+        val service = OpenFinanceConsentService(
+            repository = repository,
+            providers = ConfiguredOpenFinanceProviderRegistry(
+                providers = mapOf("fake" to provider),
+            ),
+            clock = clock,
+            retryPolicy = com.nexa.finance.infrastructure.resilience.RetryPolicy(
+                settings = com.nexa.finance.RetrySettings(
+                    maxAttempts = 3,
+                    initialBackoffMillis = 10,
+                    maxBackoffMillis = 50,
+                ),
+                sleeper = delays::add,
+            ),
+        )
+
+        val consent = service.request(userId, "fake", setOf("ACCOUNTS"))
+        service.beginAuthorization(userId, consent.id)
+
+        assertFailsWith<IOException> {
+            service.sync(userId, consent.id)
+        }
+
+        val persisted = repository.findByOwnerAndId(userId, consent.id)
+        assertEquals(OpenFinanceConsentStatus.AWAITING_AUTHORIZATION, persisted?.status)
+        assertEquals(3, provider.statusCalls)
+        assertEquals(listOf(10L, 20L), delays)
+    }
+
+    @Test
+    fun recoveredExternalProviderAllowsSyncToActiveState() {
+        val repository = FakeConsentRepository()
+        val provider = RetryingProvider()
+        val service = OpenFinanceConsentService(
+            repository = repository,
+            providers = ConfiguredOpenFinanceProviderRegistry(
+                providers = mapOf("fake" to provider),
+            ),
+            clock = clock,
+            retryPolicy = com.nexa.finance.infrastructure.resilience.RetryPolicy(
+                settings = com.nexa.finance.RetrySettings(
+                    maxAttempts = 4,
+                    initialBackoffMillis = 10,
+                    maxBackoffMillis = 100,
+                ),
+                sleeper = {},
+            ),
+        )
+
+        val consent = service.request(userId, "fake", setOf("ACCOUNTS"))
+        service.beginAuthorization(userId, consent.id)
+
+        provider.transientFailuresRemaining = 1
+        provider.recoveredStatus = OpenFinanceProvider.ExternalConsentStatus.ACTIVE
+        provider.recoveredExpiresAt = now.plusSeconds(3600)
+
+        val synced = service.sync(userId, consent.id)
+
+        assertEquals(OpenFinanceConsentStatus.ACTIVE, synced.status)
+        assertEquals(now.plusSeconds(3600), synced.expiresAt)
+        assertEquals(2, provider.statusCalls)
+    }
+
+    @Test
     fun requestPersistsNormalizedConsentForConfiguredProvider() {
         val repository = FakeConsentRepository()
         val provider = FakeProvider("BELVO")
@@ -125,6 +193,8 @@ class OpenFinanceConsentServiceTest {
 
         var transientFailuresRemaining = 0
         var statusCalls = 0
+        var recoveredStatus = OpenFinanceProvider.ExternalConsentStatus.AWAITING_AUTHORIZATION
+        var recoveredExpiresAt: Instant? = null
 
         override fun requestConsent(
             userId: UserId,
@@ -141,8 +211,8 @@ class OpenFinanceConsentServiceTest {
                 throw IOException("temporary provider outage")
             }
             return OpenFinanceProvider.ProviderConsentState(
-                status = OpenFinanceProvider.ExternalConsentStatus.AWAITING_AUTHORIZATION,
-                expiresAt = null,
+                status = recoveredStatus,
+                expiresAt = recoveredExpiresAt,
             )
         }
 
