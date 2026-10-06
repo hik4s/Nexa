@@ -146,3 +146,17 @@ jobs:
             android/app/build/outputs/apk/release/*.apk
             android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
+
+
+  backup-worker:
+    name: Backup worker validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate backup script syntax
+        run: sh -n ops/postgres-backup/backup.sh
+
+      - name: Build backup worker image
+        run: docker build -f ops/postgres-backup/Dockerfile ops/postgres-backup
