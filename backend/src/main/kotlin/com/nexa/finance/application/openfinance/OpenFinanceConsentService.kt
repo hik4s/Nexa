@@ -4,12 +4,11 @@ import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.UserId
 import com.nexa.finance.domain.openfinance.OpenFinanceConsent
 import com.nexa.finance.domain.openfinance.OpenFinanceConsentId
-import com.nexa.finance.infrastructure.openfinance.JdbcOpenFinanceConsentRepository
 import java.time.Clock
 import java.time.Instant
 
 class OpenFinanceConsentService(
-    private val repository: JdbcOpenFinanceConsentRepository,
+    private val repository: OpenFinanceConsentRepository,
     private val providers: OpenFinanceProviderRegistry,
     private val clock: Clock = Clock.systemUTC(),
 ) {
