@@ -1,5 +1,6 @@
 package com.nexa.finance.application.openfinance
 
+import com.nexa.finance.application.audit.AuditEventRecorder
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.UserId
 import com.nexa.finance.domain.openfinance.OpenFinanceConsent
@@ -11,6 +12,7 @@ class OpenFinanceConsentService(
     private val repository: OpenFinanceConsentRepository,
     private val providers: OpenFinanceProviderRegistry,
     private val clock: Clock = Clock.systemUTC(),
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun request(
         userId: UserId,
@@ -25,6 +27,13 @@ class OpenFinanceConsentService(
             clock = clock,
         )
         repository.create(consent)
+        audit?.record(
+            actorUserId = userId,
+            eventType = "OPEN_FINANCE_CONSENT_CREATED",
+            targetType = "OPEN_FINANCE_CONSENT",
+            targetId = consent.id,
+            metadata = "{\"provider\":\"" + consent.providerId + "\",\"scopeCount\":" + consent.scopes.size + "}",
+        )
         return consent
     }
 
@@ -40,6 +49,13 @@ class OpenFinanceConsentService(
             now = Instant.now(clock),
         )
         repository.update(updated)
+        audit?.record(
+            actorUserId = userId,
+            eventType = "OPEN_FINANCE_AUTHORIZATION_STARTED",
+            targetType = "OPEN_FINANCE_CONSENT",
+            targetId = consent.id,
+            metadata = "{\"provider\":\"" + consent.providerId + "\"}",
+        )
         return session
     }
 
@@ -70,8 +86,16 @@ class OpenFinanceConsentService(
             OpenFinanceProvider.ExternalConsentStatus.FAILED ->
                 consent.fail(now)
         }
-        return repository.update(updated)
+        val persisted = repository.update(updated)
             ?: throw DomainValidationException("Open Finance consent was not found.")
+        audit?.record(
+            actorUserId = userId,
+            eventType = "OPEN_FINANCE_CONSENT_STATUS_CHANGED",
+            targetType = "OPEN_FINANCE_CONSENT",
+            targetId = consent.id,
+            metadata = "{\"status\":\"" + persisted.status.name + "\"}",
+        )
+        return persisted
     }
 
     fun revoke(
@@ -81,8 +105,15 @@ class OpenFinanceConsentService(
         val consent = get(userId, consentId)
         consent.externalConsentId?.let { providers.get(consent.providerId).revokeConsent(it) }
         val updated = consent.revoke(Instant.now(clock))
-        return repository.update(updated)
+        val persisted = repository.update(updated)
             ?: throw DomainValidationException("Open Finance consent was not found.")
+        audit?.record(
+            actorUserId = userId,
+            eventType = "OPEN_FINANCE_CONSENT_REVOKED",
+            targetType = "OPEN_FINANCE_CONSENT",
+            targetId = consent.id,
+        )
+        return persisted
     }
 
     fun list(userId: UserId): List<OpenFinanceConsent> = repository.findByOwner(userId)
