@@ -124,7 +124,7 @@ jobs:
 
       - name: Android cold-start Macrobenchmark
         working-directory: android
-        run: ./gradlew :benchmark:connectedBenchmarkAndroidTest --no-daemon
+        run: ./gradlew :benchmark:connectedCheck --no-daemon
 
       - name: Lint Android
         working-directory: android
