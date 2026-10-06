@@ -2,6 +2,8 @@ package com.nexa.finance.application.transaction
 
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.account.AccountStatus
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
 import com.nexa.finance.domain.category.CategoryId
 import com.nexa.finance.domain.common.ConflictException
 import com.nexa.finance.domain.common.DomainValidationException
@@ -20,6 +22,7 @@ import java.time.LocalDate
 class TransactionService(
     private val transactions: JdbcTransactionRepository,
     private val accounts: JdbcAccountRepository,
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun create(
         ownerId: UserId,
@@ -56,6 +59,7 @@ class TransactionService(
             id = id ?: java.util.UUID.randomUUID(),
         )
         transactions.create(ownerId, transaction)
+        audit?.record(ownerId, AuditEventTypes.TRANSACTION_CREATED, "TRANSACTION", transaction.id)
         return transaction
     }
 
@@ -107,6 +111,7 @@ class TransactionService(
             if (latest == null) throw DomainValidationException("Transaction was not found.")
             throw ConflictException("Transaction has changed since this client last read it.")
         }
+        audit?.record(ownerId, AuditEventTypes.TRANSACTION_UPDATED, "TRANSACTION", updated.id)
         return updated
     }
 
@@ -128,6 +133,9 @@ class TransactionService(
                     if (latest == null) throw DomainValidationException("Transaction was not found.")
                     throw ConflictException("Transaction has changed since this client last read it.")
                 }
+            }.also { updated ->
+                audit?.record(ownerId, AuditEventTypes.TRANSACTION_POSTED, "TRANSACTION", updated.id)
+            }
         }
 
     fun cancel(ownerId: UserId, id: TransactionId): Transaction =
@@ -141,5 +149,8 @@ class TransactionService(
                     if (latest == null) throw DomainValidationException("Transaction was not found.")
                     throw ConflictException("Transaction has changed since this client last read it.")
                 }
+            }.also { updated ->
+                audit?.record(ownerId, AuditEventTypes.TRANSACTION_CANCELLED, "TRANSACTION", updated.id)
+            }
         }
 }
