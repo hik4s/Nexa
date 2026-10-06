@@ -66,7 +66,7 @@ class GoalService(
             amount = Money(amountMinor, currency),
             occurredOn = occurredOn,
         )
-        audit?.record(userId, AuditEventTypes.GOAL_CONTRIBUTION_ADDED, "GOAL", result.first.goal.id)
+        audit?.record(userId, AuditEventTypes.GOAL_CONTRIBUTION_ADDED, "GOAL", result.first.id)
         return progressFor(result.first) to result.second
     }
 
