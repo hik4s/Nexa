@@ -1,5 +1,7 @@
 package com.nexa.finance.application.card
 
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.card.Card
 import com.nexa.finance.domain.card.CardBrand
@@ -24,11 +26,13 @@ class CardService(
     private val accounts: JdbcAccountRepository,
     private val transactions: JdbcTransactionRepository,
     private val installments: JdbcInstallmentRepository,
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun create(ownerId: UserId, liabilityAccountId: AccountId, name: String, brand: CardBrand, lastFourDigits: String, creditLimit: Money, closingDay: Int, dueDay: Int): Card {
         val account = accounts.findByOwnerAndId(ownerId, liabilityAccountId) ?: throw DomainValidationException("Liability account was not found.")
         val card = Card.create(ownerId, account, name, brand, lastFourDigits, creditLimit, closingDay, dueDay)
         cards.create(card)
+        audit?.record(ownerId, AuditEventTypes.CARD_CREATED, "CARD", card.id)
         return card
     }
 
@@ -51,7 +55,9 @@ class CardService(
             CardStatus.BLOCKED -> current.block()
             CardStatus.CANCELLED -> current.cancel()
         }
-        return cards.updateStatus(ownerId, id, next.status) ?: throw DomainValidationException("Card was not found.")
+        val updated = cards.updateStatus(ownerId, id, next.status) ?: throw DomainValidationException("Card was not found.")
+        audit?.record(ownerId, AuditEventTypes.CARD_STATUS_CHANGED, "CARD", updated.id)
+        return updated
     }
 
     fun purchase(ownerId: UserId, cardId: CardId, amount: Money, occurredOn: LocalDate, invoiceId: com.nexa.finance.domain.invoice.InvoiceId?, description: String?, source: TransactionSource, post: Boolean, installmentCount: Int = 1): Transaction {
@@ -62,6 +68,7 @@ class CardService(
         if (installmentCount == 1) {
             val transaction = CardLedger.purchase(card, amount, occurredOn, invoiceId = invoiceId, description = description, source = source)
             transactions.create(ownerId, transaction)
+            audit?.record(ownerId, AuditEventTypes.CARD_PURCHASE_CREATED, "TRANSACTION", transaction.id)
             return if (post) transactions.updateStatus(
                 ownerId,
                 transaction.id,
@@ -92,6 +99,7 @@ class CardService(
             if (post) pending.post() else pending
         }
         installments.persistCardPurchase(ownerId, card, plan, installmentTransactions)
+        audit?.record(ownerId, AuditEventTypes.CARD_PURCHASE_CREATED, "TRANSACTION", installmentTransactions.first().id)
         return installmentTransactions.first()
     }
 
