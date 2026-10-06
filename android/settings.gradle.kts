@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "nexa-finance-android"
 include(":app")
+include(":benchmark")
