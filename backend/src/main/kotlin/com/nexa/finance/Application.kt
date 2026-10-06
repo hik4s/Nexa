@@ -61,6 +61,8 @@ import com.nexa.finance.infrastructure.sync.JdbcSyncChangeRepository
 import com.nexa.finance.infrastructure.transfer.JdbcTransferRepository
 import com.nexa.finance.infrastructure.user.JdbcUserAuthRepository
 import io.ktor.serialization.JsonConvertException
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -73,6 +75,11 @@ import io.ktor.server.engine.EngineConnectorBuilder
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.calllogging.CallLogging
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callid.callId
+import io.ktor.server.plugins.callid.callIdMdc
+import io.ktor.server.plugins.callid.replyToHeader
+import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.plugins.ratelimit.RateLimit
@@ -80,12 +87,15 @@ import io.ktor.server.plugins.ratelimit.RateLimitName
 import io.ktor.server.plugins.ratelimit.rateLimit
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.path
+import io.ktor.server.request.httpMethod
 import kotlin.math.ceil
 import io.ktor.server.plugins.statuspages.exception
 import io.ktor.server.request.ContentTransformationException
 import io.ktor.server.plugins.origin
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
+import org.slf4j.LoggerFactory
+import java.util.UUID
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 
@@ -107,6 +117,8 @@ fun main() {
 fun Application.module(
     openFinanceProviders: com.nexa.finance.application.openfinance.OpenFinanceProviderRegistry =
         ConfiguredOpenFinanceProviderRegistry(),
+    observabilitySettings: ObservabilitySettings = ObservabilitySettings.fromEnvironment(),
+    observability: NexaObservability = NexaObservability(),
 ) {
     val settings = ServerSettings.fromEnvironment()
     val rateLimitSettings = RateLimitSettings.fromEnvironment()
@@ -163,8 +175,41 @@ fun Application.module(
         database.close()
     }
 
+    install(CallId) {
+        header(HttpHeaders.XRequestId)
+        generate {
+            UUID.randomUUID().toString()
+        }
+        verify { callId -> callId.length in 16..128 && callId.all { it.isLetterOrDigit() || it == '-' || it == '_' } }
+        replyToHeader(HttpHeaders.XRequestId)
+    }
+
     install(CallLogging) {
+        callIdMdc("requestId")
         filter { call -> call.request.path().startsWith("/api/v1") }
+        format { call ->
+            val requestId = call.callId ?: "missing"
+            val method = call.request.httpMethod.value
+            val requestPath = call.request.path()
+                .replace("\\", "\\\\")
+                .replace(""", "\\"")
+            val status = call.response.status()?.value ?: 0
+            "{\"event\":\"http_request\",\"requestId\":\"" + requestId +
+                "\",\"method\":\"" + method +
+                "\",\"path\":\"" + requestPath +
+                "\",\"status\":" + status + "}"
+        }
+    }
+
+    val logger = LoggerFactory.getLogger("com.nexa.finance.http")
+
+    install(MicrometerMetrics) {
+        registry = observability.metricsRegistry
+        transformRoute { route ->
+            route.toString()
+                .replace("\\", "")
+                .ifBlank { "unknown" }
+        }
     }
 
     install(ContentNegotiation) {
@@ -219,6 +264,48 @@ fun Application.module(
         get("/health") {
             call.respondText("NEXA Finance API - OK")
         }
+
+        get("/ready") {
+            val ready = runCatching {
+                database.open().use { connection ->
+                    connection.createStatement().use { statement ->
+                        statement.executeQuery("SELECT 1").use { result ->
+                            check(result.next() && result.getInt(1) == 1) { "PostgreSQL readiness query failed." }
+                        }
+                    }
+                }
+            }
+            ready.onSuccess {
+                call.respondText(
+                    "{\"status\":\"ready\",\"database\":\"ok\"}",
+                    ContentType.Application.Json,
+                )
+            }.onFailure { error ->
+                observability.recordReadinessFailure()
+                logger.warn("readiness_check_failed", error)
+                call.respondText(
+                    "{\"status\":\"not_ready\",\"database\":\"unavailable\"}",
+                    ContentType.Application.Json,
+                    HttpStatusCode.ServiceUnavailable,
+                )
+            }
+        }
+
+        get("/metrics") {
+            if (!observabilitySettings.metricsEnabled) {
+                call.respondText("Not found.", status = HttpStatusCode.NotFound)
+                return@get
+            }
+            if (!validateMetricsToken(observabilitySettings.metricsToken, call.request.headers["X-Metrics-Token"])) {
+                call.respondText("Unauthorized.", status = HttpStatusCode.Unauthorized)
+                return@get
+            }
+            call.respondText(
+                observability.metricsRegistry.scrape(),
+                ContentType.parse("text/plain; version=0.0.4; charset=utf-8"),
+            )
+        }
+
         rateLimit(RateLimitName("api")) {
             authRoutes(authentication, recovery, profile)
             dataExportRoutes(dataExport)
