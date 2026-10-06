@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 2 concluída e validada; Parte 3 em progresso. Sincronização 3.2 concluída, discovery/consentimento Open Finance em andamento, observabilidade de base concluída; pendências críticas atuais: retries/DR de produção, conexão/importação Open Finance, segurança/compliance, observabilidade operacional avançada e performance.
+**Checkpoint atual:** Partes 1 e 2 concluídas e validadas; Parte 3 em progresso. Sincronização 3.2, discovery Open Finance, consentimento Open Finance 3.3.3, audit trail técnico, logs estruturados e métricas estão implementados e validados. Pendências reais: retries controlados, backups/DR de produção, conexão e importações Open Finance, segurança/compliance formal, observabilidade operacional avançada, performance de dispositivo e exercícios completos de falha/recuperação.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -283,7 +283,7 @@ Validação desta microetapa: testes de domínio e E2E PostgreSQL adicionados; m
 
 ### Auditoria completa do Master Plan — 2026-10-05
 
-Inventário atualizado contra o estado do repositório `feat/card-invoice-ledger`: 308 checks explícitos, 276 já concluídos e 32 mantidos em aberto após revisão de evidência.
+Inventário atualizado contra o estado do repositório `feat/card-invoice-ledger`: 308 checks explícitos, 274 concluídos e 34 mantidos em aberto após revisão de evidência. O registro anterior de 276/32 estava desatualizado.
 
 Correções de precisão realizadas:
 - Backups de produção voltou a aberto: os scripts de backup/restore são locais e ainda não constituem a política de backup/restore do PostgreSQL de produção.
@@ -293,6 +293,31 @@ Correções de precisão realizadas:
 - Testes de falhas externas e recuperação foram reabertos: existem mecanismos de retry/recovery e scripts de restore, mas ainda não há um exercício automatizado e completo que comprove essas propriedades como requisito de produção.
 
 Os demais checks em aberto requerem implementação interna adicional ou dependências externas reais descritas nas seções 3.1, 3.3, 3.4, 3.5, 3.6 e 3.7.
+### Auditoria global do Master Plan — 2026-10-06
+
+Revalidação realizada contra o branch `feat/card-invoice-ledger`, cabeça `003b05eca159f7908a9f0668d7454bde6d55c733`, arquivos do repositório, testes versionados, CI e runtime Railway.
+
+| Seção | Checks | Concluídos | Abertos | Evidência principal | Status real / próxima ação |
+|---|---:|---:|---:|---|---|
+| 1.1–1.10 Fundação | 130 | 130 | 0 | Código, documentação e gates de CI históricos; nenhum código de fundação alterado no delta após o checkpoint de sync | CONCLUÍDO; manter regressão. |
+| 2.1–2.11 Produto | 99 | 99 | 0 | Código Android/backend, testes de produto e gates de CI; delta recente não altera as telas/fluxos de produto | CONCLUÍDO; manter regressão. |
+| 3.1 Backend produção | 21 | 18 | 3 | Railway atual `SUCCESS`, /health validado, Flyway V1–V18 | ABERTO: retries de produção, backup de produção e DR. |
+| 3.2 Sincronização | 7 | 7 | 0 | Sync protocol, Outbox/Room, testes JVM/instrumentados e CI | CONCLUÍDO no escopo de transações. |
+| 3.3 Open Finance | 13 | 5 | 8 | Consent domain/service/routes/repository, V17, E2E PostgreSQL e CI | Consentimento/revogação CONCLUÍDOS; conexão/importações/monitoramento pendentes. |
+| 3.4 Segurança avançada | 10 | 7 | 3 | SQLCipher/Keystore, autorização, rate limit, audit trail V18 e testes | Fundamentos técnicos CONCLUÍDOS; faltam auditoria formal, retenção e revisão da IA. |
+| 3.5 LGPD/compliance | 9 | 3 | 6 | `docs/LGPD_DATA_MAP.md`, exportação e isolamento | ABERTO: finalidade/base legal, documentos, consentimento aplicável, exclusão e retenção. |
+| 3.6 Observabilidade | 8 | 2 | 6 | `Observability.kt`, /metrics protegido, /ready, X-Request-Id, testes e CI | Logs/métricas CONCLUÍDOS; operação externa, tracing, alertas e monitoramento pendentes. |
+| 3.7 Performance | 10 | 4 | 6 | paginação, índices, benchmarks de 50k registros e carga API/DB | ABERTO: performance do cliente, rede e cache. |
+| 3.8 Carga/confiabilidade | 8 | 6 | 2 | carga API/DB, SyncQueueTest, AI integration tests e sync tests | ABERTO: exercício completo de falhas externas e recuperação. |
+
+**Resultado da auditoria:** 308 checks = **274 concluídos + 34 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 34 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
+
+**CI atual:** run `37410740449` concluído com sucesso nos jobs de backend (migrations/test/build) e Android (unit, instrumented, lint, debug APK, release APK e release AAB).
+
+**Railway atual:** deployment `83968089-9e4c-451c-9b0b-6843835ffa54` em `SUCCESS`; aplicação iniciada, PostgreSQL em versão 18, 18 migrations validadas e healthcheck `/health` passou. Não há mudanças staged atuais.
+
+**Falhas históricas do Railway:** os 3 deployments falhos recentes ocorreram em `BUILD_IMAGE`; dois apontam para configuração antiga de root directory `/backend`. O deployment atual está saudável. Esses eventos permanecem como histórico e não justificam reabrir o runtime atual.
+
 
 ---
 
@@ -902,7 +927,7 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 
 ## 3.1 â€” Backend de produÃ§Ã£o
 
-**Status:** EM PROGRESSO — produção publicada e validada; runtime, containerização base, secrets, pool JDBC, banco/migrations, HTTPS, rate limiting e versionamento de API concluídos. Permanecem timeout HTTP, retries controlados, tratamento de falhas, backups e recuperação de desastre.
+**Status:** EM PROGRESSO — produção publicada e validada; runtime, containerização base, secrets, pool JDBC, banco/migrations, HTTPS, rate limiting, versionamento de API, políticas de timeout e tratamento de falhas concluídos. Permanecem retries controlados, backups de produção e recuperação de desastre.
 
 - [x] Host e porta configuráveis por ambiente
 - [x] Configuração de banco por variáveis de ambiente
