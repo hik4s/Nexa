@@ -310,7 +310,7 @@ Revalidação realizada contra o branch `feat/card-invoice-ledger`, cabeça `003
 | 3.7 Performance | 10 | 5 | 5 | paginação, índices, benchmarks de 50k registros, carga API/DB e cache curto validado por teste/CI | ABERTO: medições de inicialização/telas, memória, bateria e rede. |
 | 3.8 Carga/confiabilidade | 8 | 6 | 2 | carga API/DB, SyncQueueTest, AI integration tests e sync tests | ABERTO: exercício completo de falhas externas e recuperação. |
 
-**Resultado da auditoria:** 308 checks = **278 concluídos + 30 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 30 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
+**Resultado da auditoria:** 308 checks = **280 concluídos + 28 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 30 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
 
 **CI atual:** run `37460572216` do commit `5eab0b8` concluiu verde, validando a migração de coroutines da UI. Run `37462927156` do commit `ae60ae8` concluiu verde, incluindo `ExpiringCacheTest`, backend migrations/test/build, Android unit/instrumented/lint/debug/release APK/release AAB e validação do worker de backup.
 
@@ -1104,8 +1104,8 @@ Escopo concluÃ­do neste checkpoint: consultas do banco, Ã­ndices e teste com
 - [x] Teste de filas quando existirem
 - [x] Teste de integraÃ§Ã£o com IA
 - [x] Teste de sincronizaÃ§Ã£o
-- [ ] Teste de falhas externas
-- [ ] Teste de recuperaÃ§Ã£o
+- [x] Teste de falhas externas
+- [x] Teste de recuperaÃ§Ã£o
 
 ### Checkpoint 3.8.1 — carga concorrente da API
 
@@ -1149,3 +1149,14 @@ O check **Tracing quando necessário** foi fechado: o tracing e a auto-instrumen
 
 Permanecem abertos retenção e recuperação de desastre: o Railway Bucket atual não fornece versionamento/lifecycle, e esses requisitos precisam de política própria e exercício de restauração.
 
+
+
+### Checkpoint 3.8.3 — falhas externas e recuperação — 2026-10-06
+
+Validação automatizada concluída no run CI #171, commit `fc1f9a047f8c6f1eb2fd0cef9314fc3af6fc68cf`, com backend migrations, testes e build verdes; Android unitário, instrumentado, lint, debug APK, release APK e release AAB verdes; e validação do backup worker verde.
+
+Foram adicionados dois cenários explícitos ao `OpenFinanceConsentServiceTest`:
+- falha transitória externa que esgota o retry configurado e preserva o consentimento em `AWAITING_AUTHORIZATION`;
+- recuperação do provider externo, com nova tentativa bem-sucedida que leva o consentimento a `ACTIVE`.
+
+A prova cobre comportamento determinístico de falha/retry/recuperação da dependência externa. Isso não encerra recuperação de desastre do banco/produção, que permanece separada no check 3.1 e exige exercício de restauração operacional.
