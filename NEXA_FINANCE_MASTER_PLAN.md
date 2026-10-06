@@ -997,6 +997,14 @@ Concluído e validado. O banco Room `nexa-local.db` agora usa SQLCipher 4.19 com
 Validação executada: bateria instrumentada crítica de criptografia/provedor 3/3; suíte instrumentada completa 16/16; testes unitários, lint, assembleRelease e bundleRelease passaram. A implementação foi integrada no commit `553ce6ba0c7137129d52c8e1f4d75e6099dfceb2`. O item de criptografia em repouso deixa de ser bloqueador; permanecem auditoria, retenção de dados e revisão de exposição da IA.
 ---
 
+### Microcheckpoint 3.4.2 — audit trail de eventos críticos — 2026-10-05
+
+Implementada a fundação técnica de auditoria para eventos críticos. A migration V18 cria `audit_events`; o recorder mantém o evento independente do ciclo de vida do usuário e não armazena senhas, tokens, recovery tokens ou URLs de autorização. O ciclo Open Finance registra criação, início de autorização, mudanças de status e revogação; autenticação registra cadastro, login bem-sucedido/falho, logout e recuperação/reset; exportação de dados registra a solicitação.
+
+Validação adicionada: teste JDBC do repositório e testes JVM do recorder. A cobertura completa de auditoria de todas as mutações financeiras e a política de retenção continuam abertas.
+
+---
+
 ## 3.5 â€” LGPD e compliance
 
 - [x] Mapear dados pessoais
