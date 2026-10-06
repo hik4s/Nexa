@@ -180,7 +180,7 @@ fun Application.module(
             UUID.randomUUID().toString()
         }
         verify { callId -> callId.length in 16..128 && callId.all { it.isLetterOrDigit() || it == '-' || it == '_' } }
-        reply { call, id -> call.response.header(HttpHeaders.XRequestId, id) }
+        reply { call, id -> call.response.headers.append(HttpHeaders.XRequestId, id) }
     }
 
     install(CallLogging) {
