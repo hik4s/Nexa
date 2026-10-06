@@ -3,7 +3,7 @@
 **VersÃ£o:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Partes 1 e 2 concluídas e validadas; Parte 3 em progresso. Sincronização 3.2, discovery Open Finance, consentimento Open Finance 3.3.3, audit trail técnico, logs estruturados e métricas estão implementados e validados. Pendências reais: retries controlados, backups/DR de produção, conexão e importações Open Finance, segurança/compliance formal, observabilidade operacional avançada, performance de dispositivo e exercícios completos de falha/recuperação.
+**Checkpoint atual:** Partes 1 e 2 concluídas e validadas; Parte 3 em progresso. Sincronização 3.2, discovery/consentimento Open Finance 3.3.3, audit trail técnico, logs estruturados, métricas, retries controlados, backups de produção, tracing e cache curto do cliente estão implementados e validados. Pendências reais: recuperação de desastre, conexão e importações Open Finance, segurança/compliance formal, observabilidade operacional avançada, medições de performance do dispositivo/rede e exercícios completos de falha/recuperação.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
 
@@ -301,20 +301,20 @@ Revalidação realizada contra o branch `feat/card-invoice-ledger`, cabeça `003
 |---|---:|---:|---:|---|---|
 | 1.1–1.10 Fundação | 130 | 130 | 0 | Código, documentação e gates de CI históricos; nenhum código de fundação alterado no delta após o checkpoint de sync | CONCLUÍDO; manter regressão. |
 | 2.1–2.11 Produto | 99 | 99 | 0 | Código Android/backend, testes de produto e gates de CI; delta recente não altera as telas/fluxos de produto | CONCLUÍDO; manter regressão. |
-| 3.1 Backend produção | 21 | 18 | 3 | Railway atual `SUCCESS`, /health validado, Flyway V1–V18 | ABERTO: retries de produção, backup de produção e DR. |
+| 3.1 Backend produção | 21 | 20 | 1 | Railway API deployment `58ded56b-bb42-42ca-aba1-c135e2beed18` `SUCCESS`, PostgreSQL online, retry validado no CI | ABERTO: recuperação de desastre. |
 | 3.2 Sincronização | 7 | 7 | 0 | Sync protocol, Outbox/Room, testes JVM/instrumentados e CI | CONCLUÍDO no escopo de transações. |
 | 3.3 Open Finance | 13 | 5 | 8 | Consent domain/service/routes/repository, V17, E2E PostgreSQL e CI | Consentimento/revogação CONCLUÍDOS; conexão/importações/monitoramento pendentes. |
 | 3.4 Segurança avançada | 10 | 7 | 3 | SQLCipher/Keystore, autorização, rate limit, audit trail V18 e testes | Fundamentos técnicos CONCLUÍDOS; faltam auditoria formal, retenção e revisão da IA. |
 | 3.5 LGPD/compliance | 9 | 3 | 6 | `docs/LGPD_DATA_MAP.md`, exportação e isolamento | ABERTO: finalidade/base legal, documentos, consentimento aplicável, exclusão e retenção. |
-| 3.6 Observabilidade | 8 | 2 | 6 | `Observability.kt`, /metrics protegido, /ready, X-Request-Id, testes e CI | Logs/métricas CONCLUÍDOS; operação externa, tracing, alertas e monitoramento pendentes. |
-| 3.7 Performance | 10 | 4 | 6 | paginação, índices, benchmarks de 50k registros e carga API/DB | ABERTO: performance do cliente, rede e cache. |
+| 3.6 Observabilidade | 8 | 3 | 5 | `Observability.kt`, /metrics protegido, /ready, X-Request-Id, tracing Railway ativo, testes e CI | Logs/métricas/tracing técnico CONCLUÍDOS; crash reporting, alertas e monitoramento operacional pendentes. |
+| 3.7 Performance | 10 | 5 | 5 | paginação, índices, benchmarks de 50k registros, carga API/DB e cache curto validado por teste/CI | ABERTO: medições de inicialização/telas, memória, bateria e rede. |
 | 3.8 Carga/confiabilidade | 8 | 6 | 2 | carga API/DB, SyncQueueTest, AI integration tests e sync tests | ABERTO: exercício completo de falhas externas e recuperação. |
 
-**Resultado da auditoria:** 308 checks = **277 concluídos + 31 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 34 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
+**Resultado da auditoria:** 308 checks = **278 concluídos + 30 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 30 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
 
-**CI atual:** run `37410740449` concluído com sucesso nos jobs de backend (migrations/test/build) e Android (unit, instrumented, lint, debug APK, release APK e release AAB).
+**CI atual:** run `37460572216` do commit `5eab0b8` concluiu verde, validando a migração de coroutines da UI. Run `37462927156` do commit `ae60ae8` concluiu verde, incluindo `ExpiringCacheTest`, backend migrations/test/build, Android unit/instrumented/lint/debug/release APK/release AAB e validação do worker de backup.
 
-**Railway atual:** deployment `83968089-9e4c-451c-9b0b-6843835ffa54` em `SUCCESS`; aplicação iniciada, PostgreSQL em versão 18, 18 migrations validadas e healthcheck `/health` passou. Não há mudanças staged atuais.
+**Railway atual:** API deployment `58ded56b-bb42-42ca-aba1-c135e2beed18` e backup worker deployment `594620cb-567b-4643-8bef-ab95293f52e8` em `SUCCESS`; API e PostgreSQL estão online, sem mudanças staged atuais.
 
 **Falhas históricas do Railway:** os 3 deployments falhos recentes ocorreram em `BUILD_IMAGE`; dois apontam para configuração antiga de root directory `/backend`. O deployment atual está saudável. Esses eventos permanecem como histórico e não justificam reabrir o runtime atual.
 
@@ -927,7 +927,7 @@ Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes
 
 ## 3.1 â€” Backend de produÃ§Ã£o
 
-**Status:** EM PROGRESSO — produção publicada e validada; runtime, containerização base, secrets, pool JDBC, banco/migrations, HTTPS, rate limiting, versionamento de API, políticas de timeout e tratamento de falhas concluídos. Permanecem retries controlados, backups de produção e recuperação de desastre.
+**Status:** EM PROGRESSO — produção publicada e validada; runtime, containerização base, secrets, pool JDBC, banco/migrations, HTTPS, rate limiting, versionamento de API, políticas de timeout, tratamento de falhas, retries controlados e backups de produção concluídos. Permanece recuperação de desastre.
 
 - [x] Host e porta configuráveis por ambiente
 - [x] Configuração de banco por variáveis de ambiente
@@ -1075,7 +1075,7 @@ Validação adicionada: teste JDBC do repositório e testes JVM do recorder. A c
 - [ ] Uso de bateria
 - [ ] Uso de rede
 - [x] PaginaÃ§Ã£o
-- [ ] Cache
+- [x] Cache
 - [x] Consultas do banco
 - [x] Ãndices
 - [x] Teste com grande volume de transaÃ§Ãµes
@@ -1148,3 +1148,4 @@ Os checks **Retries controlados** e **Backups** foram fechados após implementa�
 O check **Tracing quando necessário** foi fechado: o tracing e a auto-instrumentação nativa da API estão ativos em production. Ainda não foram observados traces no período de validação por ausência de tráfego, portanto tracing operacional avançado e alertas continuam em escopo separado.
 
 Permanecem abertos retenção e recuperação de desastre: o Railway Bucket atual não fornece versionamento/lifecycle, e esses requisitos precisam de política própria e exercício de restauração.
+
