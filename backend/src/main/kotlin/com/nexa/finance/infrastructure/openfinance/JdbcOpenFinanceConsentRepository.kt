@@ -5,14 +5,15 @@ import com.nexa.finance.domain.openfinance.OpenFinanceConsent
 import com.nexa.finance.domain.openfinance.OpenFinanceConsentId
 import com.nexa.finance.domain.openfinance.OpenFinanceConsentStatus
 import com.nexa.finance.infrastructure.database.DatabaseConnectionProvider
+import com.nexa.finance.application.openfinance.OpenFinanceConsentRepository
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
 
 class JdbcOpenFinanceConsentRepository(
     private val connections: DatabaseConnectionProvider = DatabaseConnectionProvider(),
-) {
-    fun create(consent: OpenFinanceConsent) {
+) : OpenFinanceConsentRepository {
+    override fun create(consent: OpenFinanceConsent) {
         connections.open().use { c ->
             c.prepareStatement(
                 """
@@ -39,7 +40,7 @@ class JdbcOpenFinanceConsentRepository(
         }
     }
 
-    fun findByOwner(ownerId: UserId): List<OpenFinanceConsent> =
+    override fun findByOwner(ownerId: UserId): List<OpenFinanceConsent> =
         connections.open().use { c ->
             c.prepareStatement(
                 """
@@ -59,7 +60,7 @@ class JdbcOpenFinanceConsentRepository(
             }
         }
 
-    fun findByOwnerAndId(ownerId: UserId, id: OpenFinanceConsentId): OpenFinanceConsent? =
+    override fun findByOwnerAndId(ownerId: UserId, id: OpenFinanceConsentId): OpenFinanceConsent? =
         connections.open().use { c ->
             c.prepareStatement(
                 """
@@ -77,7 +78,7 @@ class JdbcOpenFinanceConsentRepository(
             }
         }
 
-    fun update(consent: OpenFinanceConsent): OpenFinanceConsent? =
+    override fun update(consent: OpenFinanceConsent): OpenFinanceConsent? =
         connections.open().use { c ->
             c.prepareStatement(
                 """
@@ -105,7 +106,7 @@ class JdbcOpenFinanceConsentRepository(
             }
         }
 
-    fun listUsable(ownerId: UserId, at: Instant): List<OpenFinanceConsent> =
+    override fun listUsable(ownerId: UserId, at: Instant): List<OpenFinanceConsent> =
         connections.open().use { c ->
             c.prepareStatement(
                 """
