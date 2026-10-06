@@ -13,7 +13,6 @@ android {
     }
 
     targetProjectPath = ":app"
-    testBuildType = "benchmark"
 
 
     compileOptions {
@@ -23,6 +22,12 @@ android {
 
     kotlin {
         jvmToolchain(17)
+    }
+
+    buildTypes {
+        create("benchmark") {
+            initWith(getByName("debug"))
+        }
     }
 
     experimentalProperties["android.experimental.self-instrumenting"] = true
