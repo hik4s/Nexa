@@ -6,7 +6,13 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
+    private val cache = ExpiringCache<String, Any>(ttlMillis = 15_000L)
+
     var token: String? = null
+        set(value) {
+            field = value
+            cache.clear()
+        }
 
     fun withToken(value: String): ApiClient {
         token = value
@@ -66,17 +72,26 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
     }
 
     fun categories(type: String? = null): List<Category> {
+        val cacheKey = "categories:" + type.orEmpty()
+        @Suppress("UNCHECKED_CAST")
+        cache.get(cacheKey)?.let { return it as List<Category> }
+
         val path = "/api/v1/categories" + (type?.let { "?type=$it" } ?: "")
         val array = requestArray("GET", path)
-        return (0 until array.length()).map { i ->
+        val value = (0 until array.length()).map { i ->
             val o = array.getJSONObject(i)
             Category(o.getString("id"), o.getString("name"), o.getString("type"), o.optString("iconKey").ifBlank { null })
         }
+        cache.put(cacheKey, value)
+        return value
     }
 
     fun cards(): List<Card> {
+        @Suppress("UNCHECKED_CAST")
+        cache.get("cards")?.let { return it as List<Card> }
+
         val array = requestArray("GET", "/api/v1/cards")
-        return (0 until array.length()).map { i ->
+        val value = (0 until array.length()).map { i ->
             val o = array.getJSONObject(i)
             Card(
                 o.getString("id"),
@@ -92,6 +107,12 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
                 o.getString("status"),
             )
         }
+        cache.put("cards", value)
+        return value
+    }
+
+    fun clearCache() {
+        cache.clear()
     }
 
     fun createCard(
@@ -113,6 +134,7 @@ class ApiClient(private val baseUrl: String = BuildConfig.NEXA_API_URL) {
             put("closingDay", closingDay)
             put("dueDay", dueDay)
         })
+        cache.invalidate("cards")
         return Card(
             o.getString("id"), o.getString("liabilityAccountId"), o.getString("name"),
             o.getString("brand"), o.getString("lastFourDigits"), o.getLong("creditLimitMinor"),
