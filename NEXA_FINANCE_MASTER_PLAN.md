@@ -1,95 +1,95 @@
-﻿# NEXA Finance â€” Plano Mestre do Projeto
+﻿# NEXA Finance — Plano Mestre do Projeto
 
-**VersÃ£o:** 1.0
+**Versão:** 1.0
 **Status:** Documento-base do desenvolvimento
 
 **Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 e 1.5 concluidas; automacao de desenvolvimento instalada e verificada.
 **Plataforma inicial:** Android
-**Objetivo:** Construir um aplicativo de finanÃ§as pessoais sÃ³lido, seguro, escalÃ¡vel e preparado para distribuiÃ§Ã£o futura.
+**Objetivo:** Construir um aplicativo de finanças pessoais sólido, seguro, escalável e preparado para distribuição futura.
 
 ---
 
-## 0. VisÃ£o do produto
+## 0. Visão do produto
 
-O **NEXA Finance** serÃ¡ um aplicativo de gestÃ£o financeira pessoal focado em trÃªs ideias centrais:
+O **NEXA Finance** será um aplicativo de gestão financeira pessoal focado em três ideias centrais:
 
 1. **Registrar gastos em poucos segundos.**
-2. **Transformar registros em uma visÃ£o financeira clara.**
-3. **Usar IA para interpretar a situaÃ§Ã£o financeira e gerar insights Ãºteis.**
+2. **Transformar registros em uma visão financeira clara.**
+3. **Usar IA para interpretar a situação financeira e gerar insights úteis.**
 
-A integraÃ§Ã£o bancÃ¡ria via **Open Finance** serÃ¡ tratada como uma evoluÃ§Ã£o posterior. A arquitetura jÃ¡ deverÃ¡ nascer preparada para essa expansÃ£o, mas o MVP nÃ£o dependerÃ¡ dela.
+A integração bancária via **Open Finance** será tratada como uma evolução posterior. A arquitetura já deverá nascer preparada para essa expansão, mas o MVP não dependerá dela.
 
-### PrincÃ­pio de produto
+### Princípio de produto
 
-> O usuÃ¡rio nÃ£o deve preencher manualmente informaÃ§Ãµes que o NEXA consegue inferir com seguranÃ§a.
+> O usuário não deve preencher manualmente informações que o NEXA consegue inferir com segurança.
 
 Exemplo:
 
-`18,90 almoÃ§o`
+`18,90 almoço`
 
-poderÃ¡ resultar automaticamente em:
+poderá resultar automaticamente em:
 
 - Valor: R$ 18,90
 - Tipo: despesa
-- Categoria: AlimentaÃ§Ã£o
-- DescriÃ§Ã£o: AlmoÃ§o
+- Categoria: Alimentação
+- Descrição: Almoço
 - Data: hoje
-- Conta/cartÃ£o: padrÃ£o selecionado
+- Conta/cartão: padrão selecionado
 
-Meta de experiÃªncia: **registro comum em menos de 20 segundos**.
+Meta de experiência: **registro comum em menos de 20 segundos**.
 
 ---
 
-# 1. DecisÃµes arquiteturais
+# 1. Decisões arquiteturais
 
-## 1.1 Stack tecnolÃ³gica base
+## 1.1 Stack tecnológica base
 
 ### Android
 
 - Kotlin
 - Jetpack Compose
-- Material 3, adaptado ao Design System prÃ³prio do NEXA
-- MVVM + princÃ­pios de Clean Architecture
+- Material 3, adaptado ao Design System próprio do NEXA
+- MVVM + princípios de Clean Architecture
 - Coroutines
 - Flow
 - Navigation Compose
-- Testes unitÃ¡rios e instrumentados
+- Testes unitários e instrumentados
 
 ### Backend
 
 - Kotlin
 - Ktor
 - API REST
-- Arquitetura modular por domÃ­nio
-- ValidaÃ§Ã£o de entrada
-- AutenticaÃ§Ã£o e autorizaÃ§Ã£o
+- Arquitetura modular por domínio
+- Validação de entrada
+- Autenticação e autorização
 
 ### Banco de dados
 
 - PostgreSQL
-- MigraÃ§Ãµes versionadas
+- Migrações versionadas
 - Integridade referencial
-- Ãndices definidos conforme os padrÃµes de consulta reais
+- Índices definidos conforme os padrões de consulta reais
 
 ### Infraestrutura
 
-- Docker para desenvolvimento e ambientes reproduzÃ­veis
-- VariÃ¡veis de ambiente/secrets fora do cÃ³digo
-- CI/CD serÃ¡ incorporado progressivamente
+- Docker para desenvolvimento e ambientes reproduzíveis
+- Variáveis de ambiente/secrets fora do código
+- CI/CD será incorporado progressivamente
 
 ### IA
 
-- Camada de integraÃ§Ã£o desacoplada do fornecedor/modelo
-- Context Builder prÃ³prio
-- Regras de seguranÃ§a e filtragem de dados antes da chamada ao modelo
+- Camada de integração desacoplada do fornecedor/modelo
+- Context Builder próprio
+- Regras de segurança e filtragem de dados antes da chamada ao modelo
 - Possibilidade de trocar o modelo sem reescrever o aplicativo
 
-### IntegraÃ§Ãµes futuras
+### Integrações futuras
 
 - Open Finance
-- NotificaÃ§Ãµes
+- Notificações
 - Analytics/observabilidade
-- ServiÃ§os de produÃ§Ã£o
+- Serviços de produção
 
 ---
 
@@ -97,41 +97,41 @@ Meta de experiÃªncia: **registro comum em menos de 20 segundos**.
 
 ```text
                          NEXA Finance
-                              â”‚
-             â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-             â”‚                                 â”‚
+                              │
+             ┌────────────────┴────────────────┐
+             │                                 │
        Android App                         Backend API
-             â”‚                                 â”‚
-    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”                â”Œâ”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”
-    â”‚        â”‚        â”‚                â”‚       â”‚        â”‚
+             │                                 │
+    ┌────────┼────────┐                ┌───────┼────────┐
+    │        │        │                │       │        │
 Presentation Domain  Data           Auth   Finance    AI
-    â”‚        â”‚        â”‚                â”‚       â”‚        â”‚
-    â””â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”˜                â””â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                              â”‚
+    │        │        │                │       │        │
+    └────────┴────────┘                └───────┼────────┘
+                                              │
                                          PostgreSQL
-                                              â”‚
-                                      IntegraÃ§Ãµes futuras
-                                      â”œâ”€â”€ Open Finance
-                                      â””â”€â”€ ServiÃ§os externos
+                                              │
+                                      Integrações futuras
+                                      ├── Open Finance
+                                      └── Serviços externos
 ```
 
-## 2.1 Regra de separaÃ§Ã£o
+## 2.1 Regra de separação
 
-A interface nÃ£o deve conter regras financeiras complexas.
+A interface não deve conter regras financeiras complexas.
 
 Fluxo preferencial:
 
 ```text
 UI
- â†“
+ ↓
 ViewModel / State
- â†“
+ ↓
 Use Case
- â†“
+ ↓
 Domain
- â†“
+ ↓
 Repository
- â†“
+ ↓
 Data Source / API / Database
 ```
 
@@ -139,13 +139,13 @@ No backend:
 
 ```text
 HTTP / Controller
- â†“
+ ↓
 Application / Use Case
- â†“
+ ↓
 Domain
- â†“
+ ↓
 Repository
- â†“
+ ↓
 PostgreSQL / External Services
 ```
 
@@ -157,32 +157,32 @@ PostgreSQL / External Services
 
 A identidade visual deve transmitir:
 
-- sofisticaÃ§Ã£o
-- precisÃ£o
-- confianÃ§a
-- discriÃ§Ã£o
-- inteligÃªncia
-- sensaÃ§Ã£o premium
+- sofisticação
+- precisão
+- confiança
+- discrição
+- inteligência
+- sensação premium
 - simplicidade
-- organizaÃ§Ã£o
+- organização
 
-A inspiraÃ§Ã£o estÃ©tica vem de marcas conhecidas pela **contenÃ§Ã£o visual, uso de espaÃ§o, tipografia forte e materiais de aparÃªncia premium**, mas o NEXA deverÃ¡ possuir identidade prÃ³pria e nÃ£o copiar elementos proprietÃ¡rios de nenhuma marca.
+A inspiração estética vem de marcas conhecidas pela **contenção visual, uso de espaço, tipografia forte e materiais de aparência premium**, mas o NEXA deverá possuir identidade própria e não copiar elementos proprietários de nenhuma marca.
 
-## 3.2 DireÃ§Ã£o estÃ©tica
+## 3.2 Direção estética
 
 **Minimalismo premium.**
 
-O aplicativo deve evitar excesso de gradientes, sombras fortes, bordas desnecessÃ¡rias, Ã­cones decorativos e informaÃ§Ãµes simultÃ¢neas demais.
+O aplicativo deve evitar excesso de gradientes, sombras fortes, bordas desnecessárias, ícones decorativos e informações simultâneas demais.
 
-A interface deverÃ¡ privilegiar:
+A interface deverá privilegiar:
 
-- bastante espaÃ§o em branco/negativo
-- hierarquia tipogrÃ¡fica clara
+- bastante espaço em branco/negativo
+- hierarquia tipográfica clara
 - poucos elementos por tela
-- microanimaÃ§Ãµes discretas
+- microanimações discretas
 - componentes com acabamento refinado
 - contraste elevado
-- feedback visual sem poluiÃ§Ã£o
+- feedback visual sem poluição
 
 ## 3.3 Paleta principal
 
@@ -192,9 +192,9 @@ A interface deverÃ¡ privilegiar:
 
 Uso:
 - fundos escuros
-- cabeÃ§alhos
-- navegaÃ§Ã£o
-- Ã¡reas premium
+- cabeçalhos
+- navegação
+- áreas premium
 
 ### Ivory
 
@@ -202,7 +202,7 @@ Uso:
 
 Uso:
 - fundo claro principal
-- superfÃ­cies
+- superfícies
 - contraste com Obsidian
 
 ### Burgundy
@@ -212,7 +212,7 @@ Uso:
 Uso:
 - marca
 - destaques
-- aÃ§Ãµes especiais
+- ações especiais
 - estados premium
 
 ### Deep Green
@@ -220,8 +220,8 @@ Uso:
 `#173B2B`
 
 Uso:
-- informaÃ§Ãµes positivas
-- saldo saudÃ¡vel
+- informações positivas
+- saldo saudável
 - metas
 - crescimento
 
@@ -230,8 +230,8 @@ Uso:
 `#8C8C8C`
 
 Uso:
-- textos secundÃ¡rios
-- descriÃ§Ãµes
+- textos secundários
+- descrições
 - separadores discretos
 
 ### Champagne Accent
@@ -245,11 +245,11 @@ Uso extremamente moderado:
 
 ## 3.4 Regra de uso das cores
 
-A maior parte da interface deverÃ¡ permanecer em **Obsidian + Ivory + tons neutros**.
+A maior parte da interface deverá permanecer em **Obsidian + Ivory + tons neutros**.
 
-Burgundy e Deep Green funcionam como cores de identidade e semÃ¢ntica. Champagne serÃ¡ raro.
+Burgundy e Deep Green funcionam como cores de identidade e semântica. Champagne será raro.
 
-Evitar transformar toda a interface em uma composiÃ§Ã£o multicolorida.
+Evitar transformar toda a interface em uma composição multicolorida.
 
 ## 3.5 Tipografia
 
@@ -263,31 +263,31 @@ Base recomendada:
 
 - fonte sans-serif moderna
 - pesos bem definidos
-- nÃºmeros financeiros com destaque
-- tÃ­tulos relativamente grandes e limpos
-- textos secundÃ¡rios menores, porÃ©m legÃ­veis
+- números financeiros com destaque
+- títulos relativamente grandes e limpos
+- textos secundários menores, porém legíveis
 
-O sistema tipogrÃ¡fico deverÃ¡ ser centralizado em tokens do Design System.
+O sistema tipográfico deverá ser centralizado em tokens do Design System.
 
 ## 3.6 Forma dos componentes
 
 - cantos moderadamente arredondados
-- bordas finas quando necessÃ¡rias
-- sombras quase imperceptÃ­veis
-- poucos nÃ­veis de elevaÃ§Ã£o
-- cards usados somente quando agregarem organizaÃ§Ã£o
-- botÃµes simples e sÃ³lidos
-- Ã­cones lineares e consistentes
+- bordas finas quando necessárias
+- sombras quase imperceptíveis
+- poucos níveis de elevação
+- cards usados somente quando agregarem organização
+- botões simples e sólidos
+- ícones lineares e consistentes
 
-## 3.7 SensaÃ§Ã£o desejada
+## 3.7 Sensação desejada
 
-A tela deverÃ¡ passar a impressÃ£o de:
+A tela deverá passar a impressão de:
 
-> â€œIsto Ã© organizado, preciso e caro, sem precisar parecer chamativo.â€
+> “Isto é organizado, preciso e caro, sem precisar parecer chamativo.”
 
 ---
 
-# 4. PrincÃ­pios permanentes do desenvolvimento
+# 4. Princípios permanentes do desenvolvimento
 
 Estas regras valem para todo o projeto.
 
@@ -297,60 +297,60 @@ Cada tarefa deve possuir:
 
 - objetivo claro
 - entradas
-- implementaÃ§Ã£o
+- implementação
 - testes
-- revisÃ£o
-- integraÃ§Ã£o
-- critÃ©rio de conclusÃ£o
+- revisão
+- integração
+- critério de conclusão
 
-## 4.2 NÃ£o acumular dÃ­vida tÃ©cnica deliberadamente
+## 4.2 Não acumular dívida técnica deliberadamente
 
 Evitar:
 
-- cÃ³digo duplicado sem justificativa
-- regras de negÃ³cio espalhadas
-- valores mÃ¡gicos
-- dependÃªncias desnecessÃ¡rias
+- código duplicado sem justificativa
+- regras de negócio espalhadas
+- valores mágicos
+- dependências desnecessárias
 - arquivos gigantes
-- telas responsÃ¡veis por lÃ³gica de domÃ­nio
-- soluÃ§Ãµes provisÃ³rias sem registro
+- telas responsáveis por lógica de domínio
+- soluções provisórias sem registro
 
-## 4.3 Debug contÃ­nuo
+## 4.3 Debug contínuo
 
-Todo erro encontrado deve ser tratado na origem sempre que possÃ­vel.
+Todo erro encontrado deve ser tratado na origem sempre que possível.
 
-NÃ£o utilizar â€œdepois consertamosâ€ como mÃ©todo de desenvolvimento.
+Não utilizar “depois consertamos” como método de desenvolvimento.
 
-## 4.4 RegressÃ£o
+## 4.4 Regressão
 
-Toda alteraÃ§Ã£o significativa deve verificar se funcionalidades anteriores continuam funcionando.
+Toda alteração significativa deve verificar se funcionalidades anteriores continuam funcionando.
 
-## 4.5 SeguranÃ§a desde o inÃ­cio
+## 4.5 Segurança desde o início
 
-Dados financeiros sÃ£o sensÃ­veis. Nenhuma etapa deverÃ¡ depender de prÃ¡ticas inseguras apenas por ser â€œMVPâ€.
+Dados financeiros são sensíveis. Nenhuma etapa deverá depender de práticas inseguras apenas por ser “MVP”.
 
-## 4.6 PreparaÃ§Ã£o para escala
+## 4.6 Preparação para escala
 
-A arquitetura deve suportar a evoluÃ§Ã£o de:
+A arquitetura deve suportar a evolução de:
 
 ```text
-1 usuÃ¡rio
-â†’ 100 usuÃ¡rios
-â†’ 10.000 usuÃ¡rios
-â†’ escala maior
+1 usuário
+→ 100 usuários
+→ 10.000 usuários
+→ escala maior
 ```
 
-sem exigir reconstruÃ§Ã£o completa do produto.
+sem exigir reconstrução completa do produto.
 
 ---
 
-# PARTE 1 â€” FUNDAÃ‡ÃƒO
+# PARTE 1 — FUNDAÇÃO
 
-Objetivo: construir uma base tÃ©cnica sÃ³lida antes de acelerar o desenvolvimento de funcionalidades.
+Objetivo: construir uma base técnica sólida antes de acelerar o desenvolvimento de funcionalidades.
 
 ---
 
-## 1.1 â€” Fechamento tÃ©cnico
+## 1.1 — Fechamento técnico
 
 ### Microtarefas
 
@@ -359,58 +359,58 @@ Objetivo: construir uma base tÃ©cnica sÃ³lida antes de acelerar o desenvolvi
 - [x] Confirmar Jetpack Compose
 - [x] Confirmar MVVM + Clean Architecture
 - [x] Confirmar PostgreSQL
-- [x] Definir estratÃ©gia de migrations
-- [x] Definir estrutura de mÃ³dulos
-- [x] Definir estratÃ©gia de ambientes
-- [x] Definir polÃ­tica de dependÃªncias
-- [x] Definir padrÃ£o de versionamento
-- [x] Definir convenÃ§Ãµes de cÃ³digo
+- [x] Definir estratégia de migrations
+- [x] Definir estrutura de módulos
+- [x] Definir estratégia de ambientes
+- [x] Definir política de dependências
+- [x] Definir padrão de versionamento
+- [x] Definir convenções de código
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-Todas as escolhas devem estar documentadas e ser suficientes para iniciar a implementaÃ§Ã£o sem decisÃµes estruturais pendentes.
+Todas as escolhas devem estar documentadas e ser suficientes para iniciar a implementação sem decisões estruturais pendentes.
 
 ---
 
-## 1.2 â€” RepositÃ³rio e estrutura inicial
+## 1.2 — Repositório e estrutura inicial
 
 ### Microtarefas
 
-- [ ] Criar repositÃ³rio
+- [ ] Criar repositório
 - [ ] Criar estrutura Android
 - [ ] Criar estrutura backend
-- [ ] Criar documentaÃ§Ã£o inicial
+- [ ] Criar documentação inicial
 - [ ] Configurar Git
 - [ ] Criar `.gitignore`
-- [ ] Separar configuraÃ§Ãµes locais de configuraÃ§Ãµes versionadas
-- [ ] Criar estratÃ©gia de branches
+- [ ] Separar configurações locais de configurações versionadas
+- [ ] Criar estratégia de branches
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-O projeto deve clonar e iniciar de forma reprodutÃ­vel em ambiente limpo.
+O projeto deve clonar e iniciar de forma reprodutível em ambiente limpo.
 
 ---
 
-## 1.3 â€” Ambiente de desenvolvimento
+## 1.3 — Ambiente de desenvolvimento
 
 ### Microtarefas
 
-- [ ] Configurar JDK/SDK necessÃ¡rios
+- [ ] Configurar JDK/SDK necessários
 - [ ] Configurar Android Studio
 - [ ] Configurar Gradle
 - [ ] Configurar backend
 - [ ] Configurar Docker
 - [ ] Subir PostgreSQL local
-- [ ] Criar configuraÃ§Ã£o de ambiente local
+- [ ] Criar configuração de ambiente local
 - [ ] Documentar setup
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-Outra mÃ¡quina deve conseguir reproduzir o ambiente seguindo o README sem dependÃªncias ocultas.
+Outra máquina deve conseguir reproduzir o ambiente seguindo o README sem dependências ocultas.
 
 ---
 
-## 1.4 â€” Design System
+## 1.4 — Design System
 
 **Status:** CONCLUÍDO
 
@@ -420,52 +420,52 @@ Microtarefas concluídas: tokens de cor, tipografia, espaçamento, raio, elevaç
 ### Microtarefas
 
 - [x] Criar tokens de cor
-- [x] Criar tokens tipogrÃ¡ficos
-- [x] Criar tokens de espaÃ§amento
+- [x] Criar tokens tipográficos
+- [x] Criar tokens de espaçamento
 - [x] Criar tokens de raio
-- [x] Criar tokens de elevaÃ§Ã£o
+- [x] Criar tokens de elevação
 - [x] Criar componentes base
-- [x] Criar estados de botÃ£o
+- [x] Criar estados de botão
 - [x] Criar campos de entrada
 - [x] Criar cards
-- [x] Criar componentes de valor monetÃ¡rio
+- [x] Criar componentes de valor monetário
 - [x] Criar feedback/loading/error states
 - [x] Criar modo claro
 - [x] Criar modo escuro
-- [x] Validar acessibilidade bÃ¡sica
+- [x] Validar acessibilidade básica
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
 Novas telas devem conseguir utilizar o Design System sem criar estilos ad hoc.
 
 ---
 
-## 1.5 â€” Banco de dados e migraÃ§Ãµes
+## 1.5 — Banco de dados e migrações
 
 **Status:** CONCLUÍDO
 
 ### Microtarefas
 
 - [x] Criar PostgreSQL local
-- [x] Definir convenÃ§Ãµes de tabelas
+- [x] Definir convenções de tabelas
 - [x] Criar migrations
-- [x] Definir chaves primÃ¡rias
+- [x] Definir chaves primárias
 - [x] Definir foreign keys
-- [x] Definir Ã­ndices iniciais
+- [x] Definir índices iniciais
 - [x] Definir timestamps
-- [x] Definir estratÃ©gia de auditoria quando necessÃ¡ria
-- [x] Testar criaÃ§Ã£o do banco do zero
-- [x] Testar rollback quando aplicÃ¡vel
+- [x] Definir estratégia de auditoria quando necessária
+- [x] Testar criação do banco do zero
+- [x] Testar rollback quando aplicável
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-O banco Ã© reproduzÃ­vel por migrations, possui integridade referencial adequada e sua recriaÃ§Ã£o local foi validada do volume vazio atÃ© a aplicaÃ§Ã£o das migrations V1 e V2.
+O banco é reproduzível por migrations, possui integridade referencial adequada e sua recriação local foi validada do volume vazio até a aplicação das migrations V1 e V2.
 
-A reversÃ£o adotada neste estÃ¡gio Ã© por nova migration; para o ambiente local descartÃ¡vel, a reconstruÃ§Ã£o do volume foi testada.
+A reversão adotada neste estágio é por nova migration; para o ambiente local descartável, a reconstrução do volume foi testada.
 
 ---
 
-## 1.6 â€” Modelo de domÃ­nio financeiro
+## 1.6 — Modelo de domínio financeiro
 
 **Status:** EM ANDAMENTO
 
@@ -490,75 +490,75 @@ Revisão 1.6: User, Account, Transaction, Category, PaymentMethodType, Transfer,
 - [ ] Definir campos
 - [ ] Definir relacionamentos
 - [ ] Definir regras de estado
-- [ ] Definir tipos monetÃ¡rios
+- [ ] Definir tipos monetários
 - [ ] Definir datas e timezone
 - [ ] Definir regras para valores positivos/negativos
-- [ ] Definir transferÃªncias
+- [ ] Definir transferências
 - [ ] Definir estornos
 - [ ] Definir cancelamentos
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-O domÃ­nio deve representar corretamente as operaÃ§Ãµes financeiras previstas sem depender da interface.
+O domínio deve representar corretamente as operações financeiras previstas sem depender da interface.
 
 ---
 
-## 1.7 â€” AutenticaÃ§Ã£o e usuÃ¡rios
+## 1.7 — Autenticação e usuários
 
 ### Microtarefas
 
 - [ ] Criar cadastro
 - [ ] Criar login
-- [ ] Criar sessÃ£o
+- [ ] Criar sessão
 - [ ] Criar logout
-- [ ] Criar recuperaÃ§Ã£o de acesso
-- [ ] Criar perfil bÃ¡sico
-- [ ] Implementar autorizaÃ§Ã£o por usuÃ¡rio
-- [ ] Testar isolamento de dados entre usuÃ¡rios
+- [ ] Criar recuperação de acesso
+- [ ] Criar perfil básico
+- [ ] Implementar autorização por usuário
+- [ ] Testar isolamento de dados entre usuários
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-Um usuÃ¡rio nÃ£o pode acessar dados pertencentes a outro usuÃ¡rio.
+Um usuário não pode acessar dados pertencentes a outro usuário.
 
 ---
 
-## 1.8 â€” API base
+## 1.8 — API base
 
 ### Microtarefas
 
 - [ ] Criar servidor Ktor
 - [ ] Configurar rotas
-- [ ] Criar serializaÃ§Ã£o
-- [ ] Criar validaÃ§Ã£o de requests
+- [ ] Criar serialização
+- [ ] Criar validação de requests
 - [ ] Criar tratamento central de erros
 - [ ] Criar respostas padronizadas
-- [ ] Criar autenticaÃ§Ã£o
-- [ ] Criar documentaÃ§Ã£o inicial da API
+- [ ] Criar autenticação
+- [ ] Criar documentação inicial da API
 - [ ] Criar health check
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-A API deve responder de maneira consistente e previsÃ­vel a requests vÃ¡lidos e invÃ¡lidos.
+A API deve responder de maneira consistente e previsível a requests válidos e inválidos.
 
 ---
 
-## 1.9 â€” Motor financeiro
+## 1.9 — Motor financeiro
 
 ### Microtarefas
 
-- [ ] CÃ¡lculo de saldo
+- [ ] Cálculo de saldo
 - [ ] Registro de receita
 - [ ] Registro de despesa
-- [ ] TransferÃªncia entre contas
-- [ ] Compra no cartÃ£o
+- [ ] Transferência entre contas
+- [ ] Compra no cartão
 - [ ] Fatura
 - [ ] Pagamento de fatura
 - [ ] Parcelamento
 - [ ] Estorno
 - [ ] Cancelamento
-- [ ] RecorrÃªncia
+- [ ] Recorrência
 
-### Testes obrigatÃ³rios
+### Testes obrigatórios
 
 - [ ] Valores positivos
 - [ ] Valores negativos
@@ -566,71 +566,71 @@ A API deve responder de maneira consistente e previsÃ­vel a requests vÃ¡lido
 - [ ] Casas decimais
 - [ ] Datas diferentes
 - [ ] Parcelas
-- [ ] TransferÃªncias
+- [ ] Transferências
 - [ ] Estornos
-- [ ] CenÃ¡rios combinados
+- [ ] Cenários combinados
 
-### CritÃ©rio de conclusÃ£o
+### Critério de conclusão
 
-O motor deve produzir resultados determinÃ­sticos e testados para os principais fluxos financeiros.
+O motor deve produzir resultados determinísticos e testados para os principais fluxos financeiros.
 
 ---
 
-## 1.10 â€” MVP tÃ©cnico
+## 1.10 — MVP técnico
 
-O final da Parte 1 deverÃ¡ permitir:
+O final da Parte 1 deverá permitir:
 
 ```text
 Abrir NEXA
-â†“
+↓
 Criar conta / Login
-â†“
+↓
 Criar conta financeira
-â†“
+↓
 Adicionar receita
-â†“
+↓
 Adicionar despesa
-â†“
+↓
 Atualizar saldo
-â†“
-Consultar histÃ³rico
+↓
+Consultar histórico
 ```
 
-### Gate de aprovaÃ§Ã£o da Parte 1
+### Gate de aprovação da Parte 1
 
 - [ ] Build Android funcionando
 - [ ] Backend funcionando
-- [ ] Banco reproduzÃ­vel
-- [ ] AutenticaÃ§Ã£o funcionando
+- [ ] Banco reproduzível
+- [ ] Autenticação funcionando
 - [ ] CRUD essencial funcionando
 - [ ] Motor financeiro testado
-- [ ] Logs bÃ¡sicos funcionando
-- [ ] DocumentaÃ§Ã£o atualizada
-- [ ] Nenhum bug crÃ­tico aberto
+- [ ] Logs básicos funcionando
+- [ ] Documentação atualizada
+- [ ] Nenhum bug crítico aberto
 
 ---
 
-# PARTE 2 â€” PRODUTO
+# PARTE 2 — PRODUTO
 
-Objetivo: transformar a fundaÃ§Ã£o em uma experiÃªncia financeira completa e agradÃ¡vel.
+Objetivo: transformar a fundação em uma experiência financeira completa e agradável.
 
 ---
 
-## 2.1 â€” Registro ultrarrÃ¡pido
+## 2.1 — Registro ultrarrápido
 
-- [ ] Fluxo de criaÃ§Ã£o rÃ¡pida
-- [ ] Entrada numÃ©rica
-- [ ] DescriÃ§Ã£o curta
-- [ ] SeleÃ§Ã£o rÃ¡pida de categoria
-- [ ] Conta padrÃ£o
-- [ ] CartÃ£o padrÃ£o
-- [ ] ConfirmaÃ§Ã£o em poucos toques
+- [ ] Fluxo de criação rápida
+- [ ] Entrada numérica
+- [ ] Descrição curta
+- [ ] Seleção rápida de categoria
+- [ ] Conta padrão
+- [ ] Cartão padrão
+- [ ] Confirmação em poucos toques
 - [ ] Entrada em linguagem natural
 - [ ] Parser de valores
 - [ ] Parser de categoria
-- [ ] Parser de descriÃ§Ã£o
-- [ ] CorreÃ§Ã£o rÃ¡pida antes da confirmaÃ§Ã£o
-- [ ] Teste de tempo de execuÃ§Ã£o do fluxo
+- [ ] Parser de descrição
+- [ ] Correção rápida antes da confirmação
+- [ ] Teste de tempo de execução do fluxo
 
 ### Meta
 
@@ -638,112 +638,112 @@ Gastos comuns devem ser registrados em menos de 20 segundos.
 
 ---
 
-## 2.2 â€” Dashboard
+## 2.2 — Dashboard
 
 - [ ] Saldo
 - [ ] Entradas
 - [ ] Despesas
-- [ ] Resultado do perÃ­odo
-- [ ] GrÃ¡fico por categoria
-- [ ] EvoluÃ§Ã£o temporal
-- [ ] ComparaÃ§Ã£o com perÃ­odos anteriores
+- [ ] Resultado do período
+- [ ] Gráfico por categoria
+- [ ] Evolução temporal
+- [ ] Comparação com períodos anteriores
 - [ ] Gastos recorrentes
-- [ ] OrÃ§amento consumido
+- [ ] Orçamento consumido
 - [ ] Insights destacados
 
 ---
 
-## 2.3 â€” Contas
+## 2.3 — Contas
 
 - [ ] Listagem
 - [ ] Detalhes
 - [ ] Saldo
-- [ ] HistÃ³rico
-- [ ] TransferÃªncias
+- [ ] Histórico
+- [ ] Transferências
 - [ ] Conta principal
-- [ ] Contas secundÃ¡rias
-- [ ] Dinheiro em espÃ©cie
+- [ ] Contas secundárias
+- [ ] Dinheiro em espécie
 
 ---
 
-## 2.4 â€” CartÃµes e faturas
+## 2.4 — Cartões e faturas
 
-- [ ] Cadastro de cartÃ£o
+- [ ] Cadastro de cartão
 - [ ] Limite
-- [ ] Limite disponÃ­vel
+- [ ] Limite disponível
 - [ ] Fechamento
 - [ ] Vencimento
 - [ ] Fatura atual
-- [ ] PrÃ³ximas faturas
+- [ ] Próximas faturas
 - [ ] Parcelas
 - [ ] Pagamento
-- [ ] HistÃ³rico
+- [ ] Histórico
 
 ---
 
-## 2.5 â€” OrÃ§amentos
+## 2.5 — Orçamentos
 
-- [ ] OrÃ§amento mensal
-- [ ] OrÃ§amento por categoria
+- [ ] Orçamento mensal
+- [ ] Orçamento por categoria
 - [ ] Barra de progresso
 - [ ] Alertas
 - [ ] Limites personalizados
-- [ ] HistÃ³rico de orÃ§amento
+- [ ] Histórico de orçamento
 
 ---
 
-## 2.6 â€” Metas financeiras
+## 2.6 — Metas financeiras
 
 - [ ] Criar meta
 - [ ] Valor-alvo
 - [ ] Valor acumulado
 - [ ] Prazo
 - [ ] Progresso
-- [ ] ContribuiÃ§Ãµes
-- [ ] ProjeÃ§Ã£o
+- [ ] Contribuições
+- [ ] Projeção
 
 ---
 
-## 2.7 â€” RecorrÃªncias
+## 2.7 — Recorrências
 
-- [ ] Criar recorrÃªncia
-- [ ] Editar recorrÃªncia
-- [ ] Pausar recorrÃªncia
-- [ ] Encerrar recorrÃªncia
-- [ ] Detectar possÃ­veis recorrÃªncias
-- [ ] PrÃ³ximas cobranÃ§as
+- [ ] Criar recorrência
+- [ ] Editar recorrência
+- [ ] Pausar recorrência
+- [ ] Encerrar recorrência
+- [ ] Detectar possíveis recorrências
+- [ ] Próximas cobranças
 - [ ] Alertas
 
 ---
 
-## 2.8 â€” Busca, filtros e histÃ³rico
+## 2.8 — Busca, filtros e histórico
 
 - [ ] Busca textual
-- [ ] Filtro por perÃ­odo
+- [ ] Filtro por período
 - [ ] Filtro por categoria
 - [ ] Filtro por conta
-- [ ] Filtro por cartÃ£o
+- [ ] Filtro por cartão
 - [ ] Filtro por tipo
-- [ ] OrdenaÃ§Ã£o
-- [ ] Detalhamento da transaÃ§Ã£o
+- [ ] Ordenação
+- [ ] Detalhamento da transação
 
 ---
 
-## 2.9 â€” IA Financeira
+## 2.9 — IA Financeira
 
 ### Arquitetura
 
 ```text
 Dados financeiros
-â†“
-Motor de anÃ¡lise
-â†“
+↓
+Motor de análise
+↓
 Context Builder
-â†“
+↓
 Modelo de IA
-â†“
+↓
 Resposta estruturada
-â†“
+↓
 NEXA App
 ```
 
@@ -752,254 +752,254 @@ NEXA App
 - [ ] Criar interface de provider de IA
 - [ ] Criar camada de contexto
 - [ ] Definir quais dados podem ser enviados
-- [ ] Criar anÃ¡lise mensal
-- [ ] Criar explicaÃ§Ã£o de gastos
-- [ ] Criar detecÃ§Ã£o de padrÃµes
+- [ ] Criar análise mensal
+- [ ] Criar explicação de gastos
+- [ ] Criar detecção de padrões
 - [ ] Criar insights
 - [ ] Criar perguntas financeiras
-- [ ] Criar anÃ¡lise de metas
-- [ ] Criar anÃ¡lise de orÃ§amento
-- [ ] Criar proteÃ§Ã£o contra respostas inventadas
-- [ ] Registrar origem dos nÃºmeros utilizados
+- [ ] Criar análise de metas
+- [ ] Criar análise de orçamento
+- [ ] Criar proteção contra respostas inventadas
+- [ ] Registrar origem dos números utilizados
 - [ ] Criar limites de uso
 
-### PrincÃ­pio
+### Princípio
 
-A IA nÃ£o deve inventar nÃºmeros. Toda afirmaÃ§Ã£o quantitativa precisa ter origem nos dados disponÃ­veis no NEXA.
+A IA não deve inventar números. Toda afirmação quantitativa precisa ter origem nos dados disponíveis no NEXA.
 
 ---
 
-## 2.10 â€” NotificaÃ§Ãµes e insights proativos
+## 2.10 — Notificações e insights proativos
 
-- [ ] Alertas de orÃ§amento
-- [ ] Despesas recorrentes prÃ³ximas
-- [ ] Fatura prÃ³xima do vencimento
+- [ ] Alertas de orçamento
+- [ ] Despesas recorrentes próximas
+- [ ] Fatura próxima do vencimento
 - [ ] Meta
-- [ ] AlteraÃ§Ã£o significativa de gasto
-- [ ] Insight periÃ³dico
-- [ ] ConfiguraÃ§Ãµes de notificaÃ§Ãµes
+- [ ] Alteração significativa de gasto
+- [ ] Insight periódico
+- [ ] Configurações de notificações
 
 ---
 
-## 2.11 â€” Gate de aprovaÃ§Ã£o da Parte 2
+## 2.11 — Gate de aprovação da Parte 2
 
-- [ ] Registro rÃ¡pido validado
+- [ ] Registro rápido validado
 - [ ] Dashboard consistente
 - [ ] Contas funcionando
-- [ ] CartÃµes funcionando
+- [ ] Cartões funcionando
 - [ ] Faturas funcionando
-- [ ] OrÃ§amentos funcionando
+- [ ] Orçamentos funcionando
 - [ ] Metas funcionando
-- [ ] RecorrÃªncias funcionando
-- [ ] IA integrada com seguranÃ§a
-- [ ] Testes de regressÃ£o executados
-- [ ] Nenhum bug crÃ­tico aberto
+- [ ] Recorrências funcionando
+- [ ] IA integrada com segurança
+- [ ] Testes de regressão executados
+- [ ] Nenhum bug crítico aberto
 
 ---
 
-# PARTE 3 â€” ESCALA
+# PARTE 3 — ESCALA
 
-Objetivo: preparar o NEXA para usuÃ¡rios reais, crescimento, integraÃ§Ãµes bancÃ¡rias e distribuiÃ§Ã£o.
+Objetivo: preparar o NEXA para usuários reais, crescimento, integrações bancárias e distribuição.
 
 ---
 
-## 3.1 â€” Backend de produÃ§Ã£o
+## 3.1 — Backend de produção
 
-- [ ] Ambiente de produÃ§Ã£o
-- [ ] ConfiguraÃ§Ã£o segura de secrets
-- [ ] Banco de produÃ§Ã£o
-- [ ] Migrations de produÃ§Ã£o
+- [ ] Ambiente de produção
+- [ ] Configuração segura de secrets
+- [ ] Banco de produção
+- [ ] Migrations de produção
 - [ ] HTTPS
 - [ ] Rate limiting
 - [ ] Versionamento de API
-- [ ] PolÃ­ticas de timeout
+- [ ] Políticas de timeout
 - [ ] Retries controlados
 - [ ] Tratamento de falhas
 - [ ] Backups
-- [ ] RecuperaÃ§Ã£o de desastre
+- [ ] Recuperação de desastre
 
 ---
 
-## 3.2 â€” SincronizaÃ§Ã£o
+## 3.2 — Sincronização
 
-- [ ] SincronizaÃ§Ã£o de dados
-- [ ] Controle de versÃ£o
-- [ ] EstratÃ©gia offline
+- [ ] Sincronização de dados
+- [ ] Controle de versão
+- [ ] Estratégia offline
 - [ ] Retry
 - [ ] Estados de conflito
-- [ ] IdempotÃªncia
-- [ ] ConsistÃªncia entre dispositivos
+- [ ] Idempotência
+- [ ] Consistência entre dispositivos
 
 ---
 
-## 3.3 â€” Open Finance
+## 3.3 — Open Finance
 
-A integraÃ§Ã£o bancÃ¡ria serÃ¡ adicionada somente quando a base financeira e a infraestrutura estiverem maduras.
+A integração bancária será adicionada somente quando a base financeira e a infraestrutura estiverem maduras.
 
 ### Microtarefas
 
-- [ ] Levantar requisitos regulatÃ³rios aplicÃ¡veis
-- [ ] Mapear fornecedores/participantes de integraÃ§Ã£o
-- [ ] Definir arquitetura de integraÃ§Ã£o
+- [ ] Levantar requisitos regulatórios aplicáveis
+- [ ] Mapear fornecedores/participantes de integração
+- [ ] Definir arquitetura de integração
 - [ ] Implementar consentimento
-- [ ] Implementar conexÃ£o
+- [ ] Implementar conexão
 - [ ] Importar contas
-- [ ] Importar transaÃ§Ãµes
-- [ ] Importar cartÃµes quando suportado
-- [ ] Categorizar transaÃ§Ãµes
-- [ ] Criar conciliaÃ§Ã£o
+- [ ] Importar transações
+- [ ] Importar cartões quando suportado
+- [ ] Categorizar transações
+- [ ] Criar conciliação
 - [ ] Tratar duplicidades
-- [ ] Tratar revogaÃ§Ã£o de consentimento
-- [ ] Monitorar sincronizaÃ§Ã£o
+- [ ] Tratar revogação de consentimento
+- [ ] Monitorar sincronização
 
 ---
 
-## 3.4 â€” SeguranÃ§a avanÃ§ada
+## 3.4 — Segurança avançada
 
-- [ ] ProteÃ§Ã£o de credenciais
-- [ ] ProteÃ§Ã£o de tokens
+- [ ] Proteção de credenciais
+- [ ] Proteção de tokens
 - [ ] Armazenamento seguro no dispositivo
-- [ ] Criptografia quando necessÃ¡ria
-- [ ] AutorizaÃ§Ã£o por recurso
-- [ ] ProteÃ§Ã£o de endpoints
-- [ ] DetecÃ§Ã£o de abuso
+- [ ] Criptografia quando necessária
+- [ ] Autorização por recurso
+- [ ] Proteção de endpoints
+- [ ] Detecção de abuso
 - [ ] Auditoria
-- [ ] PolÃ­tica de retenÃ§Ã£o de dados
-- [ ] RevisÃ£o de exposiÃ§Ã£o de dados da IA
+- [ ] Política de retenção de dados
+- [ ] Revisão de exposição de dados da IA
 
 ---
 
-## 3.5 â€” LGPD e compliance
+## 3.5 — LGPD e compliance
 
 - [ ] Mapear dados pessoais
-- [ ] Mapear dados sensÃ­veis/financeiros tratados
+- [ ] Mapear dados sensíveis/financeiros tratados
 - [ ] Definir finalidade de tratamento
-- [ ] PolÃ­tica de privacidade
+- [ ] Política de privacidade
 - [ ] Termos de uso
-- [ ] GestÃ£o de consentimentos quando aplicÃ¡vel
-- [ ] ExportaÃ§Ã£o de dados
-- [ ] ExclusÃ£o de conta/dados conforme requisitos aplicÃ¡veis
-- [ ] RetenÃ§Ã£o e descarte
+- [ ] Gestão de consentimentos quando aplicável
+- [ ] Exportação de dados
+- [ ] Exclusão de conta/dados conforme requisitos aplicáveis
+- [ ] Retenção e descarte
 
 ---
 
-## 3.6 â€” Observabilidade
+## 3.6 — Observabilidade
 
 - [ ] Logs estruturados
-- [ ] MÃ©tricas
+- [ ] Métricas
 - [ ] Crash reporting
-- [ ] Tracing quando necessÃ¡rio
+- [ ] Tracing quando necessário
 - [ ] Alertas
 - [ ] Monitoramento de API
 - [ ] Monitoramento do banco
-- [ ] Monitoramento de integraÃ§Ãµes externas
+- [ ] Monitoramento de integrações externas
 
 ---
 
-## 3.7 â€” Performance
+## 3.7 — Performance
 
-- [ ] Tempo de inicializaÃ§Ã£o
+- [ ] Tempo de inicialização
 - [ ] Tempo de abertura de telas
-- [ ] Uso de memÃ³ria
+- [ ] Uso de memória
 - [ ] Uso de bateria
 - [ ] Uso de rede
-- [ ] PaginaÃ§Ã£o
+- [ ] Paginação
 - [ ] Cache
 - [ ] Consultas do banco
-- [ ] Ãndices
-- [ ] Teste com grande volume de transaÃ§Ãµes
+- [ ] Índices
+- [ ] Teste com grande volume de transações
 
-### CenÃ¡rio-alvo de teste
+### Cenário-alvo de teste
 
-O aplicativo deve continuar utilizÃ¡vel com histÃ³rico financeiro grande, incluindo milhares de transaÃ§Ãµes por usuÃ¡rio.
+O aplicativo deve continuar utilizável com histórico financeiro grande, incluindo milhares de transações por usuário.
 
 ---
 
-## 3.8 â€” Testes de carga e confiabilidade
+## 3.8 — Testes de carga e confiabilidade
 
-- [ ] Teste de concorrÃªncia
+- [ ] Teste de concorrência
 - [ ] Teste de carga da API
 - [ ] Teste de banco
 - [ ] Teste de filas quando existirem
-- [ ] Teste de integraÃ§Ã£o com IA
-- [ ] Teste de sincronizaÃ§Ã£o
+- [ ] Teste de integração com IA
+- [ ] Teste de sincronização
 - [ ] Teste de falhas externas
-- [ ] Teste de recuperaÃ§Ã£o
+- [ ] Teste de recuperação
 
 ---
 
-## 3.9 â€” DistribuiÃ§Ã£o
+## 3.9 — Distribuição
 
-- [ ] ConfiguraÃ§Ã£o de release
+- [ ] Configuração de release
 - [ ] Assinatura do aplicativo
 - [ ] Versionamento
-- [ ] Build de produÃ§Ã£o
-- [ ] Testes prÃ©-lanÃ§amento
-- [ ] PreparaÃ§Ã£o da Play Console
-- [ ] PolÃ­tica de privacidade publicada
+- [ ] Build de produção
+- [ ] Testes pré-lançamento
+- [ ] Preparação da Play Console
+- [ ] Política de privacidade publicada
 - [ ] Termos publicados
 - [ ] Ficha da loja
-- [ ] Ãcone
+- [ ] Ícone
 - [ ] Screenshots
-- [ ] DescriÃ§Ã£o
-- [ ] EstratÃ©gia de atualizaÃ§Ã£o
+- [ ] Descrição
+- [ ] Estratégia de atualização
 
 ---
 
-# 5. Qualidade e processo de revisÃ£o
+# 5. Qualidade e processo de revisão
 
-Toda microtarefa deverÃ¡ passar por este ciclo:
+Toda microtarefa deverá passar por este ciclo:
 
 ```text
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Definir microtarefa â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-           â†“
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Implementar         â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-           â†“
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Testar              â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-           â†“
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Debug               â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-           â†“
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Revisar arquitetura â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-           â†“
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Refatorar           â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-           â†“
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Integrar            â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-           â†“
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚ Criar checkpoint    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+┌─────────────────────┐
+│ Definir microtarefa │
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│ Implementar         │
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│ Testar              │
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│ Debug               │
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│ Revisar arquitetura │
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│ Refatorar           │
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│ Integrar            │
+└──────────┬──────────┘
+           ↓
+┌─────────────────────┐
+│ Criar checkpoint    │
+└─────────────────────┘
 ```
 
 ## Definition of Done
 
-Uma microtarefa sÃ³ Ã© considerada concluÃ­da quando:
+Uma microtarefa só é considerada concluída quando:
 
 - [ ] A funcionalidade atende ao objetivo
-- [ ] O cÃ³digo estÃ¡ organizado
+- [ ] O código está organizado
 - [ ] O comportamento foi testado
 - [ ] Os casos de erro relevantes foram tratados
-- [ ] NÃ£o existem erros conhecidos crÃ­ticos
-- [ ] NÃ£o houve regressÃ£o relevante
-- [ ] A documentaÃ§Ã£o necessÃ¡ria foi atualizada
-- [ ] O prÃ³ximo passo pode ser iniciado com a base atual
+- [ ] Não existem erros conhecidos críticos
+- [ ] Não houve regressão relevante
+- [ ] A documentação necessária foi atualizada
+- [ ] O próximo passo pode ser iniciado com a base atual
 
 ---
 
-# 1.3 â€” DomÃ­nio financeiro
+# 1.3 — Domínio financeiro
 
 Objetivo: definir as entidades e invariantes financeiras no backend antes de criar tabelas, endpoints ou telas.
 
@@ -1007,71 +1007,71 @@ Objetivo: definir as entidades e invariantes financeiras no backend antes de cri
 
 ```text
 Transaction
-  â†“
+  ↓
 Account
-  â†“
+  ↓
 Category
-  â†“
+  ↓
 Transfer / Payment / Refund
-  â†“
+  ↓
 Installment / Recurrence
-  â†“
+  ↓
 Motor financeiro
 ```
 
-### 1.3.1 â€” Transaction core
+### 1.3.1 — Transaction core
 
-**Status:** CONCLUÃ�DA
+**Status:** CONCLUÍDA
 
 - [x] Definir `TransactionId`, `AccountId` e `CategoryId`
-- [x] Definir `Money` em unidade monetÃ¡ria mÃ­nima
-- [x] Definir cÃ³digo de moeda
-- [x] Definir direÃ§Ã£o `DEBIT/CREDIT`
-- [x] Definir tipo de operaÃ§Ã£o
+- [x] Definir `Money` em unidade monetária mínima
+- [x] Definir código de moeda
+- [x] Definir direção `DEBIT/CREDIT`
+- [x] Definir tipo de operação
 - [x] Definir status
 - [x] Definir origem
 - [x] Definir data do evento vs. timestamps de auditoria
-- [x] Definir referÃªncia entre transaÃ§Ãµes relacionadas
-- [x] Definir invariantes de validaÃ§Ã£o
-- [x] Criar testes unitÃ¡rios
-- [x] Validar compatibilidade com futuras parcelas e recorrÃªncias
+- [x] Definir referência entre transações relacionadas
+- [x] Definir invariantes de validação
+- [x] Criar testes unitários
+- [x] Validar compatibilidade com futuras parcelas e recorrências
 
 ### Invariantes iniciais
 
-- Valor da transaÃ§Ã£o Ã© sempre positivo; a direÃ§Ã£o determina dÃ©bito/crÃ©dito.
-- Valores monetÃ¡rios usam `Long` em unidade mÃ­nima, evitando `Double` para dinheiro.
-- OperaÃ§Ãµes monetÃ¡rias exigem a mesma moeda.
-- `INCOME` e `REFUND` sÃ£o crÃ©ditos.
-- `EXPENSE`, `PURCHASE` e `PAYMENT` sÃ£o dÃ©bitos.
-- `CANCELLATION` exige referÃªncia Ã  transaÃ§Ã£o relacionada.
-- DescriÃ§Ã£o Ã© opcional, normalizada e limitada a 160 caracteres.
+- Valor da transação é sempre positivo; a direção determina débito/crédito.
+- Valores monetários usam `Long` em unidade mínima, evitando `Double` para dinheiro.
+- Operações monetárias exigem a mesma moeda.
+- `INCOME` e `REFUND` são créditos.
+- `EXPENSE`, `PURCHASE` e `PAYMENT` são débitos.
+- `CANCELLATION` exige referência à transação relacionada.
+- Descrição é opcional, normalizada e limitada a 160 caracteres.
 - Datas financeiras usam `LocalDate`; auditoria usa `Instant`.
 
-**CritÃ©rio 1.3.1:** domÃ­nio compilando no projeto real, testes unitÃ¡rios passando no Gradle do projeto e invariantes documentadas. Validado com `clean test` + `build` e CI.
+**Critério 1.3.1:** domínio compilando no projeto real, testes unitários passando no Gradle do projeto e invariantes documentadas. Validado com `clean test` + `build` e CI.
 
-### PrÃ³ximas microtarefas 1.3
+### Próximas microtarefas 1.3
 
-- [x] 1.3.2 â€” Account
-- [x] 1.3.3 â€” Category
-- [x] 1.3.4 â€” Transfer
-- [x] 1.3.5 â€” Payment / Refund / Cancellation
-- [x] 1.3.6 â€” Installment
-- [x] 1.3.7 â€” Recurrence
-- [x] 1.3.8 â€” RevisÃ£o de domÃ­nio
+- [x] 1.3.2 — Account
+- [x] 1.3.3 — Category
+- [x] 1.3.4 — Transfer
+- [x] 1.3.5 — Payment / Refund / Cancellation
+- [x] 1.3.6 — Installment
+- [x] 1.3.7 — Recurrence
+- [x] 1.3.8 — Revisão de domínio
 
-### 1.3.6 â€” Installment
+### 1.3.6 — Installment
 
-**Status:** CONCLUÃ�DA
+**Status:** CONCLUÍDA
 
-O agregado representa o cronograma de parcelamento sem lanÃ§ar automaticamente valores futuros no saldo.
+O agregado representa o cronograma de parcelamento sem lançar automaticamente valores futuros no saldo.
 
-- [x] DivisÃ£o exata do total em unidades monetÃ¡rias mÃ­nimas
-- [x] DistribuiÃ§Ã£o determinÃ­stica do resto da divisÃ£o
-- [x] Cronograma mensal com tratamento correto de fim de mÃªs
+- [x] Divisão exata do total em unidades monetárias mínimas
+- [x] Distribuição determinística do resto da divisão
+- [x] Cronograma mensal com tratamento correto de fim de mês
 - [x] Limite de 2 a 360 parcelas
 - [x] Estados do plano e das parcelas
-- [x] Cancelamento protegido quando jÃ¡ existe parcela concluÃ­da
-- [x] Testes unitÃ¡rios e build validados localmente
+- [x] Cancelamento protegido quando já existe parcela concluída
+- [x] Testes unitários e build validados localmente
 
 ---
 
@@ -1110,43 +1110,43 @@ Revisão cruzada dos agregados financeiros, invariantes e fronteiras entre domí
 Documento: docs/domain/domain-review-1.3.8.md.
 ---
 
-# 6. EstratÃ©gia de testes
+# 6. Estratégia de testes
 
-## Testes unitÃ¡rios
+## Testes unitários
 
 Para:
 
 - regras financeiras
 - parsers
-- cÃ¡lculos
-- validaÃ§Ãµes
+- cálculos
+- validações
 - Use Cases
-- regras de domÃ­nio
+- regras de domínio
 
-## Testes de integraÃ§Ã£o
+## Testes de integração
 
 Para:
 
 - API + banco
-- autenticaÃ§Ã£o
-- persistÃªncia
-- sincronizaÃ§Ã£o
-- integraÃ§Ãµes externas
+- autenticação
+- persistência
+- sincronização
+- integrações externas
 
 ## Testes instrumentados/UI
 
 Para:
 
-- fluxos crÃ­ticos
+- fluxos críticos
 - login
-- criaÃ§Ã£o de transaÃ§Ã£o
-- navegaÃ§Ã£o
+- criação de transação
+- navegação
 - fatura
 - metas
 
-## Testes manuais exploratÃ³rios
+## Testes manuais exploratórios
 
-SerÃ£o usados para encontrar problemas de UX e cenÃ¡rios que testes automatizados nÃ£o cobrem bem.
+Serão usados para encontrar problemas de UX e cenários que testes automatizados não cobrem bem.
 
 ---
 
@@ -1156,192 +1156,192 @@ O NEXA deve distinguir claramente:
 
 ```text
 Saldo em conta
-â‰ 
-Limite do cartÃ£o
-â‰ 
-Limite disponÃ­vel
-â‰ 
+≠
+Limite do cartão
+≠
+Limite disponível
+≠
 Valor da fatura
-â‰ 
+≠
 Valor efetivamente pago
 ```
 
-TambÃ©m deverÃ¡ distinguir:
+Também deverá distinguir:
 
 ```text
 Compra
-TransferÃªncia
+Transferência
 Pagamento
 Estorno
 Cancelamento
 Parcela
-RecorrÃªncia
+Recorrência
 ```
 
-Qualquer alteraÃ§Ã£o nessas regras exige novos testes de regressÃ£o.
+Qualquer alteração nessas regras exige novos testes de regressão.
 
 ---
 
 # 8. Regras especiais da IA
 
-A IA do NEXA deverÃ¡:
+A IA do NEXA deverá:
 
 - trabalhar sobre contexto financeiro estruturado
-- evitar inferÃªncias nÃ£o suportadas pelos dados
-- declarar incerteza quando necessÃ¡rio
-- nÃ£o alterar dados financeiros sem confirmaÃ§Ã£o explÃ­cita
-- nÃ£o inventar valores, datas ou transaÃ§Ãµes
-- respeitar permissÃµes do usuÃ¡rio
-- receber somente os dados necessÃ¡rios para a tarefa
+- evitar inferências não suportadas pelos dados
+- declarar incerteza quando necessário
+- não alterar dados financeiros sem confirmação explícita
+- não inventar valores, datas ou transações
+- respeitar permissões do usuário
+- receber somente os dados necessários para a tarefa
 
-A IA serÃ¡ um **assistente de interpretaÃ§Ã£o**, nÃ£o a fonte primÃ¡ria dos dados financeiros.
+A IA será um **assistente de interpretação**, não a fonte primária dos dados financeiros.
 
 ---
 
-# 9. Ordem oficial de execuÃ§Ã£o
+# 9. Ordem oficial de execução
 
-A sequÃªncia oficial serÃ¡:
+A sequência oficial será:
 
 ```text
 PARTE 1
-  â†“
-1.1 Fechamento tÃ©cnico
-  â†“
-1.2 RepositÃ³rio + ambiente
-  â†“
-1.3 DomÃ­nio financeiro
-  â†“
+  ↓
+1.1 Fechamento técnico
+  ↓
+1.2 Repositório + ambiente
+  ↓
+1.3 Domínio financeiro
+  ↓
 1.4 Banco + migrations
-  â†“
-1.5 AutenticaÃ§Ã£o
-  â†“
+  ↓
+1.5 Autenticação
+  ↓
 1.6 API
-  â†“
+  ↓
 1.7 Motor financeiro
-  â†“
-1.8 IntegraÃ§Ã£o Android funcional
-  â†“
+  ↓
+1.8 Integração Android funcional
+  ↓
 1.9 Design System + refinamento visual
-  â†“
-1.10 MVP tÃ©cnico
-  â†“
+  ↓
+1.10 MVP técnico
+  ↓
 CHECKPOINT PARTE 1
-  â†“
+  ↓
 PARTE 2
-  â†“
-2.1 Registro rÃ¡pido
-  â†“
+  ↓
+2.1 Registro rápido
+  ↓
 2.2 Dashboard
-  â†“
+  ↓
 2.3 Contas
-  â†“
-2.4 CartÃµes/Faturas
-  â†“
-2.5 OrÃ§amentos
-  â†“
+  ↓
+2.4 Cartões/Faturas
+  ↓
+2.5 Orçamentos
+  ↓
 2.6 Metas
-  â†“
-2.7 RecorrÃªncias
-  â†“
-2.8 HistÃ³rico
-  â†“
+  ↓
+2.7 Recorrências
+  ↓
+2.8 Histórico
+  ↓
 2.9 IA
-  â†“
-2.10 NotificaÃ§Ãµes
-  â†“
+  ↓
+2.10 Notificações
+  ↓
 CHECKPOINT PARTE 2
-  â†“
+  ↓
 PARTE 3
-  â†“
-3.1 ProduÃ§Ã£o
-  â†“
-3.2 SincronizaÃ§Ã£o
-  â†“
+  ↓
+3.1 Produção
+  ↓
+3.2 Sincronização
+  ↓
 3.3 Open Finance
-  â†“
-3.4 SeguranÃ§a
-  â†“
+  ↓
+3.4 Segurança
+  ↓
 3.5 LGPD/Compliance
-  â†“
+  ↓
 3.6 Observabilidade
-  â†“
+  ↓
 3.7 Performance
-  â†“
+  ↓
 3.8 Carga/Confiabilidade
-  â†“
-3.9 DistribuiÃ§Ã£o
-  â†“
+  ↓
+3.9 Distribuição
+  ↓
 CHECKPOINT FINAL
 ```
 
 ---
 
-# 10. Regra de evoluÃ§Ã£o do documento
+# 10. Regra de evolução do documento
 
-Este arquivo Ã© a **fonte de verdade do planejamento**.
+Este arquivo é a **fonte de verdade do planejamento**.
 
-Quando novas decisÃµes estruturais forem tomadas, o plano deverÃ¡ ser atualizado antes de iniciar uma nova etapa que dependa delas.
+Quando novas decisões estruturais forem tomadas, o plano deverá ser atualizado antes de iniciar uma nova etapa que dependa delas.
 
-Durante a implementaÃ§Ã£o, o checklist serÃ¡ marcado progressivamente.
+Durante a implementação, o checklist será marcado progressivamente.
 
-AlteraÃ§Ãµes no plano deverÃ£o preservar a coerÃªncia entre:
+Alterações no plano deverão preservar a coerência entre:
 
 - arquitetura
-- domÃ­nio
+- domínio
 - banco
 - API
 - Android
 - IA
-- seguranÃ§a
-- experiÃªncia do usuÃ¡rio
+- segurança
+- experiência do usuário
 
 ---
 
 # 11. Resultado final esperado
 
-Ao completar as trÃªs partes, o NEXA Finance deverÃ¡ possuir uma base preparada para ser um produto real:
+Ao completar as três partes, o NEXA Finance deverá possuir uma base preparada para ser um produto real:
 
 ```text
                  NEXA FINANCE
-                       â”‚
-        â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-        â”‚              â”‚              â”‚
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
      Android        Backend           IA
-        â”‚              â”‚              â”‚
-        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                       â”‚
+        │              │              │
+        └──────────────┼──────────────┘
+                       │
                    PostgreSQL
-                       â”‚
-             â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-             â”‚                   â”‚
-        Open Finance        ServiÃ§os
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+        Open Finance        Serviços
           futuro             externos
 ```
 
-A visÃ£o do produto Ã© simples:
+A visão do produto é simples:
 
-> **O NEXA deve tornar a gestÃ£o financeira pessoal rÃ¡pida, clara e inteligente, sem sacrificar precisÃ£o, seguranÃ§a ou capacidade de escala.**
-
----
-
-## PrÃ³xima execuÃ§Ã£o oficial
-
-**PARTE 1 â†’ Microtarefa 1.3 â€” DomÃ­nio financeiro.**
-
-ApÃ³s o fechamento tÃ©cnico e da infraestrutura local, o desenvolvimento passa a priorizar o domÃ­nio financeiro e suas invariantes antes do banco, API e acabamento visual.
+> **O NEXA deve tornar a gestão financeira pessoal rápida, clara e inteligente, sem sacrificar precisão, segurança ou capacidade de escala.**
 
 ---
 
-# 1.2 â€” RepositÃ³rio e estrutura inicial
+## Próxima execução oficial
+
+**PARTE 1 → Microtarefa 1.3 — Domínio financeiro.**
+
+Após o fechamento técnico e da infraestrutura local, o desenvolvimento passa a priorizar o domínio financeiro e suas invariantes antes do banco, API e acabamento visual.
+
+---
+
+# 1.2 — Repositório e estrutura inicial
 
 ## Estado atual
 
 - [x] Monorepo Git inicializado
 - [x] `android/` e `backend/` como builds Gradle independentes
-- [x] ConvenÃ§Ãµes de repositÃ³rio documentadas
+- [x] Convenções de repositório documentadas
 - [x] `.editorconfig` e `.gitattributes`
-- [x] ConfiguraÃ§Ã£o local via `.env.example`
-- [x] Script para geraÃ§Ã£o do Gradle Wrapper
+- [x] Configuração local via `.env.example`
+- [x] Script para geração do Gradle Wrapper
 - [x] Gradle Wrapper Android validado em 9.5.0
 - [x] Gradle Wrapper Backend validado em 9.5.0
 - [x] JDK 17 validado
@@ -1352,28 +1352,28 @@ ApÃ³s o fechamento tÃ©cnico e da infraestrutura local, o desenvolvimento pas
 - [x] WSL 2 habilitado e atualizado
 - [x] Docker Desktop / Docker Engine validados
 - [x] `docker compose config` validado
-- [x] PostgreSQL em execuÃ§Ã£o saudÃ¡vel
-- [x] RevisÃ£o final da infraestrutura local
+- [x] PostgreSQL em execução saudável
+- [x] Revisão final da infraestrutura local
 
-### CorreÃ§Ã£o aplicada e resultado
+### Correção aplicada e resultado
 
-O primeiro `postgres:18-alpine` iniciou em loop de reinÃ­cio porque o Compose montava o volume em `/var/lib/postgresql/data`. A partir do PostgreSQL 18, a imagem oficial passou a usar `/var/lib/postgresql` como ponto de volume e `PGDATA=/var/lib/postgresql/18/docker`. O Compose foi corrigido para seguir esse contrato e tambÃ©m passou a exigir `POSTGRES_PASSWORD` via `.env`, sem fallback de senha no arquivo versionado.
+O primeiro `postgres:18-alpine` iniciou em loop de reinício porque o Compose montava o volume em `/var/lib/postgresql/data`. A partir do PostgreSQL 18, a imagem oficial passou a usar `/var/lib/postgresql` como ponto de volume e `PGDATA=/var/lib/postgresql/18/docker`. O Compose foi corrigido para seguir esse contrato e também passou a exigir `POSTGRES_PASSWORD` via `.env`, sem fallback de senha no arquivo versionado.
 
-ApÃ³s a correÃ§Ã£o, uma inicializaÃ§Ã£o limpa foi validada: o container ficou `healthy`, `pg_isready` retornou `accepting connections`, e os logs confirmaram `database system is ready to accept connections`. O aviso de locale da imagem Alpine foi identificado como nÃ£o bloqueante para o ambiente atual.
+Após a correção, uma inicialização limpa foi validada: o container ficou `healthy`, `pg_isready` retornou `accepting connections`, e os logs confirmaram `database system is ready to accept connections`. O aviso de locale da imagem Alpine foi identificado como não bloqueante para o ambiente atual.
 
-### CritÃ©rio de conclusÃ£o 1.2
+### Critério de conclusão 1.2
 
-A microtarefa foi concluÃ­da apÃ³s verificar:
+A microtarefa foi concluída após verificar:
 
 1. Android compilando com `assembleDebug`;
 2. Backend passando em `clean build` e `test` com JDK 17;
 3. Docker operacional;
-4. `docker compose ... config` vÃ¡lido;
+4. `docker compose ... config` válido;
 5. PostgreSQL `healthy` e respondendo a `pg_isready`;
 6. `.env` fora do versionamento;
-7. revisÃ£o final sem pendÃªncias bloqueadoras de ambiente, estrutura ou documentaÃ§Ã£o.
+7. revisão final sem pendências bloqueadoras de ambiente, estrutura ou documentação.
 
-**Status: CONCLUÃDA âœ…**
+**Status: CONCLUÍDA ✅**
 
 
 # 12. Estado atual consolidado
