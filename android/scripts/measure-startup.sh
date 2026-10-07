@@ -9,8 +9,17 @@ echo "Measuring cold startup with adb am start -S -W (5 samples)..."
 
 i=1
 while [ "$i" -le 5 ]; do
-  adb shell am force-stop "$package_name" >/dev/null
-  output="$(adb shell am start -S -W -n "$activity" 2>&1)"
+  adb shell am force-stop "$package_name" >/dev/null 2>&1 || true
+  if output="$(adb shell am start -S -W -n "$activity" 2>&1)"; then
+    start_status=0
+  else
+    start_status=$?
+  fi
+  if [ "$start_status" -ne 0 ]; then
+    printf "adb am start failed on sample %s (exit=%s)\n" "$i" "$start_status"
+    printf "%s\n" "$output"
+    exit 1
+  fi
   total_time="$(printf '%s\n' "$output" | awk -F': ' '$1 == "TotalTime" {print $2; exit}')"
   case "$total_time" in
     ''|*[!0-9]*)
