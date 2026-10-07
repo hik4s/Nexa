@@ -4,9 +4,9 @@ Aplicativo Android de finanças pessoais com registro ultrarrápido, visão fina
 
 ## Status
 
-**Parte 1 — Fundação → Microtarefa 1.2 em andamento.**
+**Partes 1 e 2 concluídas e validadas. Parte 3 em fechamento: sincronização, hardening, exportação e operação já implementados; permanecem integrações externas, compliance formal e distribuição.**
 
-A estrutura do repositório foi revisada e endurecida. O único bloqueio restante desta microtarefa é a geração do Gradle Wrapper, que exige uma instalação do Gradle fora do ambiente atual.
+O projeto já possui backend + PostgreSQL, Android, CI, sincronização local-first/servidor, proteção de conflitos, rate limiting, backup/restore local, exportação de dados e baseline de carga. A última suíte instrumentada real havia passado 9/9; uma nova execução em 2026-10-04 ficou presa no emulador e foi encerrada para evitar processos órfãos.
 
 ## Stack fixada
 
@@ -19,8 +19,8 @@ A estrutura do repositório foi revisada e endurecida. O único bloqueio restant
 | Activity | activity-compose 1.12.4 |
 | Backend | Kotlin 2.4.20 + Ktor 3.6.0 |
 | Banco | PostgreSQL |
-| ORM/SQL | Exposed (a fixar na etapa de persistência) |
-| Migrações | Flyway (a fixar na etapa de banco) |
+| ORM/SQL | JDBC + SQL explícito |
+| Migrações | Flyway 13.9.0 |
 | Runtime Java | JDK 17 (toolchain) |
 | Infra local | Docker Compose |
 

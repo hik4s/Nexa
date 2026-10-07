@@ -41,4 +41,4 @@ Exemplo:
 - Estados de botão: concluídos
 - Campos de entrada: concluídos
 - Cards: concluídos
-- Componentes de valor monetário: próximos
+- Componentes de valor monetário: concluídos

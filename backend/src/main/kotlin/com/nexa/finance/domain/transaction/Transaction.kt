@@ -4,6 +4,8 @@ import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.category.CategoryId
+import com.nexa.finance.domain.card.CardId
+import com.nexa.finance.domain.invoice.InvoiceId
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -27,12 +29,23 @@ data class Transaction private constructor(
     val occurredOn: LocalDate,
     val description: String?,
     val categoryId: CategoryId?,
+    val cardId: CardId?,
+    val invoiceId: InvoiceId?,
+    val installmentId: UUID?,
+    val installmentNumber: Int?,
+    val recurrenceId: UUID?,
+    val recurrenceOccurrenceNumber: Int?,
     val source: TransactionSource,
     val relatedTransactionId: TransactionId?,
     val createdAt: Instant,
     val updatedAt: Instant,
+    val version: Long,
 ) {
     init {
+        if (version <= 0) {
+            throw DomainValidationException("Transaction version must be positive.")
+        }
+
         if (amount.amountInMinor <= 0) {
             throw DomainValidationException("Transaction amount must be greater than zero.")
         }
@@ -52,6 +65,18 @@ data class Transaction private constructor(
 
         if (type == TransactionType.CANCELLATION && relatedTransactionId == null) {
             throw DomainValidationException("A cancellation must reference the transaction it cancels.")
+        }
+        if ((installmentId == null) != (installmentNumber == null)) {
+            throw DomainValidationException("Installment metadata must be complete.")
+        }
+        if (installmentNumber != null && installmentNumber <= 0) {
+            throw DomainValidationException("Installment number must be greater than zero.")
+        }
+        if ((recurrenceId == null) != (recurrenceOccurrenceNumber == null)) {
+            throw DomainValidationException("Recurrence execution metadata must be complete.")
+        }
+        if (recurrenceOccurrenceNumber != null && recurrenceOccurrenceNumber <= 0) {
+            throw DomainValidationException("Recurrence occurrence number must be greater than zero.")
         }
     }
 
@@ -82,12 +107,19 @@ data class Transaction private constructor(
             occurredOn: LocalDate,
             description: String? = null,
             categoryId: CategoryId? = null,
+            cardId: CardId? = null,
+            invoiceId: InvoiceId? = null,
+            installmentId: UUID? = null,
+            installmentNumber: Int? = null,
+            recurrenceId: UUID? = null,
+            recurrenceOccurrenceNumber: Int? = null,
             source: TransactionSource = TransactionSource.MANUAL,
             status: TransactionStatus = TransactionStatus.POSTED,
             relatedTransactionId: TransactionId? = null,
             id: TransactionId = UUID.randomUUID(),
             createdAt: Instant = Instant.now(),
             updatedAt: Instant = createdAt,
+            version: Long = 1,
         ): Transaction {
             if (accountId.value == UUID(0, 0)) {
                 throw DomainValidationException("Account ID cannot be the zero UUID.")
@@ -105,10 +137,17 @@ data class Transaction private constructor(
                 occurredOn = occurredOn,
                 description = normalizedDescription,
                 categoryId = categoryId,
+                cardId = cardId,
+                invoiceId = invoiceId,
+                installmentId = installmentId,
+                installmentNumber = installmentNumber,
+                recurrenceId = recurrenceId,
+                recurrenceOccurrenceNumber = recurrenceOccurrenceNumber,
                 source = source,
                 relatedTransactionId = relatedTransactionId,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
+                version = version,
             )
         }
 
@@ -117,14 +156,16 @@ data class Transaction private constructor(
             direction: TransactionDirection,
         ) {
             val expectedDirection = when (type) {
-                TransactionType.INCOME,
-                TransactionType.REFUND,
-                -> TransactionDirection.CREDIT
+                TransactionType.INCOME -> TransactionDirection.CREDIT
 
-                TransactionType.EXPENSE,
+                TransactionType.EXPENSE -> TransactionDirection.DEBIT
+
+                // PURCHASE, PAYMENT and REFUND are account-contextual:
+                // assets and liabilities have opposite accounting effects.
                 TransactionType.PURCHASE,
                 TransactionType.PAYMENT,
-                -> TransactionDirection.DEBIT
+                TransactionType.REFUND,
+                -> null
 
                 TransactionType.TRANSFER,
                 TransactionType.CANCELLATION,

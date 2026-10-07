@@ -118,6 +118,41 @@ data class Recurrence private constructor(
         return copy(status = RecurrenceStatus.CANCELLED, updatedAt = now)
     }
 
+    fun update(
+        accountId: AccountId = this.accountId,
+        amount: Money = this.amount,
+        transactionType: TransactionType = this.transactionType,
+        frequency: RecurrenceFrequency = this.frequency,
+        interval: Int = this.interval,
+        startOn: LocalDate = this.startOn,
+        endOn: LocalDate? = this.endOn,
+        maxOccurrences: Int? = this.maxOccurrences,
+        description: String? = this.description,
+        categoryId: CategoryId? = this.categoryId,
+        now: Instant = Instant.now(),
+    ): Recurrence {
+        if (status == RecurrenceStatus.CANCELLED) {
+            throw DomainValidationException("Cancelled recurrences cannot be edited.")
+        }
+        return Recurrence(
+            id = id,
+            userId = userId,
+            accountId = accountId,
+            amount = amount,
+            transactionType = transactionType,
+            frequency = frequency,
+            interval = interval,
+            startOn = startOn,
+            endOn = endOn,
+            maxOccurrences = maxOccurrences,
+            description = description?.trim()?.takeIf { it.isNotEmpty() },
+            categoryId = categoryId,
+            status = status,
+            createdAt = createdAt,
+            updatedAt = now,
+        )
+    }
+
     /**
      * Returns the deterministic date for an occurrence number, independent of the current status.
      * This allows historical/audit queries without turning the schedule into ledger entries.
@@ -278,6 +313,40 @@ data class Recurrence private constructor(
         private val SUPPORTED_TRANSACTION_TYPES = setOf(
             TransactionType.INCOME,
             TransactionType.EXPENSE,
+        )
+
+        fun restore(
+            id: RecurrenceId,
+            userId: UserId,
+            accountId: AccountId,
+            amount: Money,
+            transactionType: TransactionType,
+            frequency: RecurrenceFrequency,
+            interval: Int,
+            startOn: LocalDate,
+            endOn: LocalDate?,
+            maxOccurrences: Int?,
+            description: String?,
+            categoryId: CategoryId?,
+            status: RecurrenceStatus,
+            createdAt: Instant,
+            updatedAt: Instant,
+        ): Recurrence = Recurrence(
+            id = id,
+            userId = userId,
+            accountId = accountId,
+            amount = amount,
+            transactionType = transactionType,
+            frequency = frequency,
+            interval = interval,
+            startOn = startOn,
+            endOn = endOn,
+            maxOccurrences = maxOccurrences,
+            description = description,
+            categoryId = categoryId,
+            status = status,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
         )
 
         fun create(

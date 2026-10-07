@@ -55,13 +55,13 @@ jobs:
         working-directory: backend
         run: chmod +x ./gradlew
 
-      - name: Test
-        working-directory: backend
-        run: ./gradlew clean test
-
       - name: Run database migrations
         working-directory: backend
         run: ./gradlew migrateDatabase
+
+      - name: Test
+        working-directory: backend
+        run: ./gradlew clean test
 
       - name: Build
         working-directory: backend
@@ -104,6 +104,25 @@ jobs:
         working-directory: android
         run: ./gradlew clean :app:testDebugUnitTest
 
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Instrumented Android tests + startup smoke metric
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          working-directory: ./android
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          disable-animations: true
+          script: |
+            ./gradlew :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.nexa.finance.sync.SyncConflictResolverInstrumentedTest --no-daemon
+            ./scripts/measure-startup.sh
       - name: Lint Android
         working-directory: android
         run: ./gradlew :app:lintDebug
@@ -111,3 +130,34 @@ jobs:
       - name: Build debug APK
         working-directory: android
         run: ./gradlew :app:assembleDebug
+
+      - name: Build release APK (unsigned)
+        working-directory: android
+        run: ./gradlew :app:assembleRelease -PnexaVersionCode=1 -PnexaVersionName=0.1.0
+
+      - name: Build release AAB (unsigned)
+        working-directory: android
+        run: ./gradlew :app:bundleRelease -PnexaVersionCode=1 -PnexaVersionName=0.1.0
+
+      - name: Upload unsigned release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexa-android-release-unsigned
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+
+  backup-worker:
+    name: Backup worker validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate backup script syntax
+        run: sh -n ops/postgres-backup/backup.sh
+
+      - name: Build backup worker image
+        run: docker build -f ops/postgres-backup/Dockerfile ops/postgres-backup

@@ -19,6 +19,7 @@ val ktorVersion = "3.6.0"
 val serializationVersion = "1.11.0"
 val flywayVersion = "13.9.0"
 val postgresqlVersion = "42.7.13"
+val hikariVersion = "7.1.0"
 
 kotlin {
     jvmToolchain(17)
@@ -28,11 +29,21 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-rate-limit-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-forwarded-header-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-logging-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-id-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-metrics-micrometer-jvm:$ktorVersion")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.17.1")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    runtimeOnly("org.slf4j:slf4j-simple:2.0.19")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
@@ -40,6 +51,11 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+
+    // Keep the integration suite deterministic when many Ktor test applications run in parallel.
+    // Explicit CI/local overrides remain respected through the environment variables.
+    environment("POSTGRES_POOL_MAX_SIZE", System.getenv("POSTGRES_POOL_MAX_SIZE") ?: "2")
+    environment("POSTGRES_POOL_MIN_IDLE", System.getenv("POSTGRES_POOL_MIN_IDLE") ?: "0")
 }
 
 tasks.register<JavaExec>("migrateDatabase") {

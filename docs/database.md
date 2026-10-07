@@ -24,6 +24,12 @@
 
 `V2__align_transaction_source_values.sql` alinha a restrição de `transactions.source` aos valores reais de `TransactionSource` no domínio.
 
+`V14__add_sync_changes.sql` cria o log de mudanças por usuário usado pelo protocolo de sincronização.
+
+`V15__add_transaction_versions.sql` adiciona versionamento otimista às transações, permitindo detecção de conflitos concorrentes.
+
+`V16__add_transaction_performance_indexes.sql` substitui o índice simples de histórico por um índice composto compatível com a ordenação da listagem e adiciona um índice parcial para consultas de transações relacionadas ativas.
+
 `owner_id` e `user_id` ainda não possuem FK para uma tabela de usuários. Essa relação será criada quando o agregado `User` e a autenticação forem formalizados na Parte 1.7.
 
 ## Executando localmente

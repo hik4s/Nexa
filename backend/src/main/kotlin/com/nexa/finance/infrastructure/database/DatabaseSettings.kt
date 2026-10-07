@@ -15,8 +15,18 @@ data class DatabaseSettings(
                     "jdbc:postgresql://$host:$port/$database"
                 }
             val username = environment["POSTGRES_USER"]?.trim().takeIf { !it.isNullOrEmpty() } ?: "nexa"
-            val password = environment["POSTGRES_PASSWORD"]
-                ?: error("POSTGRES_PASSWORD must be set for database migrations.")
+            val passwordFile = environment["POSTGRES_PASSWORD_FILE"]?.trim().takeIf { !it.isNullOrEmpty() }
+            val passwordValue = environment["POSTGRES_PASSWORD"]
+
+            val password = when {
+                passwordFile != null && passwordValue != null ->
+                    error("Set only one of POSTGRES_PASSWORD or POSTGRES_PASSWORD_FILE.")
+                passwordFile != null ->
+                    java.nio.file.Files.readString(java.nio.file.Path.of(passwordFile)).trimEnd('\r', '\n')
+                passwordValue != null -> passwordValue
+                else -> error("POSTGRES_PASSWORD or POSTGRES_PASSWORD_FILE must be set for database migrations.")
+            }
+            require(password.isNotEmpty()) { "Database password must not be empty." }
 
             return DatabaseSettings(
                 jdbcUrl = jdbcUrl,

@@ -1,5 +1,6 @@
 package com.nexa.finance.domain.goal
 
+import com.nexa.finance.domain.common.CurrencyCode
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.common.UserId
@@ -113,6 +114,31 @@ data class Goal private constructor(
 
     companion object {
         const val MAX_DESCRIPTION_LENGTH = 160
+
+        fun restore(
+            id: GoalId,
+            userId: UserId,
+            name: String,
+            targetAmountMinor: Long,
+            currentAmountMinor: Long,
+            currency: CurrencyCode,
+            targetDate: LocalDate?,
+            description: String?,
+            status: GoalStatus,
+            createdAt: Instant,
+            updatedAt: Instant,
+        ): Goal = Goal(
+            id = id,
+            userId = userId,
+            name = name,
+            targetAmount = Money(targetAmountMinor, currency),
+            currentAmount = Money(currentAmountMinor, currency),
+            targetDate = targetDate,
+            description = description,
+            status = status,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
 
         fun create(
             userId: UserId,

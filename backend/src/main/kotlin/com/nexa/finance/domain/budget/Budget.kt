@@ -1,6 +1,7 @@
 package com.nexa.finance.domain.budget
 
 import com.nexa.finance.domain.category.CategoryId
+import com.nexa.finance.domain.common.CurrencyCode
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
 import com.nexa.finance.domain.common.UserId
@@ -45,6 +46,29 @@ data class Budget private constructor(
         if (description != null && description.length > MAX_DESCRIPTION_LENGTH) {
             throw DomainValidationException("Budget description cannot exceed $MAX_DESCRIPTION_LENGTH characters.")
         }
+    }
+
+    fun update(
+        amount: Money,
+        startOn: LocalDate,
+        endOn: LocalDate,
+        categoryId: CategoryId?,
+        description: String?,
+        now: Instant = Instant.now(),
+    ): Budget {
+        val normalizedDescription = description?.trim()?.takeIf { it.isNotEmpty() }
+        return Budget(
+            id = id,
+            userId = userId,
+            categoryId = categoryId,
+            amount = amount,
+            startOn = startOn,
+            endOn = endOn,
+            description = normalizedDescription,
+            status = status,
+            createdAt = createdAt,
+            updatedAt = now,
+        )
     }
 
     fun pause(now: Instant = Instant.now()): Budget {
@@ -101,5 +125,30 @@ data class Budget private constructor(
                 updatedAt = now,
             )
         }
+
+        fun restore(
+            id: BudgetId,
+            userId: UserId,
+            categoryId: CategoryId?,
+            amountMinor: Long,
+            currency: CurrencyCode,
+            startOn: LocalDate,
+            endOn: LocalDate,
+            description: String?,
+            status: BudgetStatus,
+            createdAt: Instant,
+            updatedAt: Instant,
+        ): Budget = Budget(
+            id = id,
+            userId = userId,
+            categoryId = categoryId,
+            amount = Money(amountMinor, currency),
+            startOn = startOn,
+            endOn = endOn,
+            description = description,
+            status = status,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
     }
 }

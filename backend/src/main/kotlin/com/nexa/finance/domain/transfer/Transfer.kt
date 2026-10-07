@@ -71,6 +71,20 @@ data class Transfer private constructor(
             return Transfer(id, userId, sourceAccount.id, destinationAccount.id, amount, occurredOn, sourceTransaction, destinationTransaction, TransferStatus.PENDING, now, now)
         }
 
+        fun restore(
+            id: TransferId,
+            userId: UserId,
+            sourceAccountId: AccountId,
+            destinationAccountId: AccountId,
+            amount: Money,
+            occurredOn: LocalDate,
+            sourceTransaction: Transaction,
+            destinationTransaction: Transaction,
+            status: TransferStatus,
+            createdAt: Instant,
+            updatedAt: Instant,
+        ): Transfer = Transfer(id, userId, sourceAccountId, destinationAccountId, amount, occurredOn, sourceTransaction, destinationTransaction, status, createdAt, updatedAt)
+
         private fun TransferStatus.toTransactionStatus(): TransactionStatus = when (this) {
             TransferStatus.PENDING -> TransactionStatus.PENDING
             TransferStatus.POSTED -> TransactionStatus.POSTED

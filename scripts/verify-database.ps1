@@ -20,12 +20,25 @@ $container = 'nexa-finance-postgres'
 
 $expectedTables = @(
     'accounts',
+    'ai_usage_daily',
+    'budgets',
+    'cards',
     'categories',
+    'goal_contributions',
+    'goals',
     'installment_items',
     'installments',
+    'invoice_payment_transactions',
+    'invoices',
+    'notifications',
+    'password_recovery_tokens',
     'recurrences',
+    'sync_changes',
     'transactions',
-    'transfers'
+    'transfers',
+    'user_credentials',
+    'user_sessions',
+    'users'
 )
 
 $tableQuery = "SELECT string_agg(table_name, ',' ORDER BY table_name) FROM information_schema.tables WHERE table_schema='public' AND table_name NOT LIKE 'flyway%';"
@@ -43,16 +56,16 @@ $migrationQuery = "SELECT version || '|' || success FROM flyway_schema_history O
 $migration = docker exec $container psql -U $dbUser -d $dbName -Atc $migrationQuery
 if ($LASTEXITCODE -ne 0) { throw 'Could not query Flyway schema history.' }
 $actualMigrations = @($migration -split '\r?\n' | Where-Object { $_.Trim() -ne '' } | ForEach-Object { $_.Trim() })
-$expectedMigrations = @('1|true', '2|true')
+$expectedMigrations = 1..16 | ForEach-Object { "$_|true" }
 if (($actualMigrations -join '|') -ne ($expectedMigrations -join '|')) { throw "Unexpected Flyway history: $migration" }
 
 $indexQuery = "SELECT count(*) FROM pg_indexes WHERE schemaname='public' AND indexname LIKE 'idx_%';"
 $indexCount = [int](docker exec $container psql -U $dbUser -d $dbName -Atc $indexQuery)
-if ($indexCount -lt 13) { throw "Expected at least 13 application indexes, found $indexCount." }
+if ($indexCount -lt 32) { throw "Expected at least 32 application indexes, found $indexCount." }
 
 $fkQuery = "SELECT count(*) FROM information_schema.table_constraints WHERE constraint_schema='public' AND constraint_type='FOREIGN KEY' AND table_name <> 'flyway_schema_history';"
 $foreignKeyCount = [int](docker exec $container psql -U $dbUser -d $dbName -Atc $fkQuery)
-if ($foreignKeyCount -lt 12) { throw "Expected at least 12 foreign keys, found $foreignKeyCount." }
+if ($foreignKeyCount -lt 36) { throw "Expected at least 36 foreign keys, found $foreignKeyCount." }
 
 Write-Host "Database verification: PASS"
 Write-Host "Tables: $($expectedTables -join ', ')"
