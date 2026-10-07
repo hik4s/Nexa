@@ -3,8 +3,8 @@
 **Versão:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Parte 1 - Microtarefas 1.3.1 a 1.3.8 concluidas; 1.4 e 1.5 concluidas; automacao de desenvolvimento instalada e verificada.
-**Plataforma inicial:** Android
+**Checkpoint atual:** 2026-10-07 — base de domínio, banco, infraestrutura, confiabilidade e Design System já avançados; Run #169 validado 100% verde. O próximo foco oficial é produzir evidência operacional reproduzível por meio do drill de falha externa + recuperação, sem deixar pendências de confiabilidade para trás.
+**Plataforma inicial:**** Android
 **Objetivo:** Construir um aplicativo de finanças pessoais sólido, seguro, escalável e preparado para distribuição futura.
 
 ---
@@ -188,7 +188,7 @@ A interface deverá privilegiar:
 
 ### Obsidian
 
-`#0B0B0C`
+`#0B0F0D`
 
 Uso:
 - fundos escuros
@@ -198,7 +198,7 @@ Uso:
 
 ### Ivory
 
-`#F5F2EA`
+`#FAFAF7`
 
 Uso:
 - fundo claro principal
@@ -207,7 +207,7 @@ Uso:
 
 ### Burgundy
 
-`#5A1D2A`
+`#7A1F2E`
 
 Uso:
 - marca
@@ -217,7 +217,7 @@ Uso:
 
 ### Deep Green
 
-`#173B2B`
+`#0F6B4D`
 
 Uso:
 - informações positivas
@@ -227,7 +227,7 @@ Uso:
 
 ### Soft Gray
 
-`#8C8C8C`
+`#94A3B8`
 
 Uso:
 - textos secundários
@@ -236,7 +236,7 @@ Uso:
 
 ### Champagne Accent
 
-`#C7B27A`
+`#E8DCC6`
 
 Uso extremamente moderado:
 - pequenos detalhes premium
@@ -412,7 +412,7 @@ Outra máquina deve conseguir reproduzir o ambiente seguindo o README sem depend
 
 ## 1.4 — Design System
 
-**Status:** CONCLUÍDO
+**Status:** CONCLUÍDO — identidade visual restaurada e alinhada à referência aprovada em 2026-10-07.
 
 Microtarefas concluídas: tokens de cor, tipografia, espaçamento, raio, elevação, componentes base, estados de botão, campos de entrada, cards, valores monetários, feedback/loading/error states e modos claro/escuro. Validação: assembleDebug + testDebugUnitTest + lintDebug.
 
@@ -1326,9 +1326,9 @@ A visão do produto é simples:
 
 ## Próxima execução oficial
 
-**PARTE 1 → Microtarefa 1.3 — Domínio financeiro.**
+**Confiabilidade operacional → Drill reproduzível de falha externa + recuperação.**
 
-Após o fechamento técnico e da infraestrutura local, o desenvolvimento passa a priorizar o domínio financeiro e suas invariantes antes do banco, API e acabamento visual.
+O domínio 1.3 e a fundação de infraestrutura já avançaram além do ponto descrito em versões antigas deste documento. A execução agora deve produzir evidência de comportamento diante de falha externa, validar recuperação sem corromper estado e atualizar o checkpoint antes de abrir a próxima frente.
 
 ---
 
