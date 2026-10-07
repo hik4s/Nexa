@@ -4,7 +4,7 @@
 **Status:** Documento-base do desenvolvimento
 
 **Checkpoint atual:** 2026-10-07 — base de domínio, banco, infraestrutura, confiabilidade e Design System já avançados; Run #169 validado 100% verde. O próximo foco oficial é produzir evidência operacional reproduzível por meio do drill de falha externa + recuperação, sem deixar pendências de confiabilidade para trás.
-**Plataforma inicial:**** Android
+**Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanças pessoais sólido, seguro, escalável e preparado para distribuição futura.
 
 ---
@@ -1378,17 +1378,25 @@ A microtarefa foi concluída após verificar:
 
 # 12. Estado atual consolidado
 
-## Checkpoint validado em 2026-10-03
+## Checkpoint operacional atualizado em 2026-10-07
 - Ambiente Java 17 / Gradle 9.5.0 validado.
 - Backend: testes e build passando.
-- Android: testes/build e APK debug passando.
-- Docker Compose: configuração validada.
-- Git hook pre-push configurado em .githooks.
-- Verificação completa: scripts/verify.ps1 passou com ExecutionPolicy Bypass.
-- Domínio concluído: Transaction, Account, Category e Transfer.
-- android/local.properties é local e está protegido pelo .gitignore.
+- Android: testes/build e APK debug validados nos checkpoints anteriores.
+- Docker Compose e PostgreSQL local validados.
+- Railway/produção operacional nos checkpoints anteriores.
+- Safe retries implementados e validados com política controlada; operações sensíveis sem retry automático quando isso seria incorreto.
+- Backup diário PostgreSQL configurado e execução validada.
+- Tracing implementado e validado.
+- Run #169: suíte consolidada 100% verde, incluindo testes de cache, instrumentados, lint e builds Android, além de API/worker.
+- Design System restaurado para a identidade visual aprovada: Deep Green + Burgundy + Ivory + Champagne + Obsidian, com Light/Dark.
+- O Master Plan continua sendo a fonte de verdade e não deve voltar a apontar para microtarefas já concluídas como 1.3.6/1.3.8.
 
-## Próxima etapa
-1.3.6 - Installment.
+## Situação de execução
+- Contagem consolidada no checkpoint anterior: 278/308 itens concluídos; 30 itens ainda abertos.
+- O próximo trabalho não deve ser escolhido por ordem textual antiga do documento quando ela conflitar com o estado real do repositório.
+- Antes de abrir nova frente funcional, devemos fechar o drill reproduzível de falha externa + recuperação e registrar a evidência.
+
+## Próxima etapa oficial
+**Drill de falha externa + recuperação**, seguido de reconciliação do Master Plan com o estado real e, então, avanço para o próximo bloco aberto sem dependências pendentes.
 
 
