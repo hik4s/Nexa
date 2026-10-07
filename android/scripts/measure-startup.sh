@@ -5,6 +5,17 @@ package_name="com.nexa.finance"
 activity="com.nexa.finance/.MainActivity"
 samples=""
 
+echo "Installing debug APK before startup measurement..."
+./gradlew :app:installDebug --no-daemon
+
+resolved_activity="$(adb shell cmd package resolve-activity --brief "$package_name" | tail -n 1 | tr -d "\r")"
+if [ -z "$resolved_activity" ]; then
+  echo "Unable to resolve launcher activity for $package_name"
+  exit 1
+fi
+activity="$resolved_activity"
+printf "Resolved startup activity: %s\n" "$activity"
+
 echo "Measuring cold startup with adb am start -S -W (5 samples)..."
 
 i=1
