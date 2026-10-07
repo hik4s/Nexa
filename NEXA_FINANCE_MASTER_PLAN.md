@@ -98,7 +98,7 @@ Meta de experiência: **registro comum em menos de 20 segundos**.
 ```text
                          NEXA Finance
                               │
-             ┌────────────────â”´────────────────┐
+             ┌────────────────┴───────────────┐
              │                                 │
        Android App                         Backend API
              │                                 │
@@ -106,7 +106,7 @@ Meta de experiência: **registro comum em menos de 20 segundos**.
     │        │        │                │       │        │
 Presentation Domain  Data           Auth   Finance    AI
     │        │        │                │       │        │
-    └────────â”´────────┘                └───────┼────────┘
+    └────────┴───────┘                └───────┼────────┘
                                               │
                                          PostgreSQL
                                               │
