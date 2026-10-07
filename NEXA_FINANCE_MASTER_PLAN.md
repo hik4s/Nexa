@@ -206,7 +206,7 @@ Validação desta microetapa: testes JVM do resolver passaram; teste instrumenta
 
 ### Obsidian
 
-`#0B0B0C`
+`#0B0F0D`
 
 Uso:
 - fundos escuros
@@ -216,7 +216,7 @@ Uso:
 
 ### Ivory
 
-`#F5F2EA`
+`#FAFAF7`
 
 Uso:
 - fundo claro principal
@@ -225,7 +225,7 @@ Uso:
 
 ### Burgundy
 
-`#5A1D2A`
+`#7A1F2E`
 
 Uso:
 - marca
@@ -235,7 +235,7 @@ Uso:
 
 ### Deep Green
 
-`#173B2B`
+`#0F6B4D`
 
 Uso:
 - informaÃ§Ãµes positivas
@@ -245,7 +245,7 @@ Uso:
 
 ### Soft Gray
 
-`#8C8C8C`
+`#94A3B8`
 
 Uso:
 - textos secundÃ¡rios
@@ -254,7 +254,7 @@ Uso:
 
 ### Champagne Accent
 
-`#C7B27A`
+`#E8DCC6`
 
 Uso extremamente moderado:
 - pequenos detalhes premium
@@ -310,7 +310,7 @@ Revalidação realizada contra o branch `feat/card-invoice-ledger`, cabeça `003
 | 3.7 Performance | 10 | 5 | 5 | paginação, índices, benchmarks de 50k registros, carga API/DB e cache curto validado por teste/CI | ABERTO: medições de inicialização/telas, memória, bateria e rede. |
 | 3.8 Carga/confiabilidade | 8 | 6 | 2 | carga API/DB, SyncQueueTest, AI integration tests e sync tests | ABERTO: exercício completo de falhas externas e recuperação. |
 
-**Resultado da auditoria:** 308 checks = **280 concluídos + 28 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 30 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
+**Resultado da auditoria:** 308 checks = **280 concluídos + 28 abertos**. Não foram encontrados checks `[x]` que precisassem ser reabertos nesta rodada; os 28 `[ ]` permanecem coerentes com as evidências disponíveis. O consentimento Open Finance 3.3.3 já está integrado ao branch atual e validado por CI; não deve ser repetido.
 
 **CI atual:** run `37460572216` do commit `5eab0b8` concluiu verde, validando a migração de coroutines da UI. Run `37462927156` do commit `ae60ae8` concluiu verde, incluindo `ExpiringCacheTest`, backend migrations/test/build, Android unit/instrumented/lint/debug/release APK/release AAB e validação do worker de backup.
 
@@ -1160,3 +1160,10 @@ Foram adicionados dois cenários explícitos ao `OpenFinanceConsentServiceTest`:
 - recuperação do provider externo, com nova tentativa bem-sucedida que leva o consentimento a `ACTIVE`.
 
 A prova cobre comportamento determinístico de falha/retry/recuperação da dependência externa. Isso não encerra recuperação de desastre do banco/produção, que permanece separada no check 3.1 e exige exercício de restauração operacional.
+
+
+### Próxima execução oficial — 3.1 Recuperação de desastre
+
+O exercício 3.8.3 comprovou falha/retry/recuperação de uma dependência externa, mas não substitui o exercício de restauração do PostgreSQL de produção. O próximo objetivo é executar e documentar uma restauração real de um backup de produção em ambiente isolado, verificar integridade pós-restore e registrar RPO/RTO observados.
+
+**Critério de avanço:** backup real identificado, restauração isolada concluída sem alterar a produção, verificações de integridade executadas, resultado documentado e procedimento reproduzível.
