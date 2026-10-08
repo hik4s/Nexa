@@ -100,7 +100,7 @@ class BelvoOpenFinanceProvider(
             path = "/api/token/",
             body = json.encodeToString(BelvoWidgetTokenRequest.serializer(), requestBody),
             contentType = "application/json",
-            basicAuth = null,
+            basicAuth = BasicCredentials(settings.secretId!!, settings.secretPassword!!),
         )
         val token = decode<BelvoWidgetTokenResponse>(response)
         if (token.access.isBlank()) {
