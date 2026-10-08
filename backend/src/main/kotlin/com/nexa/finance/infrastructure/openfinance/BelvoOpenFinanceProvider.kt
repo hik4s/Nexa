@@ -69,11 +69,11 @@ class BelvoOpenFinanceProvider(
         val requestBody = BelvoWidgetTokenRequest(
             id = settings.secretId!!,
             password = settings.secretPassword!!,
-            externalId = context.externalId,
             scopes = "read_institutions,write_links,read_consents,write_consents,write_consent_callback,delete_consents",
             fetchResources = resources,
             staleIn = settings.staleIn,
             widget = BelvoWidget(
+                purpose = settings.purpose,
                 openFinanceFeature = "consent_link_creation",
                 callbackUrls = BelvoCallbackUrls(
                     success = settings.successCallbackUrl!!,
@@ -81,7 +81,6 @@ class BelvoOpenFinanceProvider(
                     event = settings.eventCallbackUrl!!,
                 ),
                 consent = BelvoWidgetConsent(
-                    purpose = settings.purpose,
                     termsAndConditionsUrl = settings.termsAndConditionsUrl!!,
                     permissions = listOf("REGISTER", "ACCOUNTS", "CREDIT_CARDS", "CREDIT_OPERATIONS"),
                     identificationInfo = listOf(
@@ -91,6 +90,12 @@ class BelvoOpenFinanceProvider(
                             name = holderName,
                         ),
                     ),
+                ),
+                branding = BelvoBranding(
+                    companyIcon = settings.companyIconUrl!!,
+                    companyLogo = settings.companyLogoUrl!!,
+                    companyName = settings.companyName,
+                    companyTermsUrl = settings.termsAndConditionsUrl!!,
                 ),
             ),
         )
@@ -107,9 +112,17 @@ class BelvoOpenFinanceProvider(
             throw IOException("Belvo returned an empty widget access token.")
         }
 
+        val authorizationUrl = URI.create("https://widget.belvo.io/").let { base ->
+            base.toString() +
+                "?access_token=" + java.net.URLEncoder.encode(token.access, Charsets.UTF_8) +
+                "&locale=pt" +
+                "&access_mode=recurrent" +
+                "&external_id=" + java.net.URLEncoder.encode(context.externalId, Charsets.UTF_8)
+        }
+
         return OpenFinanceProvider.ProviderConsentSession(
             externalConsentId = null,
-            authorizationUrl = "https://widget.belvo.io/",
+            authorizationUrl = authorizationUrl,
             widgetAccessToken = token.access,
             expiresAt = Instant.now(clock).plusSeconds(600),
         )
@@ -248,6 +261,7 @@ class BelvoOpenFinanceProvider(
 
     @Serializable
     private data class BelvoWidget(
+        val purpose: String,
         @SerialName("openfinance_feature")
         val openFinanceFeature: String,
         @SerialName("callback_urls")
@@ -263,8 +277,19 @@ class BelvoOpenFinanceProvider(
     )
 
     @Serializable
+    private data class BelvoBranding(
+        @SerialName("company_icon")
+        val companyIcon: String,
+        @SerialName("company_logo")
+        val companyLogo: String,
+        @SerialName("company_name")
+        val companyName: String,
+        @SerialName("company_terms_url")
+        val companyTermsUrl: String,
+    )
+
+    @Serializable
     private data class BelvoWidgetConsent(
-        val purpose: String,
         @SerialName("terms_and_conditions_url")
         val termsAndConditionsUrl: String,
         val permissions: List<String>,
