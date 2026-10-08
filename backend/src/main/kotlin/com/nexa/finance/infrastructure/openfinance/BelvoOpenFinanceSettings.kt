@@ -12,7 +12,10 @@ data class BelvoOpenFinanceSettings(
     val successCallbackUrl: String? = null,
     val exitCallbackUrl: String? = null,
     val eventCallbackUrl: String? = null,
-    val purpose: String = "Conectar suas contas ao NEXA para organizar sua vida financeira.",
+    val companyIconUrl: String? = null,
+    val companyLogoUrl: String? = null,
+    val companyName: String = "NEXA Finance",
+    val purpose: String = "Organizar sua vida financeira com segurança.",
     val staleIn: String = "300d",
 ) {
     fun requireUsable() {
@@ -26,6 +29,11 @@ data class BelvoOpenFinanceSettings(
         requireCallbackUrl(successCallbackUrl, "BELVO_CALLBACK_SUCCESS_URL")
         requireCallbackUrl(exitCallbackUrl, "BELVO_CALLBACK_EXIT_URL")
         requireCallbackUrl(eventCallbackUrl, "BELVO_CALLBACK_EVENT")
+        requireHttpsUrl(companyIconUrl, "BELVO_COMPANY_ICON_URL")
+        requireHttpsUrl(companyLogoUrl, "BELVO_COMPANY_LOGO_URL")
+        if (companyName.isBlank() || companyName.length > 80) {
+            throw DomainValidationException("BELVO_COMPANY_NAME must contain between 1 and 80 characters.")
+        }
         if (purpose.isBlank() || purpose.length > 600) {
             throw DomainValidationException("BELVO_PURPOSE must contain between 1 and 600 characters.")
         }
@@ -46,8 +54,11 @@ data class BelvoOpenFinanceSettings(
                 successCallbackUrl = environment("BELVO_CALLBACK_SUCCESS_URL")?.trim()?.ifBlank { null },
                 exitCallbackUrl = environment("BELVO_CALLBACK_EXIT_URL")?.trim()?.ifBlank { null },
                 eventCallbackUrl = environment("BELVO_CALLBACK_EVENT")?.trim()?.ifBlank { null },
+                companyIconUrl = environment("BELVO_COMPANY_ICON_URL")?.trim()?.ifBlank { null },
+                companyLogoUrl = environment("BELVO_COMPANY_LOGO_URL")?.trim()?.ifBlank { null },
+                companyName = environment("BELVO_COMPANY_NAME")?.trim()?.ifBlank { null } ?: "NEXA Finance",
                 purpose = environment("BELVO_PURPOSE")?.trim()?.ifBlank { null }
-                    ?: "Conectar suas contas ao NEXA para organizar sua vida financeira.",
+                    ?: "Organizar sua vida financeira com segurança.",
                 staleIn = environment("BELVO_STALE_IN")?.trim()?.ifBlank { null } ?: "300d",
             )
         }
