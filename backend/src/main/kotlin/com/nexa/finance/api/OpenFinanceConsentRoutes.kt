@@ -49,6 +49,28 @@ fun Route.openFinanceConsentRoutes(service: OpenFinanceConsentService) {
                 )
             }
 
+            post("/{id}/authorization-session") {
+                val request = call.receive<OpenFinanceConsentAuthorizationSessionRequest>()
+                val session = service.beginAuthorizationSession(
+                    userId = call.principalUserId(),
+                    consentId = parseConsentId(call.parameters["id"]),
+                    context = com.nexa.finance.application.openfinance.OpenFinanceProvider.ProviderAuthorizationContext(
+                        externalId = "nexa-" + parseConsentId(call.parameters["id"]),
+                        documentType = request.documentType,
+                        documentNumber = request.documentNumber,
+                        holderName = request.holderName,
+                    ),
+                )
+                call.respond(
+                    OpenFinanceConsentAuthorizationResponse(
+                        externalConsentId = session.externalConsentId,
+                        authorizationUrl = session.authorizationUrl,
+                        widgetAccessToken = session.widgetAccessToken,
+                        sessionExpiresAt = session.expiresAt?.toString(),
+                    )
+                )
+            }
+
             post("/{id}/sync") {
                 val consent = service.sync(
                     userId = call.principalUserId(),
