@@ -68,6 +68,39 @@ class OpenFinanceConsentService(
         return session
     }
 
+    fun beginAuthorizationSession(
+        userId: UserId,
+        consentId: OpenFinanceConsentId,
+        context: OpenFinanceProvider.ProviderAuthorizationContext,
+    ): OpenFinanceProvider.ProviderConsentSession {
+        val consent = get(userId, consentId)
+        val provider = providers.get(consent.providerId)
+        val session = provider.requestAuthorizationSession(
+            userId = userId,
+            scopes = consent.scopes,
+            context = context,
+        )
+
+        val updated = session.externalConsentId?.let { externalId ->
+            consent.markAwaitingAuthorization(
+                externalConsentId = externalId,
+                now = Instant.now(clock),
+            )
+        } ?: consent
+
+        repository.update(updated)
+            ?: throw DomainValidationException("Open Finance consent was not found.")
+
+        audit?.record(
+            actorUserId = userId,
+            eventType = "OPEN_FINANCE_AUTHORIZATION_SESSION_CREATED",
+            targetType = "OPEN_FINANCE_CONSENT",
+            targetId = consent.id,
+            metadata = "{\"provider\":\"" + consent.providerId + "\",\"hasWidgetAccessToken\":" + (session.widgetAccessToken != null) + "}",
+        )
+        return session
+    }
+
     fun sync(
         userId: UserId,
         consentId: OpenFinanceConsentId,
