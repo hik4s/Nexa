@@ -47,6 +47,7 @@ interface OpenFinanceProvider {
         val externalConsentId: String?,
         val authorizationUrl: String?,
         val widgetAccessToken: String? = null,
+        val expiresAt: Instant? = null,
     )
 
     data class ProviderConsentState(
