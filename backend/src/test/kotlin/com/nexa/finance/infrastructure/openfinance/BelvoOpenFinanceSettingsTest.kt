@@ -12,7 +12,9 @@ class BelvoOpenFinanceSettingsTest {
         val settings = BelvoOpenFinanceSettings.fromEnvironment { null }
 
         assertFalse(settings.enabled)
-        settings.requireUsable()
+        assertFailsWith<com.nexa.finance.domain.common.DomainValidationException> {
+            settings.requireUsable()
+        }
     }
 
     @Test
