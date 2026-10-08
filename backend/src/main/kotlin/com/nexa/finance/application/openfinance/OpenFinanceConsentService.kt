@@ -54,7 +54,8 @@ class OpenFinanceConsentService(
         // consent on each call unless they explicitly guarantee idempotency.
         val session = provider.requestConsent(userId, consent.scopes)
         val updated = consent.markAwaitingAuthorization(
-            externalConsentId = session.externalConsentId,
+            externalConsentId = session.externalConsentId
+                ?: throw DomainValidationException("Open Finance provider did not return an external consent ID."),
             now = Instant.now(clock),
         )
         repository.update(updated)
