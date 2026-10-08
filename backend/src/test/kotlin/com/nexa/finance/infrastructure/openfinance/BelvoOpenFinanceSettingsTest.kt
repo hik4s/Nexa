@@ -28,6 +28,9 @@ class BelvoOpenFinanceSettingsTest {
             "BELVO_CALLBACK_SUCCESS_URL" to "nexa://open-finance/success",
             "BELVO_CALLBACK_EXIT_URL" to "nexa://open-finance/exit",
             "BELVO_CALLBACK_EVENT" to "nexa://open-finance/error",
+            "BELVO_COMPANY_ICON_URL" to "https://nexa.example/icon.svg",
+            "BELVO_COMPANY_LOGO_URL" to "https://nexa.example/logo.svg",
+            "BELVO_COMPANY_NAME" to "NEXA Finance",
             "BELVO_STALE_IN" to "300d",
         )
         val settings = BelvoOpenFinanceSettings.fromEnvironment(environment::get)
@@ -49,6 +52,8 @@ class BelvoOpenFinanceSettingsTest {
             "BELVO_CALLBACK_SUCCESS_URL" to "nexa://open-finance/success",
             "BELVO_CALLBACK_EXIT_URL" to "nexa://open-finance/exit",
             "BELVO_CALLBACK_EVENT" to "nexa://open-finance/error",
+            "BELVO_COMPANY_ICON_URL" to "https://nexa.example/icon.svg",
+            "BELVO_COMPANY_LOGO_URL" to "https://nexa.example/logo.svg",
         )
         val settings = BelvoOpenFinanceSettings.fromEnvironment(environment::get)
 
@@ -68,6 +73,8 @@ class BelvoOpenFinanceSettingsTest {
             "BELVO_CALLBACK_SUCCESS_URL" to "https://nexa.example/open-finance/success",
             "BELVO_CALLBACK_EXIT_URL" to "nexa://open-finance/exit",
             "BELVO_CALLBACK_EVENT" to "nexa://open-finance/error",
+            "BELVO_COMPANY_ICON_URL" to "https://nexa.example/icon.svg",
+            "BELVO_COMPANY_LOGO_URL" to "https://nexa.example/logo.svg",
         )
 
         BelvoOpenFinanceSettings.fromEnvironment(common::get).requireUsable()
