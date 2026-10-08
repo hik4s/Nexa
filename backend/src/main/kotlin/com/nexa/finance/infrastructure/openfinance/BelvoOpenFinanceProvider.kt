@@ -249,8 +249,6 @@ class BelvoOpenFinanceProvider(
     private data class BelvoWidgetTokenRequest(
         val id: String,
         val password: String,
-        @SerialName("external_id")
-        val externalId: String,
         val scopes: String,
         @SerialName("fetch_resources")
         val fetchResources: List<String>,
@@ -267,6 +265,7 @@ class BelvoOpenFinanceProvider(
         @SerialName("callback_urls")
         val callbackUrls: BelvoCallbackUrls,
         val consent: BelvoWidgetConsent,
+        val branding: BelvoBranding,
     )
 
     @Serializable
