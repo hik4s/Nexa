@@ -23,9 +23,9 @@ data class BelvoOpenFinanceSettings(
         requireSecret(secretPassword, "BELVO_SECRET_PASSWORD")
         requireHttpsUrl(baseUrl, "BELVO_BASE_URL")
         requireHttpsUrl(termsAndConditionsUrl, "BELVO_TERMS_URL")
-        requireHttpsUrl(successCallbackUrl, "BELVO_CALLBACK_SUCCESS_URL")
-        requireHttpsUrl(exitCallbackUrl, "BELVO_CALLBACK_EXIT_URL")
-        requireHttpsUrl(eventCallbackUrl, "BELVO_CALLBACK_EVENT")
+        requireCallbackUrl(successCallbackUrl, "BELVO_CALLBACK_SUCCESS_URL")
+        requireCallbackUrl(exitCallbackUrl, "BELVO_CALLBACK_EXIT_URL")
+        requireCallbackUrl(eventCallbackUrl, "BELVO_CALLBACK_EVENT")
         if (purpose.isBlank() || purpose.length > 600) {
             throw DomainValidationException("BELVO_PURPOSE must contain between 1 and 600 characters.")
         }
@@ -55,6 +55,18 @@ data class BelvoOpenFinanceSettings(
         private fun requireSecret(value: String?, name: String) {
             if (value.isNullOrBlank()) {
                 throw DomainValidationException("$name is required when Belvo is enabled.")
+            }
+        }
+
+        private fun requireCallbackUrl(value: String?, name: String) {
+            val url = value?.takeIf { it.isNotBlank() }?.let {
+                runCatching { URI(it) }.getOrNull()
+            }
+            val scheme = url?.scheme
+            if (url == null || scheme.isNullOrBlank() ||
+                (scheme != "https" && !Regex("""^[a-z][a-z0-9+.-]*$""").matches(scheme))
+            ) {
+                throw DomainValidationException("$name must be a valid HTTPS URL or application deep-link.")
             }
         }
 
