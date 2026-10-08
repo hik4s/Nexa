@@ -71,6 +71,16 @@ fun Route.openFinanceConsentRoutes(service: OpenFinanceConsentService) {
                 )
             }
 
+            post("/{id}/authorization-callback") {
+                val request = call.receive<CompleteOpenFinanceConsentAuthorizationRequest>()
+                val consent = service.completeAuthorization(
+                    userId = call.principalUserId(),
+                    consentId = parseConsentId(call.parameters["id"]),
+                    externalConsentId = request.externalConsentId,
+                )
+                call.respond(consent.toResponse())
+            }
+
             post("/{id}/sync") {
                 val consent = service.sync(
                     userId = call.principalUserId(),
