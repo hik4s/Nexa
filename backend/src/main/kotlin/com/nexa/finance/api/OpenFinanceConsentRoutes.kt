@@ -55,7 +55,7 @@ fun Route.openFinanceConsentRoutes(service: OpenFinanceConsentService) {
                     userId = call.principalUserId(),
                     consentId = parseConsentId(call.parameters["id"]),
                     context = com.nexa.finance.application.openfinance.OpenFinanceProvider.ProviderAuthorizationContext(
-                        externalId = "nexa-" + parseConsentId(call.parameters["id"]),
+                        externalId = "nexa-user-" + call.principalUserId(),
                         documentType = request.documentType,
                         documentNumber = request.documentNumber,
                         holderName = request.holderName,
