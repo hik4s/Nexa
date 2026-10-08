@@ -3,7 +3,7 @@
 **Versão:** 1.0
 **Status:** Documento-base do desenvolvimento
 
-**Checkpoint atual:** Partes 1 e 2 concluídas e validadas; Parte 3 em progresso. Sincronização 3.2, discovery/consentimento Open Finance 3.3.3, audit trail técnico, logs estruturados, métricas, retries controlados, backups de produção, tracing e cache curto do cliente estão implementados e validados. Pendências reais: recuperação de desastre, conexão e importações Open Finance, segurança/compliance formal, observabilidade operacional avançada, medições de performance do dispositivo/rede e exercícios completos de falha/recuperação.
+**Checkpoint atual:** 2026-10-08 — Partes 1 e 2 concluídas e validadas; Parte 3 em progresso. O drill de recuperação de desastre 3.1 foi concluído com backup real de produção restaurado em PostgreSQL isolado, integridade pós-restore validada e procedimento reproduzível versionado. Auditoria incremental, retries controlados, backups, tracing, sincronização 3.2 e discovery/consentimento Open Finance 3.3.3 permanecem implementados e validados. Estado do plano: 281/308 itens concluídos, 27 abertos. Próxima frente oficial: conexão Open Finance 3.3.
 **Plataforma inicial:** Android
 **Objetivo:** Construir um aplicativo de finanças pessoais sólido, seguro, escalável e preparado para distribuição futura.
 
@@ -949,7 +949,28 @@ Objetivo: preparar o NEXA para usuários reais, crescimento, integrações banc�
 - [x] Retries controlados
 - [x] Tratamento de falhas
 - [x] Backups
-- [ ] Recuperação de desastre
+- [x] Recuperação de desastre
+
+### Checkpoint 3.1.1 — restauração real de PostgreSQL — 2026-10-08
+
+Concluído e validado. O backup real `postgres/production/nexa_finance_20261008T030418Z.dump` foi transferido do Bucket privado para um runtime isolado e restaurado em PostgreSQL 18.6 sem tocar a instância de produção.
+
+Evidências do drill:
+- backup: 77.815 bytes; 175 entradas de TOC;
+- download: sucesso;
+- `pg_restore`: sucesso, 2 s;
+- workflow completo de recuperação no cenário isolado: 2 s;
+- 23 tabelas e 74 índices restaurados;
+- 0 constraints não validadas e 0 índices inválidos/não prontos;
+- Flyway presente, 18 migrações com sucesso, 0 falhas, versão mais recente 18;
+- contagens verificadas: users=1, accounts=0, transactions=0, audit_events=0, sync_changes=0;
+- produção permaneceu íntegra e separada durante todo o exercício;
+- procedimento reproduzível versionado em `ops/postgres-restore/`.
+
+O backup usado foi concluído em 2026-10-08T03:04:18Z e o drill iniciou em 2026-10-08T11:36:05Z, produzindo uma exposição observada de 8h31m47s entre o ponto de backup e o início da recuperação. Como a política atual é de backup diário às 03:00 UTC, a exposição máxima nominal continua próxima de 24 horas quando um backup diário está disponível; falhas ou atrasos de backup devem ser monitorados separadamente.
+
+O RTO de 2 s é apenas o RTO observado neste backup de 77,8 KB e neste ambiente isolado; ele não é tratado como RTO garantido para uma produção em escala real. A validação isolada de schema, integridade e aplicação da restauração satisfaz o critério de avanço do item 3.1.
+
 
 ### Checkpoint 3.1 — produção/rate limiting — 2026-10-04
 
@@ -1162,8 +1183,8 @@ Foram adicionados dois cenários explícitos ao `OpenFinanceConsentServiceTest`:
 A prova cobre comportamento determinístico de falha/retry/recuperação da dependência externa. Isso não encerra recuperação de desastre do banco/produção, que permanece separada no check 3.1 e exige exercício de restauração operacional.
 
 
-### Próxima execução oficial — 3.1 Recuperação de desastre
+### Próxima execução oficial — 3.3 Conexão Open Finance
 
-O exercício 3.8.3 comprovou falha/retry/recuperação de uma dependência externa, mas não substitui o exercício de restauração do PostgreSQL de produção. O próximo objetivo é executar e documentar uma restauração real de um backup de produção em ambiente isolado, verificar integridade pós-restore e registrar RPO/RTO observados.
+O exercício de recuperação de desastre 3.1 foi fechado. A próxima frente oficial é a conexão com participante/provedor Open Finance, mantendo a separação entre domínio, provider e ciclo de consentimento já implementados.
 
-**Critério de avanço:** backup real identificado, restauração isolada concluída sem alterar a produção, verificações de integridade executadas, resultado documentado e procedimento reproduzível.
+**Critério de avanço:** conexão sandbox/teste funcional estabelecida, credenciais e secrets fora do código, ciclo de autorização validado ponta a ponta, tratamento de expiração/erro implementado e evidência registrada sem depender de dados bancários reais.
