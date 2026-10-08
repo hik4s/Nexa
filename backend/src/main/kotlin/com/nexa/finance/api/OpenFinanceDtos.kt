@@ -29,6 +29,12 @@ data class OpenFinanceConsentResponse(
 )
 
 @Serializable
+data class CompleteOpenFinanceConsentAuthorizationRequest(
+    val externalConsentId: String,
+    val institutionId: String,
+)
+
+@Serializable
 data class OpenFinanceConsentAuthorizationResponse(
     val externalConsentId: String?,
     val authorizationUrl: String?,
