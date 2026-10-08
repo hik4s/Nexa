@@ -101,6 +101,28 @@ class OpenFinanceConsentService(
         return session
     }
 
+    fun completeAuthorization(
+        userId: UserId,
+        consentId: OpenFinanceConsentId,
+        externalConsentId: String,
+    ): OpenFinanceConsent {
+        val consent = get(userId, consentId)
+        val updated = consent.markAwaitingAuthorization(
+            externalConsentId = externalConsentId,
+            now = Instant.now(clock),
+        )
+        val persisted = repository.update(updated)
+            ?: throw DomainValidationException("Open Finance consent was not found.")
+        audit?.record(
+            actorUserId = userId,
+            eventType = "OPEN_FINANCE_AUTHORIZATION_COMPLETED",
+            targetType = "OPEN_FINANCE_CONSENT",
+            targetId = consent.id,
+            metadata = "{\"provider\":\"" + consent.providerId + "\"}",
+        )
+        return persisted
+    }
+
     fun sync(
         userId: UserId,
         consentId: OpenFinanceConsentId,
