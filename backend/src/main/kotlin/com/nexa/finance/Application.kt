@@ -54,6 +54,8 @@ import com.nexa.finance.infrastructure.export.JdbcDataExportRepository
 import com.nexa.finance.infrastructure.installment.JdbcInstallmentRepository
 import com.nexa.finance.infrastructure.invoice.JdbcInvoiceRepository
 import com.nexa.finance.infrastructure.notification.JdbcNotificationRepository
+import com.nexa.finance.infrastructure.openfinance.BelvoOpenFinanceProvider
+import com.nexa.finance.infrastructure.openfinance.BelvoOpenFinanceSettings
 import com.nexa.finance.infrastructure.openfinance.JdbcOpenFinanceConsentRepository
 import com.nexa.finance.infrastructure.recurrence.JdbcRecurrenceRepository
 import com.nexa.finance.infrastructure.transaction.JdbcTransactionRepository
@@ -114,9 +116,22 @@ fun main() {
     }.start(wait = true)
 }
 
+fun configuredOpenFinanceProviderRegistry(
+    environment: (String) -> String? = System::getenv,
+): com.nexa.finance.application.openfinance.OpenFinanceProviderRegistry {
+    val settings = BelvoOpenFinanceSettings.fromEnvironment(environment)
+    if (!settings.enabled) {
+        return ConfiguredOpenFinanceProviderRegistry()
+    }
+    settings.requireUsable()
+    return ConfiguredOpenFinanceProviderRegistry(
+        providers = mapOf("belvo" to BelvoOpenFinanceProvider(settings)),
+    )
+}
+
 fun Application.module(
     openFinanceProviders: com.nexa.finance.application.openfinance.OpenFinanceProviderRegistry =
-        ConfiguredOpenFinanceProviderRegistry(),
+        configuredOpenFinanceProviderRegistry(),
     observabilitySettings: ObservabilitySettings = ObservabilitySettings.fromEnvironment(),
     observability: NexaObservability = NexaObservability(),
 ) {
