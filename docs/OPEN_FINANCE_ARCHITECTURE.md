@@ -116,3 +116,22 @@ The backend owns normalization, reconciliation and consent metadata. Provider se
 - Belvo — Aggregation Brazil: https://developers.belvo.com/pt-br/products/aggregation_brazil/aggregation-brazil-introduction
 - Celcoin — Open Finance credentials: https://developers.celcoin.com.br/docs/obtendo-acesso-%C3%A0s-apis
 - Pluggy — July 2026 product updates: https://docs.pluggy.ai/pt/changelog/2026.07
+### 3.3.4 — fundação de conexão Belvo Hosted Widget — 2026-10-08
+
+A primeira implementação concreta de provider foi adicionada atrás do contrato provider-neutral, sem habilitar Belvo em produção por padrão.
+
+Fluxo implementado:
+
+1. O usuário cria um consentimento NEXA autenticado.
+2. O backend gera uma sessão de autorização via `POST /api/v1/open-finance/consents/{id}/authorization-session`.
+3. O adapter Belvo solicita um access token de curta duração no endpoint `/api/token/`, mantendo as credenciais Belvo exclusivamente no backend.
+4. O backend devolve ao cliente apenas o material necessário para abrir o Hosted Widget; o token do widget não é persistido nas tabelas financeiras.
+5. O Hosted Widget retorna o Link ID no evento de sucesso.
+6. O cliente envia o Link ID para `POST /api/v1/open-finance/consents/{id}/authorization-callback`, que o associa ao consentimento NEXA.
+7. O sincronismo posterior usa o Link ID como identificador externo do provider.
+
+O adapter implementado cobre geração da sessão, consulta de status e revogação da conexão. A configuração é dirigida por ambiente e exige HTTPS para URLs de infraestrutura/termos; callbacks podem ser HTTPS ou deep links da aplicação.
+
+A integração real permanece deliberadamente atrás de uma dependência externa: onboarding da conta Belvo, credenciais válidas do Sandbox, URLs de callback registradas e teste ponta a ponta com uma conta Mockbank. Sem essas credenciais, o check `Implementar conexão` não é fechado.
+
+No fluxo de dados, o NEXA deve aguardar os webhooks de atualização histórica antes de buscar contas/transações, porque a Belvo processa esses dados de forma assíncrona. O callback de sucesso fornece o Link ID necessário para as chamadas posteriores.
