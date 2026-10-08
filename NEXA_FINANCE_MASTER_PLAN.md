@@ -279,6 +279,15 @@ Implementado o primeiro ciclo real de consentimento, sem acoplamento a provider.
 
 Validação desta microetapa: testes de domínio e E2E PostgreSQL adicionados; migration V17 validada pelo Flyway; CI backend/Android obrigatório antes do merge.
 
+
+### Microcheckpoint 3.3.4 — fundação de conexão Open Finance / Belvo — 2026-10-08
+
+Implementada a primeira camada concreta de conexão sem acoplamento do domínio ao provider. O contrato provider-neutral agora suporta sessões de autorização com material temporário do widget; o fluxo autenticado possui endpoint de criação da sessão e endpoint de callback de sucesso para associar o Link ID externo ao consentimento NEXA. Foi adicionado adapter Belvo Sandbox, configuração por ambiente e validações de secrets/URLs, sem credenciais reais versionadas ou habilitação automática em produção.
+
+Validação: o build/deploy do backend no Railway concluiu com sucesso no deployment `f391fbe0-a70b-4f3e-8aea-234076495ad4`; posteriormente o commit de CI também foi publicado e API/backup worker permaneceram em `SUCCESS`. A suíte automatizada completa do GitHub não foi observada neste branch porque o workflow histórico está associado ao branch/default-base anterior; o deploy do Railway comprovou compilação do backend, não substituindo os testes completos.
+
+Dependência externa restante: credenciais válidas do Belvo Sandbox, configuração de callbacks e execução ponta a ponta com Mockbank. Portanto, o check **Implementar conexão** permanece aberto até a prova funcional externa.
+
 ---
 
 ### Auditoria completa do Master Plan — 2026-10-05
