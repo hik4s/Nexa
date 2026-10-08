@@ -9,6 +9,13 @@ data class CreateOpenFinanceConsentRequest(
 )
 
 @Serializable
+data class OpenFinanceConsentAuthorizationSessionRequest(
+    val documentType: String,
+    val documentNumber: String,
+    val holderName: String,
+)
+
+@Serializable
 data class OpenFinanceConsentResponse(
     val id: String,
     val providerId: String,
@@ -21,11 +28,12 @@ data class OpenFinanceConsentResponse(
     val revokedAt: String?,
 )
 
-
 @Serializable
 data class OpenFinanceConsentAuthorizationResponse(
-    val externalConsentId: String,
-    val authorizationUrl: String,
+    val externalConsentId: String?,
+    val authorizationUrl: String?,
+    val widgetAccessToken: String? = null,
+    val sessionExpiresAt: String? = null,
 )
 
 @Serializable
