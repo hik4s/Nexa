@@ -1,5 +1,7 @@
 package com.nexa.finance.application.budget
 
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
 import com.nexa.finance.domain.budget.Budget
 import com.nexa.finance.domain.budget.BudgetId
 import com.nexa.finance.domain.category.CategoryId
@@ -22,6 +24,7 @@ data class BudgetProgress(
 
 class BudgetService(
     private val repository: JdbcBudgetRepository,
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun create(
         userId: UserId,
@@ -42,6 +45,7 @@ class BudgetService(
             description = description,
         )
         repository.create(budget)
+        audit?.record(userId, AuditEventTypes.BUDGET_CREATED, "BUDGET", budget.id)
         return budget
     }
 
@@ -72,8 +76,10 @@ class BudgetService(
             categoryId = categoryId,
             description = description,
         )
-        return progressFor(repository.update(next)
-            ?: throw DomainValidationException("Budget was not found."))
+        val updated = repository.update(next)
+            ?: throw DomainValidationException("Budget was not found.")
+        audit?.record(userId, AuditEventTypes.BUDGET_UPDATED, "BUDGET", updated.id)
+        return progressFor(updated)
     }
 
     fun pause(userId: UserId, budgetId: BudgetId): BudgetProgress =
@@ -91,8 +97,10 @@ class BudgetService(
     private fun change(userId: UserId, budgetId: BudgetId, transform: (Budget) -> Budget): BudgetProgress {
         val current = repository.findByOwnerAndId(userId, budgetId)
             ?: throw DomainValidationException("Budget was not found.")
-        return progressFor(repository.update(transform(current))
-            ?: throw DomainValidationException("Budget was not found."))
+        val updated = repository.update(transform(current))
+            ?: throw DomainValidationException("Budget was not found.")
+        audit?.record(userId, AuditEventTypes.BUDGET_STATUS_CHANGED, "BUDGET", updated.id)
+        return progressFor(updated)
     }
 
     private fun progressFor(budget: Budget): BudgetProgress {

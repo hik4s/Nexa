@@ -1,5 +1,7 @@
 package com.nexa.finance.application.recurrence
 
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.account.AccountStatus
 import com.nexa.finance.domain.account.AccountType
@@ -27,6 +29,7 @@ class RecurrenceService(
     private val accounts: JdbcAccountRepository,
     private val transactions: JdbcTransactionRepository,
     private val clock: Clock = Clock.systemUTC(),
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun create(
         ownerId: UserId,
@@ -57,6 +60,7 @@ class RecurrenceService(
             clock = clock,
         )
         recurrences.create(recurrence)
+        audit?.record(ownerId, AuditEventTypes.RECURRENCE_CREATED, "RECURRENCE", recurrence.id)
         return recurrence
     }
 
@@ -76,7 +80,7 @@ class RecurrenceService(
     ): Recurrence {
         val current = get(ownerId, id)
         validateAccountAndCategory(ownerId, accountId, amount, categoryId)
-        return recurrences.update(
+        val updated = recurrences.update(
             current.update(
                 accountId = accountId,
                 amount = amount,
@@ -91,6 +95,8 @@ class RecurrenceService(
                 now = java.time.Instant.now(clock),
             )
         ) ?: throw DomainValidationException("Recurrence was not found.")
+        audit?.record(ownerId, AuditEventTypes.RECURRENCE_UPDATED, "RECURRENCE", updated.id)
+        return updated
     }
 
     fun list(ownerId: UserId): List<Recurrence> = recurrences.list(ownerId)
@@ -129,9 +135,12 @@ class RecurrenceService(
     fun cancel(ownerId: UserId, id: RecurrenceId): Recurrence =
         updateStatus(ownerId, id, get(ownerId, id).cancel(java.time.Instant.now(clock)).status)
 
-    private fun updateStatus(ownerId: UserId, id: RecurrenceId, status: RecurrenceStatus): Recurrence =
-        recurrences.updateStatus(ownerId, id, status)
+    private fun updateStatus(ownerId: UserId, id: RecurrenceId, status: RecurrenceStatus): Recurrence {
+        val updated = recurrences.updateStatus(ownerId, id, status)
             ?: throw DomainValidationException("Recurrence was not found.")
+        audit?.record(ownerId, AuditEventTypes.RECURRENCE_STATUS_CHANGED, "RECURRENCE", updated.id)
+        return updated
+    }
 
     fun execute(ownerId: UserId, id: RecurrenceId, occurrenceNumber: Int): Transaction {
         val recurrence = get(ownerId, id)
@@ -169,6 +178,7 @@ class RecurrenceService(
             recurrenceOccurrenceNumber = occurrence.number,
         )
         transactions.create(ownerId, transaction)
+        audit?.record(ownerId, AuditEventTypes.RECURRENCE_EXECUTED, "TRANSACTION", transaction.id)
         return transaction
     }
 

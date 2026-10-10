@@ -2,6 +2,8 @@ package com.nexa.finance.application.transaction
 
 import com.nexa.finance.domain.account.AccountId
 import com.nexa.finance.domain.account.AccountStatus
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
 import com.nexa.finance.domain.category.CategoryId
 import com.nexa.finance.domain.common.ConflictException
 import com.nexa.finance.domain.common.DomainValidationException
@@ -20,6 +22,7 @@ import java.time.LocalDate
 class TransactionService(
     private val transactions: JdbcTransactionRepository,
     private val accounts: JdbcAccountRepository,
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun create(
         ownerId: UserId,
@@ -56,6 +59,7 @@ class TransactionService(
             id = id ?: java.util.UUID.randomUUID(),
         )
         transactions.create(ownerId, transaction)
+        audit?.record(ownerId, AuditEventTypes.TRANSACTION_CREATED, "TRANSACTION", transaction.id)
         return transaction
     }
 
@@ -107,6 +111,7 @@ class TransactionService(
             if (latest == null) throw DomainValidationException("Transaction was not found.")
             throw ConflictException("Transaction has changed since this client last read it.")
         }
+        audit?.record(ownerId, AuditEventTypes.TRANSACTION_UPDATED, "TRANSACTION", updated.id)
         return updated
     }
 
@@ -117,29 +122,33 @@ class TransactionService(
         transactions.findByOwnerAndId(ownerId, id)
             ?: throw DomainValidationException("Transaction was not found.")
 
-    fun post(ownerId: UserId, id: TransactionId): Transaction =
-        get(ownerId, id).let {
-            if (it.status != TransactionStatus.PENDING) {
-                throw DomainValidationException("Only pending transactions can be posted.")
-            }
-            transactions.updateStatus(ownerId, id, TransactionStatus.POSTED, it.version)
-                ?: run {
-                    val latest = transactions.findByOwnerAndId(ownerId, id)
-                    if (latest == null) throw DomainValidationException("Transaction was not found.")
-                    throw ConflictException("Transaction has changed since this client last read it.")
-                }
+    fun post(ownerId: UserId, id: TransactionId): Transaction {
+        val current = get(ownerId, id)
+        if (current.status != TransactionStatus.PENDING) {
+            throw DomainValidationException("Only pending transactions can be posted.")
         }
+        val updated = transactions.updateStatus(ownerId, id, TransactionStatus.POSTED, current.version)
+            ?: run {
+                val latest = transactions.findByOwnerAndId(ownerId, id)
+                if (latest == null) throw DomainValidationException("Transaction was not found.")
+                throw ConflictException("Transaction has changed since this client last read it.")
+            }
+        audit?.record(ownerId, AuditEventTypes.TRANSACTION_POSTED, "TRANSACTION", updated.id)
+        return updated
+    }
 
-    fun cancel(ownerId: UserId, id: TransactionId): Transaction =
-        get(ownerId, id).let {
-            if (it.status == TransactionStatus.CANCELLED) {
-                throw DomainValidationException("Transaction is already cancelled.")
-            }
-            transactions.updateStatus(ownerId, id, TransactionStatus.CANCELLED, it.version)
-                ?: run {
-                    val latest = transactions.findByOwnerAndId(ownerId, id)
-                    if (latest == null) throw DomainValidationException("Transaction was not found.")
-                    throw ConflictException("Transaction has changed since this client last read it.")
-                }
+    fun cancel(ownerId: UserId, id: TransactionId): Transaction {
+        val current = get(ownerId, id)
+        if (current.status == TransactionStatus.CANCELLED) {
+            throw DomainValidationException("Transaction is already cancelled.")
         }
+        val updated = transactions.updateStatus(ownerId, id, TransactionStatus.CANCELLED, current.version)
+            ?: run {
+                val latest = transactions.findByOwnerAndId(ownerId, id)
+                if (latest == null) throw DomainValidationException("Transaction was not found.")
+                throw ConflictException("Transaction has changed since this client last read it.")
+            }
+        audit?.record(ownerId, AuditEventTypes.TRANSACTION_CANCELLED, "TRANSACTION", updated.id)
+        return updated
+    }
 }

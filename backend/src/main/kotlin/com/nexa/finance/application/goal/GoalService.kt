@@ -1,5 +1,7 @@
 package com.nexa.finance.application.goal
 
+import com.nexa.finance.application.audit.AuditEventRecorder
+import com.nexa.finance.application.audit.AuditEventTypes
 import com.nexa.finance.domain.common.CurrencyCode
 import com.nexa.finance.domain.common.DomainValidationException
 import com.nexa.finance.domain.common.Money
@@ -21,6 +23,7 @@ data class GoalProgress(
 class GoalService(
     private val repository: JdbcGoalRepository,
     private val clock: Clock = Clock.systemUTC(),
+    private val audit: AuditEventRecorder? = null,
 ) {
     fun create(
         userId: UserId,
@@ -39,6 +42,7 @@ class GoalService(
             clock = clock,
         )
         repository.create(goal)
+        audit?.record(userId, AuditEventTypes.GOAL_CREATED, "GOAL", goal.id)
         return progressFor(goal)
     }
 
@@ -62,6 +66,7 @@ class GoalService(
             amount = Money(amountMinor, currency),
             occurredOn = occurredOn,
         )
+        audit?.record(userId, AuditEventTypes.GOAL_CONTRIBUTION_ADDED, "GOAL", result.first.id)
         return progressFor(result.first) to result.second
     }
 
@@ -82,8 +87,10 @@ class GoalService(
     private fun change(userId: UserId, goalId: GoalId, transform: (Goal) -> Goal): GoalProgress {
         val current = repository.findByOwnerAndId(userId, goalId)
             ?: throw DomainValidationException("Goal was not found.")
-        return progressFor(repository.update(transform(current))
-            ?: throw DomainValidationException("Goal was not found."))
+        val updated = repository.update(transform(current))
+            ?: throw DomainValidationException("Goal was not found.")
+        audit?.record(userId, AuditEventTypes.GOAL_STATUS_CHANGED, "GOAL", updated.id)
+        return progressFor(updated)
     }
 
     private fun progressFor(goal: Goal): GoalProgress {
