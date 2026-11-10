@@ -1,0 +1,64 @@
+# Nexa Finance — identidade visual
+
+Direção aprovada: **A · Lastro**. Edição 1.0 · 10/11/2026.
+
+## Ideia e personalidade
+Equilíbrio, precisão e serenidade. Duas massas equivalentes encontram o equilíbrio. A sensação premium vem de proporção, espaço, materiais visuais sóbrios e uso contido de cor. Sem brilho, cromado, gradientes ou sombras na marca.
+
+## Logos e arquivos
+`source/` contém os vetores principais: horizontal, vertical (`stacked`), símbolo, nome e versão pequena. `digital/` contém positivos, negativos e PNGs. `web/` contém favicon, ícones de aplicativo e manifesto. Os nomes em texto corrido são **Nexa Finance**; a assinatura tem desenho próprio em caixa-alta.
+
+Todos os elementos da logo são paths preenchidos. O nome não depende de fontes instaladas. Use a arte fornecida, sem redigitar a assinatura.
+
+## Cor
+| Papel | HEX | RGB | CMYK aproximado (%) |
+|---|---|---|---|
+| Principal | `#5A1D2A` | 90, 29, 42 | 0 / 68 / 53 / 65 |
+| Fundo | `#F5F2EA` | 245, 242, 234 | 0 / 1 / 4 / 4 |
+| Tinta | `#171719` | 23, 23, 25 | 8 / 8 / 0 / 90 |
+| Acento | `#C7B27A` | 199, 178, 122 | 0 / 11 / 39 / 22 |
+| Apoio | `#173B2B` | 23, 59, 43 | 61 / 0 / 27 / 77 |
+| Texto secundário | `#746B6C` | 116, 107, 108 | 0 / 8 / 7 / 55 |
+
+Distribuição sugerida: **70% marfim / 25% borgonha e grafite / até 5% champagne**. É direção de composição, não quota obrigatória. O acento serve a pequenos detalhes, nunca a texto longo sobre fundo claro. As cores de estado da aplicação devem ter nomes e ícones, além de cor.
+
+Pares aprovados: principal sobre fundo claro; fundo claro ou branco sobre principal; preto sobre branco. Texto secundário sobre fundo claro: **4.62:1**. Principal/fundo: **11.42:1**. Tinta/fundo: **16.00:1**. Acento/principal: **6.13:1**.
+
+CMYK foi calculado por conversão matemática sem perfil de impressão. Para impressão premium, solicitar prova física e conversão no perfil da gráfica; Pantone não especificado.
+
+## Tipografia
+Interface e comunicação: **Inter**, arquivo variável incluído sob SIL Open Font License (`fontes/OFL.txt`). Títulos 500–600, corpo 400, rótulos 500. Caixa-alta e tracking 0.12em somente em legendas curtas. Não espaçar artificialmente parágrafos.
+
+Escala sugerida: 12 / 14 / 16 / 20 / 28 / 40 / 56 px, com títulos responsivos e corpo em 16 px. Entrelinha: 1.15 para títulos e 1.6 para leitura. Valores e tabelas usam `font-variant-numeric: tabular-nums`. Fallback: `Inter, system-ui, sans-serif`.
+
+## Área livre e redução
+Preservar ao menos **40 unidades do desenho de 256** em torno da silhueta. A assinatura tem margens internas: respeite-as e acrescente espaço quando próxima de texto ou bordas.
+
+| Versão | Tela | Impressão |
+|---|---|---|
+| Horizontal | 280 px de largura | 50 mm de largura |
+| Vertical | 240 px de largura | 50 mm de largura |
+| Símbolo | 32 px | 8 mm |
+| Ícone pequeno | 16–24 px, usar `small`/favicon | não destinado a impressão |
+
+O descritor FINANCE deve permanecer legível; em espaços menores, usar apenas o símbolo. Para o R pequeno do RelatPy, o vazio interno foi aberto ligeiramente. A versão marfim/branca usa ajuste óptico discreto no símbolo em fundos escuros.
+
+## Composição e elementos
+Grade de 8 px. Margens generosas, divisores finos e neutros, raio 8 px nos controles. Evitar muitas superfícies encaixadas ou mais de uma ação principal por grupo. O recorte diagonal de 45 graus do símbolo pode aparecer como encontro de duas faixas, em baixo contraste, sem repetir a logo como textura.
+
+Fotografia, quando necessária: composições simples, luz suave e cores dessaturadas; nunca atrás de uma marca sem contraste. Ícones da aplicação devem ser consistentes, com traço único, sem competir com a logo.
+
+## Movimento
+Entrada automática ao entrar na área visível: **2,4 s**; a logo termina exatamente no desenho estático. Duas massas equivalentes encontram o equilíbrio. Deslocamento curto, sem giros, elástico ou deformação. Durante execução real de tarefas, pode-se repetir uma sequência curta; a apresentação de marca toca uma vez por entrada. `prefers-reduced-motion` mostra o estado final imediatamente. Exemplo funcional em `movimento/index.html`.
+
+## Voz
+Direta, calma e específica. Falar em clareza, organização e acompanhamento financeiro; sem promessas de rendimento, status de banco ou recursos que o aplicativo ainda não entrega.
+As frases da apresentação são propostas editoriais, não parte do desenho da logo. Aplicações apresentadas são estudos visuais, não novas funcionalidades.
+
+## Preservação
+Manter proporções, cor e disposição das assinaturas. Usar a versão negativa sobre fundos escuros. Não adicionar contornos, distorcer, girar ou aplicar gradientes. Não misturar versões antigas e novas na mesma aplicação.
+
+## Verificação e entrega
+As formas foram auditadas quanto a texto vivo, raster e filtros. Os símbolos usam geometria simples. Os avisos heurísticos de ângulo nas assinaturas correspondem às diagonais das letras e são ajustes tipográficos intencionais. Foram renderizadas e inspecionadas as apresentações de identidade e as provas de redução, fundos e monocromia. As animações passaram por verificação de sintaxe JavaScript; seu comportamento deve ser conferido na integração ao produto. Esta criação não inclui pesquisa de registro de marca; antes de um lançamento comercial amplo, recomenda-se pesquisa profissional.
+
+Responsável pela aplicação: Kauan Inacio dos Santos. A identidade está versionada neste repositório; a adoção nas telas do produto é uma etapa separada.

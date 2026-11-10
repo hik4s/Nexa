@@ -1,0 +1,15 @@
+@font-face{font-family:Inter;src:url("fontes/InterVariable.woff2") format("woff2");font-weight:100 900;font-display:swap}
+:root{
+  --brand-primary: #5A1D2A;
+  --brand-paper: #F5F2EA;
+  --brand-ink: #171719;
+  --brand-muted: #746B6C;
+  --brand-accent: #C7B27A;
+  --brand-secondary: #173B2B;
+  --brand-font: Inter, system-ui, sans-serif;
+  --brand-radius: 8px;
+}
+body{background:var(--brand-paper);color:var(--brand-ink);font-family:var(--brand-font)}
+.brand-number{font-variant-numeric:tabular-nums}
+.brand-action{background:var(--brand-primary);color:var(--brand-paper);border:0;border-radius:8px;padding:12px 20px;font:500 14px var(--brand-font)}
+.brand-action:focus-visible{outline:2px solid var(--brand-primary);outline-offset:4px}

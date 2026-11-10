@@ -1,0 +1,39 @@
+
+=== nexa-finance-horizontal.svg  (1801 bytes)
+viewBox 0 0 605 256 · aspect 2.363 (wide)
+colours 1: #5a1d2a · gradients 0 · anchors 139
+margins L48.0 R24.0 T48.0 B48.0 · bbox fill 0.551
+▲ WARN [near-miss-angle] 14 straight edge(s) are 0.3–3° off a clean angle — they read as mistakes. Snap them: 61.5° (→60°) len 35.0 at (451,57); 118.5° (→120°) len 35.0 at (468,88); 118.4° (→120°) len 50.0 at (499,57); 61.6° (→60°) len 50.0 at (475,101); 61.5° (→60°) len 35.0 at (484,145); 118.5° (→120°) len 35.0 at (468,114) …. (Expected — and fine — for type set on a curve or deliberately rotated elements.)
+· INFO [off-centre-x] Horizontal margins differ (left 48.0, right 24.0). Intentional optical centring? Otherwise centre it.
+production-readiness score: 91/100 (heuristic)
+
+=== nexa-finance-small.svg  (303 bytes)
+viewBox 0 0 256 256 · aspect 1.0 (square)
+colours 1: #5a1d2a · gradients 0 · anchors 14
+margins L48.0 R48.0 T48.0 B48.0 · bbox fill 0.391
+✔ no issues found
+production-readiness score: 100/100 (heuristic)
+
+=== nexa-finance-stacked.svg  (1890 bytes)
+viewBox 0 0 512 512 · aspect 1.0 (square)
+colours 1: #5a1d2a · gradients 0 · anchors 139
+margins L109.0 R110.0 T48.0 B75.5 · bbox fill 0.434
+▲ WARN [near-miss-angle] 16 straight edge(s) are 0.3–3° off a clean angle — they read as mistakes. Snap them: 61.5° (→60°) len 35.0 at (272,305); 118.5° (→120°) len 35.0 at (289,336); 118.4° (→120°) len 50.0 at (320,305); 61.6° (→60°) len 50.0 at (296,349); 61.5° (→60°) len 35.0 at (305,393); 118.5° (→120°) len 35.0 at (289,362) …. (Expected — and fine — for type set on a curve or deliberately rotated elements.)
+▲ WARN [tiny-detail] 1 sub-shape(s) smaller than 1/48 of the canvas (≈1 px at 48 px): 6.0×10.0 at (167,416). They vanish when small — enlarge, merge or remove them, or provide a small-size version.
+· INFO [complexity] 139 anchor points (library median 53.0, p75 95.5). Check every point earns its place.
+· INFO [off-centre-y] Vertical margins differ (top 48.0, bottom 75.5). Remember the optical centre sits slightly above the geometric centre.
+production-readiness score: 82/100 (heuristic)
+
+=== nexa-finance-symbol.svg  (302 bytes)
+viewBox 0 0 256 256 · aspect 1.0 (square)
+colours 1: #5a1d2a · gradients 0 · anchors 14
+margins L48.0 R48.0 T48.0 B48.0 · bbox fill 0.391
+✔ no issues found
+production-readiness score: 100/100 (heuristic)
+
+=== nexa-finance-wordmark.svg  (1621 bytes)
+viewBox 272 42 326 162 · aspect 2.012 (wide)
+colours 1: #5a1d2a · gradients 0 · anchors 125
+margins L16.0 R17.0 T15.0 B15.5 · bbox fill 0.73
+▲ WARN [near-miss-angle] 16 straight edge(s) are 0.3–3° off a clean angle — they read as mistakes. Snap them: 61.5° (→60°) len 35.0 at (451,57); 118.5° (→120°) len 35.0 at (468,88); 118.4° (→120°) len 50.0 at (499,57); 61.6° (→60°) len 50.0 at (475,101); 61.5° (→60°) len 35.0 at (484,145); 118.5° (→120°) len 35.0 at (468,114) …. (Expected — and fine — for type set on a curve or deliberately rotated elements.)
+production-readiness score: 92/100 (heuristic)

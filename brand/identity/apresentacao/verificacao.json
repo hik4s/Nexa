@@ -1,0 +1,9 @@
+{
+  "brand": "Nexa Finance",
+  "svg_files": 32,
+  "vector_checks": "XML válido; sem texto vivo, raster, filtros ou máscaras nos arquivos de logo.",
+  "visual_checks": "Apresentação principal, redução, monocromia e inversão renderizadas e inspecionadas.",
+  "png_files": 14,
+  "web_manifest": "ícones referenciados presentes",
+  "motion": "verificação de sintaxe; comportamento na integração não verificado em navegador interativo"
+}

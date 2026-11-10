@@ -128,3 +128,18 @@ A meta de registro em menos de 20 segundos é um objetivo de produto, ainda sem 
 - [Banco](docs/database.md)
 - [Revisão das regras de domínio](docs/domain/domain-review-1.3.8.md)
 - [Workflow de desenvolvimento](docs/development-workflow.md)
+
+## Identidade visual
+
+A identidade visual aprovada de Nexa Finance está em [`brand/identity/`](brand/identity/). O kit inclui logos vetoriais, versões positivas e negativas, PNGs, ícones, paleta, fonte licenciada e exemplo de movimento.
+
+![Identidade visual](brand/identity/apresentacao/identidade.png)
+
+- [Guia de identidade](brand/identity/guia-de-identidade.md)
+- [Mestres SVG](brand/identity/source/)
+- [Tokens de cor e tipografia](brand/identity/tokens.json)
+- [Aplicações e apresentação](brand/identity/apresentacao/)
+- [Ícones de aplicativo e favicon](brand/identity/web/)
+- [Exemplo de animação](brand/identity/movimento/index.html)
+
+O kit é a referência para novas aplicações de marca; este commit adiciona os arquivos de identidade sem alterar o funcionamento do produto.

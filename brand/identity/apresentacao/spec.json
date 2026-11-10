@@ -1,0 +1,45 @@
+{
+  "brand": "Nexa Finance",
+  "tagline": "Clareza para cuidar do que importa.",
+  "brief": "Equilíbrio, precisão e serenidade. Identidade minimalista e premium para um projeto de software.",
+  "adjectives": [
+    "preciso",
+    "sóbrio",
+    "premium",
+    "minimalista"
+  ],
+  "criteria": "Marca legível em redução, uso monocromático e composição com espaço.",
+  "industry": "finance",
+  "nav": [
+    "Produto",
+    "Projeto",
+    "Contato"
+  ],
+  "brand_color": "#5A1D2A",
+  "tile_color": "#5A1D2A",
+  "greyscale": false,
+  "final": true,
+  "round": 2,
+  "designer": "Kauan Inacio dos Santos",
+  "deck_title": "Identidade visual",
+  "concepts": [
+    {
+      "name": "Lastro",
+      "symbol": "../source/nexa-finance-symbol.svg",
+      "lockup": "../source/nexa-finance-horizontal.svg",
+      "stacked": "../source/nexa-finance-stacked.svg",
+      "symbol_on_tile": "../digital/nexa-finance-symbol-white.svg",
+      "lockup_on_dark": "../digital/nexa-finance-horizontal-white.svg",
+      "idea": "Duas massas equivalentes encontram o equilíbrio.",
+      "rationale": [
+        "Desenho vetorial próprio, com letras em paths.",
+        "Paleta contida e contraste alto.",
+        "Variações para interface, aplicativo e comunicação."
+      ]
+    }
+  ],
+  "recommendation": "Direção A selecionada e refinada com a paleta aprovada.",
+  "next_steps": [
+    "Aplicações ilustrativas; integração nos produtos é uma etapa posterior."
+  ]
+}
